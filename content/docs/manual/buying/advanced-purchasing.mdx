@@ -1,0 +1,470 @@
+---
+title: "Advanced purchasing"
+description: "Outside processing, RFQs, drop-ship and the supplier portal."
+---
+
+[Purchasing basics](/manual/buying/purchasing-basics) covered the everyday loop: raise a
+purchase order, send it, receive the goods. This page is for the trickier buying jobs that
+real shops run into — sending a half-finished part out to a specialist for a coating,
+getting competing prices before you commit, shipping straight from your supplier to your
+customer, and letting Carbon tell you *what* to buy before a shortage stalls a job. None of
+these are exotic; you'll likely use all of them within your first month.
+
+<Callout type="info">
+  **Where this fits.** Everything here sits inside the buying half of the flow —
+  [Quote](/manual/selling/quoting) → [Sales Order](/manual/selling/sales-orders) →
+  [Job](/manual/manufacturing/jobs) → **Purchasing** → [Shipment](/manual/inventory/shipping-receiving)
+  → [Invoice](/manual/accounting/overview). Make sure you're comfortable with
+  [Purchasing basics](/manual/buying/purchasing-basics) and [Suppliers](/manual/buying/suppliers)
+  first — this page builds on both.
+</Callout>
+
+## The five tools on this page
+
+Each section stands on its own — skip to whichever one you need today.
+
+<Cards>
+  <IconCard title="Outside processing" href="#outside-processing" description="Send a part out mid-job for a service like anodizing, then take it back." icon={<Wrench className="size-4" />} />
+  <IconCard title="Supplier quotes (RFQs)" href="#supplier-quotes-rfqs" description="Ask several suppliers for a price and compare them side by side." icon={<FileText className="size-4" />} />
+  <IconCard title="Drop-ship" href="#drop-ship" description="Have a supplier ship straight to your customer." icon={<Truck className="size-4" />} />
+  <IconCard title="Supplier portal" href="#the-supplier-portal" description="Let suppliers respond to RFQs and POs online — no account needed." icon={<Globe className="size-4" />} />
+  <IconCard title="Purchasing planning" href="#purchasing-planning" description="Turn job and stock shortages into ready-to-send PO suggestions." icon={<ListChecks className="size-4" />} />
+</Cards>
+
+## Outside processing
+
+Sometimes a step in making a part isn't something you do in-house. A part comes off your
+saw and CNC mill in great shape, but it still needs **anodizing** or **painting** — and you
+don't own an anodizing line. So you send the parts to a specialist supplier, they perform
+the service, and they ship the parts back to you to finish. That round trip is called
+**outside processing** (also "outside service" or "subcontracting").
+
+The key idea in Carbon: outside processing is just an **operation** in a part's
+[routing](/manual/overview/glossary), exactly like Flame Cut or Inspection — except its type
+is **Outside** instead of **Inside**. An *Inside* operation runs at one of your own
+[work centers](/manual/overview/glossary) and costs you shop time. An *Outside* operation
+runs at a **supplier**, and its cost is what the supplier charges you. When the job reaches
+that operation, Carbon helps you raise a purchase order for the service and tracks the parts
+while they're off-site.
+
+Acme uses two outside-processing suppliers, both classed as **Subcontractors and Service
+Providers**:
+
+<DataTable
+  columns={[
+    { key: "supplier", label: "Supplier" },
+    { key: "service", label: "Service" },
+    { key: "type", label: "Supplier type" },
+  ]}
+  rows={[
+    { supplier: "Allen's Anodizing", service: <Tag>Anodizing</Tag>, type: "Subcontractors and Service Providers" },
+    { supplier: "Zebra Painters", service: <Tag>Painting</Tag>, type: "Subcontractors and Service Providers" },
+  ]}
+/>
+
+### How an outside operation sits in a routing
+
+Picture a part — say an aluminum bracket — that's milled in-house and then anodized at
+Allen's Anodizing before a final inspection. Its [method](/manual/items/methods) tree mixes
+inside and outside steps in sequence:
+
+<AppShot title="Method — outside processing example" url="app.carbon.ms/x/part/…/manufacturing" caption="Operation 20 (Anodizing) is an Outside operation that runs at a supplier, not a work center." flush>
+  <MethodTree
+    nodes={[
+      {
+        kind: "assembly",
+        label: "Bracket",
+        detail: "Anodized aluminum bracket",
+        qty: "1 EA",
+        children: [
+          { kind: "material", label: "6061-AL-FLAT-3\" x 1.25\"-T6", detail: "6061 Aluminum Flat Bar — pulled from stock", qty: "2 LB" },
+          { kind: "operation", label: "10 · 3-Axis CNC", detail: "HAAS VF-1 · Inside", qty: "12 min/pc" },
+          { kind: "operation", label: "20 · Anodizing", detail: "Allen's Anodizing · Outside", qty: "supplier service" },
+          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station · Inside", qty: "10 min/pc" },
+        ],
+      },
+    ]}
+  />
+</AppShot>
+
+Operation 20 has no work center, no labor minutes, and no machine time. Instead it points
+at a supplier and carries a price. Compare that to Acme's hero part, the
+[Counterweight Hook](/manual/walkthrough) — all three of its operations (Flame Cut,
+Sandblasting, Inspection) are **Inside**, so the whole part is made under Acme's own roof.
+
+### Set up and run an outside operation
+
+<Steps>
+
+<Step>
+**Add the operation to the routing and set its type to Outside.** Open the part's
+**Manufacturing** tab, add an operation where the service belongs in the sequence, and
+choose **Outside** as the operation type. (You can do the same on a one-off
+[job](/manual/manufacturing/jobs) without changing the part — handy for a rush order.)
+</Step>
+
+<Step>
+**Point it at a supplier and a service item.** Pick the supplier who performs the work —
+**Allen's Anodizing** — and link the operation to a **Service** [item](/manual/overview/glossary)
+if you track services as items. Enter what the supplier charges (per piece or per lot). That
+price becomes part of the part's rolled-up cost, just like in-house labor does.
+</Step>
+
+<Step>
+**Release the job.** When you release the job, the outside operation appears in its
+operation list with status **Todo**, sitting in sequence between the inside steps before and
+after it.
+</Step>
+
+<Step>
+**Raise a purchase order for the service.** When production reaches the outside step, create
+a [purchase order](/manual/buying/purchasing-basics) to the supplier for the service. Because
+the operation is linked to the job, the PO is tied back to it — Carbon knows these parts left
+the building for anodizing, and which job they belong to.
+
+<AppShot title="Purchase Order — outside service" url="app.carbon.ms/x/purchase-order/…">
+  <RecordPanel
+    title="Purchase Order — Allen's Anodizing"
+    subtitle="Outside processing · linked to job operation 20"
+    status={<StatusBadge tone="amber">Needs Approval</StatusBadge>}
+    tabs={["Details", "Lines", "Delivery"]}
+    activeTab="Lines"
+  >
+    <DataTable
+      columns={[
+        { key: "line", label: "Line", align: "right" },
+        { key: "type", label: "Type" },
+        { key: "desc", label: "Description" },
+        { key: "qty", label: "Qty", align: "right" },
+        { key: "price", label: "Unit price", align: "right" },
+      ]}
+      rows={[
+        { line: "1", type: <Tag>Service</Tag>, desc: "Type II anodize — black", qty: "200 EA", price: "$3.50" },
+      ]}
+    />
+  </RecordPanel>
+</AppShot>
+</Step>
+
+<Step>
+**Ship the parts out, then receive them back.** Send the work-in-progress parts to the
+supplier. When they come back finished, record a [receipt](/manual/inventory/shipping-receiving)
+against that PO. Receiving the service marks the outside operation **complete**, and the job
+moves on to the next step — here, final Inspection.
+</Step>
+
+</Steps>
+
+<Callout type="tip">
+  **One supplier can do many things.** A subcontractor like Sendcutsend cuts *and* finishes
+  parts, so it can appear on outside operations for several different services. Set the
+  supplier's [supplier type](/manual/buying/suppliers) to **Subcontractors and Service
+  Providers** so it's easy to find when you're building a routing.
+</Callout>
+
+<Callout type="warn">
+  **Outside parts are still your inventory.** While parts are at the anodizer, they haven't
+  been scrapped or shipped to a customer — they're work-in-progress that's temporarily off-site.
+  Don't close the job or promise the parts as finished until you've received them back and the
+  outside operation reads complete. Otherwise your job costs and on-hand counts will be wrong.
+</Callout>
+
+## Supplier quotes (RFQs)
+
+Before you buy something expensive or new, you usually want more than one price. In Carbon
+you do that with a **Request for Quote (RFQ)**: you describe what you want to buy, send it to
+several suppliers, collect their **supplier quotes** back, and compare them. When you pick a
+winner, you convert the chosen quote into a purchase order — no re-typing.
+
+A **supplier quote** is the buying-side mirror of the [sales quote](/manual/selling/quoting)
+you send customers. Carbon creates one for each supplier you ask, so a single RFQ can spin
+off several supplier quotes you track side by side.
+
+Say Acme needs a big lot of 1-inch A36 steel plate and wants to shop it around. Acme's metals
+suppliers all carry it, so the RFQ goes to four of them at once:
+
+<DataTable
+  columns={[
+    { key: "supplier", label: "Supplier" },
+    { key: "type", label: "Supplier type" },
+    { key: "note", label: "Note" },
+  ]}
+  rows={[
+    { supplier: "Ryerson", type: "Metals and Raw Materials", note: "Acme's usual steel supplier" },
+    { supplier: "Olympic Steel", type: "Metals and Raw Materials", note: "—" },
+    { supplier: "Reliance Steel", type: "Metals and Raw Materials", note: "—" },
+    { supplier: "MetalMart", type: "Metals and Raw Materials", note: "—" },
+  ]}
+/>
+
+### Send an RFQ and compare the replies
+
+<Steps>
+
+<Step>
+**Create the RFQ and add what you want priced.** In the **Purchasing** module, create a new
+RFQ and add a line for each item you want quoted — here, one line for **A36 Steel Plate 1″**
+(`A36-STEEL-PLT-1".96x240`) at the quantity you're planning to buy. You can add notes,
+target dates, and attachments (drawings, specs) per line.
+</Step>
+
+<Step>
+**Choose the suppliers and send.** Add the four suppliers above as recipients. Carbon
+generates a **supplier quote** for each one and sends a request — either by email or through
+the [supplier portal](#the-supplier-portal), so suppliers can type their prices in directly.
+</Step>
+
+<Step>
+**Collect the replies.** As suppliers respond, their prices land back on each supplier quote.
+You'll see quotes come in at different prices, lead times, and minimum quantities. The list
+view shows you which ones are still outstanding.
+
+<AppShot title="Supplier Quotes" url="app.carbon.ms/x/supplier-quotes" caption="One supplier quote per recipient — the buying-side mirror of a sales quote." flush>
+  <DataTable
+    columns={[
+      { key: "supplier", label: "Supplier" },
+      { key: "item", label: "Item", mono: true },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { supplier: "Ryerson", item: "A36-STEEL-PLT-1\".96x240", status: <StatusBadge tone="green">Replied</StatusBadge> },
+      { supplier: "Olympic Steel", item: "A36-STEEL-PLT-1\".96x240", status: <StatusBadge tone="green">Replied</StatusBadge> },
+      { supplier: "Reliance Steel", item: "A36-STEEL-PLT-1\".96x240", status: <StatusBadge tone="blue">Sent</StatusBadge> },
+      { supplier: "MetalMart", item: "A36-STEEL-PLT-1\".96x240", status: <StatusBadge tone="green">Replied</StatusBadge> },
+    ]}
+  />
+</AppShot>
+</Step>
+
+<Step>
+**Compare side by side.** Open the **comparison** view for the RFQ. Carbon lines the
+suppliers up against each other so the cheapest price, the best lead time, and any quantity
+breaks jump out. You're not just chasing the lowest number — a slightly higher price that
+arrives a week sooner can be the right call when a job is waiting.
+
+<AppShot title="Supplier quote comparison" url="app.carbon.ms/x/rfq/…/compare" caption="Four prices for the same 54,001 LB of A36 plate, lined up. Ryerson wins on price; Olympic is fastest." flush>
+  <DataTable
+    columns={[
+      { key: "supplier", label: "Supplier" },
+      { key: "unit", label: "Unit price", align: "right" },
+      { key: "lead", label: "Lead time", align: "right" },
+      { key: "moq", label: "Min. qty", align: "right" },
+      { key: "ext", label: "Extended", align: "right" },
+      { key: "pick", label: "", align: "right" },
+    ]}
+    rows={[
+      { supplier: "Ryerson", unit: "$0.25 / LB", lead: "9 days", moq: "10,000 LB", ext: "$13,500.25", pick: <StatusBadge tone="green">Best price</StatusBadge> },
+      { supplier: "MetalMart", unit: "$0.27 / LB", lead: "7 days", moq: "5,000 LB", ext: "$14,580.27", pick: <Tag>—</Tag> },
+      { supplier: "Olympic Steel", unit: "$0.28 / LB", lead: "4 days", moq: "2,000 LB", ext: "$15,120.28", pick: <StatusBadge tone="blue">Fastest</StatusBadge> },
+      { supplier: "Reliance Steel", unit: "—", lead: "—", moq: "—", ext: "—", pick: <StatusBadge tone="neutral">No reply</StatusBadge> },
+    ]}
+  />
+</AppShot>
+</Step>
+
+<Step>
+**Convert the winner to a purchase order.** Pick the quote you want and convert it to a
+[purchase order](/manual/buying/purchasing-basics) in one click. The supplier, item, price,
+and quantity carry straight over — and the PO stays linked to the quote, so you always know
+why you paid what you paid. That's exactly how Acme's `PO000057` to Ryerson came to be:
+A36 plate at **$0.25/LB**.
+</Step>
+
+</Steps>
+
+<Callout type="tip">
+  **Keep the prices for next time.** A supplier quote can feed a supplier's **price list** for
+  that item, so the next time you buy it Carbon already knows the price and lead time — no RFQ
+  needed unless you want to re-shop it.
+</Callout>
+
+## Drop-ship
+
+Normally goods you buy come to *you* — you receive them, then ship from your own dock. But
+sometimes it makes more sense for the supplier to ship **straight to your customer**. Maybe
+you're reselling a finished item, or the part is bulky and your shop is just a middleman. That
+shortcut is a **drop-shipment**: you still buy it and you still bill your customer, but the
+goods never touch your building.
+
+In Carbon, drop-ship is a flag that links a sales order and a purchase order together.
+Acme's hero order `SO000069` is a normal (non-drop-ship) order — its `dropShipment` flag is
+**false**, because Acme makes those hooks in-house and ships them itself. A drop-ship order
+sets that flag to **true** instead.
+
+<Mermaid
+  chart={`flowchart LR
+  C[Customer order] --> SO[Sales Order drop-ship]
+  SO --> PO[Purchase Order to supplier]
+  PO --> CUST[Supplier ships to customer]
+  CUST --> INV[You invoice the customer]`}
+/>
+
+### Set up a drop-ship
+
+<Steps>
+
+<Step>
+**Mark the sales order line as drop-ship.** On the [sales order](/manual/selling/sales-orders),
+turn on **drop-shipment** for the line. This tells Carbon not to expect the part to come out
+of your own inventory.
+</Step>
+
+<Step>
+**Generate the linked purchase order.** Carbon creates a purchase order to your chosen
+supplier for that line, with the **ship-to** set to your *customer's* address rather than
+your own warehouse. Confirm the supplier, price, and quantity.
+
+<AppShot title="Purchase Order — drop-ship" url="app.carbon.ms/x/purchase-order/…">
+  <RecordPanel
+    title="Purchase Order — drop-ship"
+    subtitle="Ships to the customer, not to Acme"
+    status={<StatusBadge tone="blue">To Order</StatusBadge>}
+    tabs={["Details", "Lines", "Delivery"]}
+    activeTab="Delivery"
+  >
+    <FieldGrid cols={2}>
+      <Field label="Drop-ship" value="Yes" />
+      <Field label="Ship to" value="Radiant Aerospace (customer site)" />
+      <Field label="Linked sales order" value="SO000069" mono />
+      <Field label="Location" value="Headquarters" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+</Step>
+
+<Step>
+**Send the PO; the supplier ships your customer.** The supplier fulfills the order directly
+to the customer's door. Nothing arrives at your shop, so there's no receipt to do and no
+inventory movement on your side.
+</Step>
+
+<Step>
+**Invoice the customer as usual.** You still bill your customer from the sales order, and you
+still pay the supplier from the purchase order. Your margin is the difference — Carbon tracks
+both sides even though the goods never passed through your hands.
+</Step>
+
+</Steps>
+
+<Callout type="warn">
+  **Drop-ship skips your inventory on purpose.** Because the part never comes through your
+  dock, it never appears in your [on-hand stock](/manual/inventory/locations-and-stock) — by
+  design. Only use drop-ship for lines you genuinely want fulfilled supplier-to-customer. If
+  you want the goods first (to inspect, kit, or combine with other items), buy it normally and
+  ship it yourself.
+</Callout>
+
+## The supplier portal
+
+How do suppliers actually *reply* to an RFQ or confirm a PO? You don't want to chase prices
+over email and re-key them by hand. Carbon gives each supplier a **portal** — a secure web
+link where they can see what you've sent them and respond online, without needing a Carbon
+login of their own.
+
+When you send a supplier quote or purchase order through the portal, Carbon includes a
+private link. The supplier clicks it and can:
+
+<DataTable
+  columns={[
+    { key: "doc", label: "Document" },
+    { key: "can", label: "What the supplier can do" },
+  ]}
+  rows={[
+    { doc: <Tag>Supplier quote / RFQ</Tag>, can: "Enter unit prices, lead times, minimum quantities, and notes — then submit" },
+    { doc: <Tag>Purchase order</Tag>, can: "Review and acknowledge the order, confirm dates, or flag a problem" },
+  ]}
+/>
+
+Whatever the supplier types lands straight on the matching record in your Carbon — no copy-paste,
+no transcription mistakes. Each request carries its own link, so a supplier only ever sees the
+documents you sent *them*.
+
+<Callout type="tip">
+  **No account, no friction.** The whole point of the portal is to make it easy for suppliers
+  to respond — especially small shops like an anodizer or painter who'll never log in to a full
+  ERP. The link does the work. The faster they can reply, the faster your RFQ comparison fills in.
+</Callout>
+
+## Purchasing planning
+
+So far you've been creating purchase orders by hand. But how do you know *what* to buy in the
+first place? On a busy shop floor, the answer is **purchasing planning** — Carbon watches your
+demand and your stock, works out where you're going to run short, and hands you a list of
+**buy suggestions** you can turn into purchase orders.
+
+Demand comes from two places:
+
+- **Jobs.** When you release a [job](/manual/manufacturing/jobs), its
+  [method](/manual/items/methods) lists the materials it needs. If you don't have enough on
+  hand, that's a shortage.
+- **MRP / replenishment.** For stocked items with reorder points (see
+  [Replenishment](/manual/items/replenishment)), Carbon flags anything that's dipped below
+  its minimum.
+
+This is exactly how Acme's hero purchase order was born. Job `J000097` needed **40 LB** of
+A36 steel plate per piece — **20,000 LB** for the batch of 500 — and Acme didn't have that
+much in stock. Carbon flagged the shortage, and that suggestion became purchase order
+`PO000057` to Ryerson.
+
+<AppShot title="Purchasing planning — buy suggestions" url="app.carbon.ms/x/purchasing/planning" caption="Shortages from jobs and reorder points, ready to turn into purchase orders." flush>
+  <DataTable
+    columns={[
+      { key: "item", label: "Item", mono: true },
+      { key: "desc", label: "Description" },
+      { key: "need", label: "Needed", align: "right" },
+      { key: "onhand", label: "On hand", align: "right" },
+      { key: "buy", label: "Suggested buy", align: "right" },
+      { key: "source", label: "Driven by" },
+    ]}
+    rows={[
+      { item: "A36-STEEL-PLT-1\".96x240", desc: "A36 Steel Plate 1″", need: "20,000 LB", onhand: "4,000 LB", buy: "54,001 LB", source: <Tag>Job J000097</Tag> },
+      { item: "360-BR-SQBAR-2\"", desc: "360 Brass Square Bar 2″", need: "1,200 LB", onhand: "0 LB", buy: "1,200 LB", source: <Tag>Job J000095</Tag> },
+      { item: "WLD-WIR", desc: "Welding Wire", need: "—", onhand: "8 EA", buy: "50 EA", source: <Tag>Reorder point</Tag> },
+    ]}
+  />
+</AppShot>
+
+### Turn suggestions into purchase orders
+
+<Steps>
+
+<Step>
+**Open the planning view.** In the **Purchasing** module, open purchasing planning. Carbon
+lists every item where projected demand is about to outrun supply, the quantity it suggests
+buying, and what's driving the need (a specific job, or a reorder point).
+</Step>
+
+<Step>
+**Review and adjust.** You're in control — bump a quantity to hit a price break, change the
+suggested supplier, or skip a line you'll handle another way. Carbon's number is a starting
+point, not a command.
+</Step>
+
+<Step>
+**Generate the purchase orders.** Select the lines you want and let Carbon create the POs.
+It groups lines by supplier, so one click can produce several tidy orders — all the Ryerson
+items on one PO, all the Fastenal items on another.
+</Step>
+
+<Step>
+**Approve and send.** The new POs land in **Draft** or **Needs Approval** (just like
+`PO000057` did). From there it's the normal [purchasing basics](/manual/buying/purchasing-basics)
+loop — approve, send, receive.
+</Step>
+
+</Steps>
+
+<Callout type="info">
+  **Planning closes the loop.** This is the moment the buying side connects back to
+  production: a job creates demand, planning surfaces the shortage, a PO fills it, the
+  receipt restocks the shelf, and the job pulls the material it needs. Run planning
+  regularly and shortages stop sneaking up on you.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Purchasing basics" href="/manual/buying/purchasing-basics" description="The core loop these features build on — raise, send and receive a PO." icon={<Truck className="size-4" />} />
+  <IconCard title="Managing production" href="/manual/manufacturing/managing-production" description="See how job shortages and outside operations play out on the shop floor." icon={<Factory className="size-4" />} />
+  <IconCard title="Suppliers" href="/manual/buying/suppliers" description="Set up subcontractors, supplier types and price lists." icon={<Building className="size-4" />} />
+</Cards>

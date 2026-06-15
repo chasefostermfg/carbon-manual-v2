@@ -1,0 +1,292 @@
+---
+title: "AI & the MCP server"
+description: "Let AI assistants work in Carbon through the Model Context Protocol."
+---
+
+Carbon ships with a built-in **MCP server** — a standard way to let an AI assistant read
+and act inside your Carbon company using plain English. Instead of clicking through screens,
+you can ask Claude, ChatGPT, or your code editor "what's the on-hand quantity of A36 steel?"
+or "release every sales order stuck in Needs Approval for three days" — and the assistant
+does it by calling the same Carbon API the app itself uses. This page explains what MCP is,
+how Carbon's server is organized, how to keep it safe, and how to connect an assistant.
+
+<Callout type="info">
+  **Where this fits.** This is the second of the three *Developing* pages. The
+  [API](/manual/developing/using-the-api) is the raw machinery — every action in Carbon as a
+  callable endpoint. **MCP** wraps that same machinery so an AI assistant can drive it for
+  you. If you'd rather wire Carbon to another system than talk to it, jump to
+  [Integrating with other systems](/manual/developing/integrating).
+</Callout>
+
+## What is MCP?
+
+**MCP** stands for the [**Model Context Protocol**](/manual/overview/glossary) — an open
+standard that lets AI assistants connect to outside tools and data in a consistent way. Think
+of it like a USB port for AI: any assistant that "speaks MCP" can plug into any system that
+exposes an MCP server, with no custom glue code in between.
+
+A Carbon **MCP server** is just a program that lists the things an assistant is allowed to do
+(these are called **tools**) and runs them on request. When you ask a connected assistant a
+question, it picks the right Carbon tools, fills in the details, and reports back — reading
+records, drafting documents, or making changes, depending on what you've allowed.
+
+Carbon's server exposes roughly **1,188 tools** spanning **15 modules** — Sales, Purchasing,
+Items, Production, Inventory, Quality, Accounting, Resources, and more. In practice that means
+nearly anything you can do by clicking in Carbon, an assistant can do through MCP.
+
+<Callout type="tip">
+  Carbon hosts this for you at **app.carbon.ms/mcp**. The server you connect to is the same
+  one Carbon's own AI features use — there's nothing to install or run on your own machine.
+</Callout>
+
+## The three meta-tools
+
+A thousand-plus tools is far too many to hand an assistant all at once — it would overwhelm
+the model's context before it answered a single question. So Carbon's server hides the full
+catalog behind just **three "meta-tools"** that the assistant uses to discover and run
+everything else on demand.
+
+<DataTable
+  columns={[
+    { key: "tool", label: "Meta-tool", mono: true },
+    { key: "does", label: "What it does" },
+    { key: "example", label: "Example" },
+  ]}
+  rows={[
+    { tool: "search_tools", does: "Finds the right tools for a task by keyword, module, or safety class.", example: "search_tools({ query: \"customer\" })" },
+    { tool: "describe_tool", does: "Returns the exact inputs and outputs (the schema) for one tool.", example: "describe_tool({ name: \"sales_getCustomers\" })" },
+    { tool: "call_tool", does: "Runs a tool with its parameters and returns the result.", example: "call_tool({ name: \"sales_getCustomers\", arguments: { args: { limit: 10 } } })" },
+  ]}
+/>
+
+The flow is always the same: **search, then describe (optional), then call.** Suppose you
+ask "what's the on-hand quantity of A36 steel?" Behind the scenes the assistant:
+
+<Steps>
+<Step>
+**Searches for the right tool.** It calls `search_tools({ query: "inventory quantity" })` and
+gets back candidate tool names like `inventory_getItemQuantities`.
+</Step>
+<Step>
+**Checks the inputs.** If it's unsure what parameters the tool needs, it calls
+`describe_tool({ name: "inventory_getItemQuantities" })` to read the schema — which fields are
+required, what shape the response takes.
+</Step>
+<Step>
+**Calls the tool.** It runs `call_tool` with the item ID for A36 Steel Plate
+(`A36-STEEL-PLT-1".96x240`) and reads the result back to you in a sentence: "There's none on
+hand at Headquarters right now — every pound is committed to open jobs."
+</Step>
+</Steps>
+
+You never see these three steps — you just see the answer. But knowing the pattern helps you
+understand what your assistant is doing and why an answer occasionally takes a couple of
+round-trips.
+
+<Callout type="info">
+  Every result comes back in the same envelope: `{ data, error?, count? }`. The assistant
+  reads `data` for the answer, checks `error` if something went wrong, and uses `count` to know
+  how many records matched. IDs like `companyId` are filled in automatically from your
+  credentials, so you never have to specify which company you're working in.
+</Callout>
+
+## Tool safety classes
+
+Not every tool is equal. Reading the on-hand quantity of steel is harmless; deleting a sales
+order is not. So Carbon tags **every** tool with one of three **safety classifications**, and
+you can filter by them — for example, `search_tools({ classification: "READ" })` to surface
+only the look-but-don't-touch tools.
+
+<DataTable
+  columns={[
+    { key: "cls", label: "Class" },
+    { key: "means", label: "What it can do" },
+    { key: "ex", label: "Example tools", mono: true },
+    { key: "risk", label: "Risk", align: "right" },
+  ]}
+  rows={[
+    { cls: <StatusBadge tone="green">READ</StatusBadge>, means: "Looks up and returns data. Changes nothing.", ex: "sales_getCustomers, inventory_getItemQuantities", risk: <Tag>None</Tag> },
+    { cls: <StatusBadge tone="amber">WRITE</StatusBadge>, means: "Creates or updates records — new quotes, edited orders, released jobs.", ex: "sales_createQuote, production_updateJob", risk: <Tag>Reversible</Tag> },
+    { cls: <StatusBadge tone="red">DESTRUCTIVE</StatusBadge>, means: "Deletes records or makes changes that are hard to undo.", ex: "sales_deleteSalesOrder", risk: <Tag>Permanent</Tag> },
+  ]}
+/>
+
+<Callout type="warn">
+  **Treat WRITE and DESTRUCTIVE tools like a teammate with edit access.** An assistant calling
+  them is making real changes to your live company data — the same as if a colleague clicked
+  the buttons. When you're exploring or learning, keep your assistant to **READ** tools only.
+  Turn on WRITE access deliberately, for a specific task, with a human reviewing the result.
+</Callout>
+
+## What you can actually ask
+
+The point of MCP isn't to memorize tool names — it's to describe what you want in plain
+language and let the assistant find the tools. Here are realistic asks against Acme's data, and
+roughly what happens under the hood.
+
+<Tabs items={['Read a value', 'Find a problem', 'Take an action']}>
+<Tab value="Read a value">
+
+> **"What's the on-hand quantity of A36 steel?"**
+
+A pure **READ** request. The assistant searches for an inventory tool, calls it with the A36
+plate's item ID, and answers in a sentence. Nothing changes. Other safe reads:
+
+- "Show me every job for Radiant Aerospace that isn't finished yet."
+- "What did we invoice Radiant on AR000025, and is it paid?"
+- "List open purchase orders to Ryerson."
+
+</Tab>
+<Tab value="Find a problem">
+
+> **"Which sales orders have been stuck in Needs Approval for three or more days?"**
+
+The assistant reads the sales-order list (a **READ** call), filters by status and date, and
+hands you the offenders. This is the sweet spot for MCP — turning a question that would take
+several filtered screens into one sentence. Similar triage asks:
+
+- "Any purchase orders sitting in Draft older than a week?" (PO000056 to Ryerson would surface.)
+- "List jobs past their due date that aren't complete."
+- "Which invoices are overdue and unpaid?"
+
+</Tab>
+<Tab value="Take an action">
+
+> **"Release every sales order stuck in Needs Approval for three or more days."**
+
+Now the assistant first *reads* to find the stuck orders, then issues a **WRITE** call per
+order to release each one. Because these tools change live data, you'll want to have approved
+WRITE access and to review the list before it acts. Other action asks:
+
+- "Create a quote for 500 Counterweight Hooks for Radiant Aerospace at $73.14 each."
+- "Bump the priority on job J000099 to the top of the queue."
+
+</Tab>
+</Tabs>
+
+<Callout type="tip">
+  Good prompts are specific. "Release the stuck orders" is fine; "Release sales orders in
+  *Needs Approval* with an order date 3+ days ago, and show me the list first" gives the
+  assistant a clean target and you a checkpoint before anything changes.
+</Callout>
+
+## How the assistant reaches Carbon
+
+When you connect an assistant, two things happen on every request: the assistant authenticates
+as a real Carbon user, and Carbon enforces that user's permissions on every tool call.
+
+<Mermaid
+  chart={`flowchart LR
+  A[You ask in plain English] --> B[AI assistant]
+  B --> C[Carbon MCP server]
+  C --> D[Auth and permissions check]
+  D --> E[Carbon API and database]
+  E --> B`}
+/>
+
+- **Authentication** uses either an **OAuth** sign-in (you log in to Carbon once, the
+  assistant gets a scoped token) or an **API key** you generate in Carbon's settings — the
+  same key you'd use for the [API](/manual/developing/using-the-api).
+- **Permissions** are inherited from whoever the credentials belong to. If a user can't delete
+  sales orders in the app, the assistant can't either — even if it tries the DESTRUCTIVE tool.
+  MCP is a new doorway into Carbon, not a way around its [permission
+  model](/manual/getting-started/users-permissions).
+
+<Callout type="warn">
+  An API key is a password. Anyone holding it can act as that Carbon user through MCP. Store
+  keys in your assistant's secret settings (never paste them into a chat), give each
+  integration its own key, and revoke a key the moment it's no longer needed.
+</Callout>
+
+## Connect an assistant
+
+The exact menu differs by assistant, but the shape is identical everywhere: point the tool at
+Carbon's MCP URL and give it credentials. Here's the flow for a desktop AI client.
+
+<Steps>
+<Step>
+**Generate credentials in Carbon.** Sign in to Carbon, open **Settings → API keys**, and
+create a key (or set up OAuth if your assistant supports it). Copy the key somewhere safe — you
+won't be able to see it again.
+</Step>
+<Step>
+**Add Carbon as an MCP server.** In your assistant's settings, find the connectors or MCP
+section and add a new server pointing at **app.carbon.ms/mcp**. Paste your API key or complete
+the OAuth sign-in when prompted.
+</Step>
+<Step>
+**Confirm the connection.** The assistant should now list Carbon among its available tools.
+You'll typically see the three meta-tools — `search_tools`, `describe_tool`, `call_tool` —
+which is exactly what you want; the full catalog stays hidden behind them.
+</Step>
+<Step>
+**Start with a READ question.** Ask something safe first, like *"What's the on-hand quantity of
+A36 steel?"* or *"List Radiant Aerospace's open jobs."* If you get a sensible answer, you're
+connected. Only then move on to WRITE-level asks, deliberately.
+</Step>
+</Steps>
+
+<AppShot title="AI assistant — connected to Carbon" url="app.carbon.ms/mcp" caption="A connected assistant exposes Carbon's three meta-tools; everything else is discovered on demand.">
+  <DataTable
+    columns={[
+      { key: "tool", label: "Tool", mono: true },
+      { key: "purpose", label: "Purpose" },
+      { key: "cls", label: "Access", align: "right" },
+    ]}
+    rows={[
+      { tool: "search_tools", purpose: "Discover Carbon tools by keyword or module", cls: <StatusBadge tone="green">READ</StatusBadge> },
+      { tool: "describe_tool", purpose: "Inspect a tool's inputs and outputs", cls: <StatusBadge tone="green">READ</StatusBadge> },
+      { tool: "call_tool", purpose: "Run any discovered tool with parameters", cls: <StatusBadge tone="amber">Varies</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+<Callout type="info">
+  The `call_tool` meta-tool inherits the safety class of whatever tool it runs. Calling
+  `inventory_getItemQuantities` through it is a READ; calling `sales_deleteSalesOrder` through
+  it is DESTRUCTIVE. The wrapper doesn't soften the underlying risk — so the READ-first habit
+  matters even though `call_tool` itself looks generic.
+</Callout>
+
+## A worked example, end to end
+
+To make the pattern concrete, here's the full round-trip behind the on-hand-steel question,
+shown as the assistant would run it. You'd only ever type the first line.
+
+```text
+You:  What's the on-hand quantity of A36 steel?
+
+→ search_tools({ query: "inventory item quantity" })
+  ← ["inventory_getItemQuantities", "inventory_getItemLedger", ...]
+
+→ describe_tool({ name: "inventory_getItemQuantities" })
+  ← { inputs: { itemId, locationId? }, outputs: { quantityOnHand, ... } }
+
+→ call_tool({
+    name: "inventory_getItemQuantities",
+    arguments: { args: { itemId: "item_Mqv4Jpc9mhgpxTSFfpxjwa" } }
+  })
+  ← { data: { quantityOnHand: 0, locationId: "loc_CZUGEFrKS1CCvUruMgY9CA" } }
+
+Assistant:  You have 0 LB of A36 Steel Plate 1" on hand at Headquarters
+            right now. Each Counterweight Hook needs 40 LB, so you'd
+            have to buy more before you can build any.
+```
+
+That last sentence is the real value of MCP: it didn't just fetch a number, it connected it to
+something you care about — you can't build a single hook until you raise another
+[purchase order](/manual/buying/purchasing-basics) to Ryerson, exactly like PO000057.
+
+<Callout type="tip">
+  Because the assistant can chain reads, you can ask layered questions in one go: *"Do we have
+  enough A36 steel on hand to finish job J000099 (3,000 hooks), and if not, how much do we need
+  to buy?"* It reads the job's material requirement, reads inventory, and does the math.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Using the API" href="/manual/developing/using-the-api" description="The endpoints MCP is built on — call Carbon directly from your own code." icon={<Code className="size-4" />} />
+  <IconCard title="Integrating with other systems" href="/manual/developing/integrating" description="Connect Carbon to the rest of your stack with webhooks and integrations." icon={<Workflow className="size-4" />} />
+  <IconCard title="Users & permissions" href="/manual/getting-started/users-permissions" description="The permission model that governs what an assistant can do." icon={<Users className="size-4" />} />
+</Cards>

@@ -1,0 +1,346 @@
+---
+title: "Managing production"
+description: "Schedule, track and plan work across the shop."
+---
+
+A single job is easy to follow. The real challenge starts when you have dozens of them at
+once — some waiting on steel, some halfway through the shop, all competing for the same
+machines. This page is about that bird's-eye view: how Carbon turns customer demand into a
+plan, tells you what to **make** and what to **buy**, schedules the work across your
+machines, and shows you — at a glance — whether everything is on track.
+
+Acme runs 89 jobs through **19 work centers** and **16 processes**, so we'll use its real
+shop to show how it all hangs together.
+
+<Callout type="info">
+  **Where this fits.** A [sales order](/manual/selling/sales-orders) creates demand, and a
+  [job](/manual/manufacturing/jobs) is how you satisfy it. This page sits *between* the two:
+  it's the planning and oversight layer that decides **which** jobs to run, **when**, and
+  **on which machine** — then watches them finish. Once a job hits the floor, operators run
+  it in the [shop floor app](/manual/manufacturing/shop-floor).
+</Callout>
+
+## The big picture: demand in, plan out
+
+Every manufacturing system has to answer one question over and over: *given everything
+customers have ordered, what do we need to do today?* Carbon answers it by comparing
+**demand** against **supply**.
+
+- **Demand** is everything that needs material or capacity: open sales orders, the materials
+  jobs will consume, safety-stock targets.
+- **Supply** is everything that will satisfy demand: stock on hand, open purchase orders
+  already on their way, and jobs already in progress.
+
+Where demand outruns supply, Carbon raises a [**suggestion**](/manual/overview/glossary).
+For a part you **buy**, that's a suggestion to raise a [purchase
+order](/manual/buying/purchasing-basics). For a part you **make**, it's a suggestion to
+create a [job](/manual/manufacturing/jobs). This demand-vs-supply engine is what most ERP
+systems call **MRP** (Material Requirements Planning) — you don't have to call it that, but
+it's the idea behind the planning screen.
+
+<Mermaid
+  chart={`flowchart LR
+  D[Demand: sales orders and job materials] --> P[Planning compares demand vs supply]
+  S[Supply: stock, open POs, jobs in progress] --> P
+  P --> Buy[Shortage on a Buy item becomes a purchase suggestion]
+  P --> Make[Shortage on a Make item becomes a make suggestion]
+  Buy --> PO[Purchase Order]
+  Make --> J[Job]`}
+/>
+
+Walk the Counterweight Hook through it. The order [SO000069](/manual/selling/sales-orders)
+needs 500 hooks, each hook needs **40 LB** of A36 steel plate, so the demand is **20,000 LB**
+of steel. Acme doesn't keep that much on the shelf — so Carbon sees the shortage and suggests
+buying it. That suggestion became purchase order
+[PO000057 to Ryerson](/manual/buying/purchasing-basics). Meanwhile, because the hook is a
+**Make** part, the order itself became make-suggestion → job **J000097**. One screen, two
+kinds of action.
+
+<Callout type="tip">
+  **Make vs Buy** is a setting on every [item](/manual/items/defining-an-item) — its
+  `replenishmentSystem`. The Counterweight Hook is *Make*; its A36 steel plate is *Buy*.
+  That one flag is what decides whether a shortage turns into a job or a purchase order.
+  See [Replenishment](/manual/items/replenishment) for how to set it.
+</Callout>
+
+## The planning view
+
+Open **Production → Planning** to see demand and supply side by side, one row per item that
+needs attention. Each row shows what's required, what's available, the resulting shortage,
+and the action Carbon suggests. You review the suggestions, adjust quantities or dates if you
+need to, and then turn the ones you accept into real jobs and purchase orders.
+
+<AppShot title="Planning" url="app.carbon.ms/x/production/planning" caption="Demand vs supply for Acme's most pressing items — shortages on the right become suggestions." flush>
+  <DataTable
+    columns={[
+      { key: "item", label: "Item", mono: true },
+      { key: "src", label: "Replenish" },
+      { key: "demand", label: "Demand", align: "right" },
+      { key: "supply", label: "Supply", align: "right" },
+      { key: "short", label: "Short", align: "right" },
+      { key: "suggest", label: "Suggestion" },
+    ]}
+    rows={[
+      { item: "CWH-A36-15", src: <Tag>Make</Tag>, demand: "500 EA", supply: "0 EA", short: "500 EA", suggest: <StatusBadge tone="amber">Make → Job</StatusBadge> },
+      { item: "A36-STEEL-PLT-1\".96x240", src: <Tag>Buy</Tag>, demand: "20,000 LB", supply: "0 LB", short: "20,000 LB", suggest: <StatusBadge tone="blue">Buy → PO</StatusBadge> },
+      { item: "INV-MNT-BRKT.D", src: <Tag>Make</Tag>, demand: "4,000 EA", supply: "0 EA", short: "4,000 EA", suggest: <StatusBadge tone="amber">Make → Job</StatusBadge> },
+      { item: "BBB-360-2-01", src: <Tag>Make</Tag>, demand: "1,000 EA", supply: "0 EA", short: "1,000 EA", suggest: <StatusBadge tone="green">Job exists</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+<Steps>
+
+<Step>
+**Set your planning horizon.** At the top of the screen, choose how far ahead to look — a
+common starting point is the next few weeks. Carbon only raises suggestions for demand that
+falls inside the horizon, so a longer horizon surfaces more (and earlier) suggestions.
+</Step>
+
+<Step>
+**Read each row.** *Demand* is everything pulling on the item; *Supply* is everything already
+covering it. When *Short* is greater than zero, Carbon proposes an action in the
+**Suggestion** column. For the A36 steel plate, demand of 20,000 LB with nothing on hand
+produces a *Buy → PO* suggestion.
+</Step>
+
+<Step>
+**Adjust before you commit.** You can change a suggested quantity (for example, round a steel
+buy up to a full sheet) or pull a date earlier. Acme's PO000057 ended up at **54,001 LB** —
+more than the 20,000 LB this one job needed — because the buyer rounded up to cover the next
+two Radiant orders too.
+</Step>
+
+<Step>
+**Convert the ones you accept.** Select the suggestions you're happy with and convert them:
+*Buy* suggestions become draft [purchase orders](/manual/buying/purchasing-basics), *Make*
+suggestions become [jobs](/manual/manufacturing/jobs). Carbon links the new record back to the
+demand that created it, so the trail stays intact.
+</Step>
+
+</Steps>
+
+<Callout type="warn">
+  A suggestion is a *proposal*, never an automatic action. Carbon will not raise a PO or
+  release a job on its own — you always review and confirm. That's deliberate: planning
+  should inform your decisions, not make them for you.
+</Callout>
+
+## Scheduling jobs across work centers
+
+Once jobs exist, the next question is *when does each one run, and on which machine?* In
+Carbon, every [operation](/manual/overview/glossary) in a job's routing points at a
+[**work center**](/manual/overview/glossary) — a specific machine or station that performs a
+[**process**](/manual/overview/glossary). Acme's shop has 19 of them; here are the ones the
+Counterweight Hook touches, plus a few others to show the range.
+
+<AppShot title="Work centers" url="app.carbon.ms/x/resources/work-centers" caption="A sample of Acme's 19 work centers, each tied to a process and a location." flush>
+  <DataTable
+    columns={[
+      { key: "wc", label: "Work center" },
+      { key: "process", label: "Process" },
+      { key: "loc", label: "Location" },
+      { key: "labor", label: "Labor rate", align: "right" },
+      { key: "machine", label: "Machine rate", align: "right" },
+    ]}
+    rows={[
+      { wc: "Burn Table — PA2", process: <Tag>Flame Cut</Tag>, loc: "Headquarters", labor: "$50/hr", machine: "$25/hr" },
+      { wc: "Sand Blasting Room", process: <Tag>Sandblasting</Tag>, loc: "Headquarters", labor: "$50/hr", machine: "$25/hr" },
+      { wc: "Inspection Station", process: <Tag>Quality Inspection</Tag>, loc: "Headquarters", labor: "$50/hr", machine: "$0/hr" },
+      { wc: "HAAS VF-1", process: <Tag>3-Axis CNC</Tag>, loc: "Headquarters", labor: "$50/hr", machine: "$25/hr" },
+      { wc: "DMU 50", process: <Tag>5-Axis CNC</Tag>, loc: "Headquarters", labor: "$50/hr", machine: "$50/hr" },
+      { wc: "Laser Table — PA1", process: <Tag>Laser Cutting</Tag>, loc: "Headquarters", labor: "$50/hr", machine: "$100/hr" },
+    ]}
+  />
+</AppShot>
+
+Why this matters for scheduling: each operation carries a **time** (Flame Cut is 45 min per
+piece, Sandblasting 2 min, Inspection 10 min), and operations run **After Previous** — step 20
+can't start until step 10 finishes. Multiply the per-piece time by the job quantity and Carbon
+knows how long each operation occupies its work center. Lay those out across the calendar and
+you have a schedule.
+
+<AppShot title="Job J000097 — Operations" url="app.carbon.ms/x/job/J000097/operations" caption="The three operations on J000097, each pinned to a work center and run in sequence." flush>
+  <DataTable
+    columns={[
+      { key: "seq", label: "Seq", align: "right" },
+      { key: "op", label: "Operation" },
+      { key: "wc", label: "Work center" },
+      { key: "time", label: "Time", align: "right" },
+      { key: "order", label: "Order" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { seq: "10", op: "Flame Cut", wc: "Burn Table — PA2", time: "45 min/pc", order: "After Previous", status: <StatusBadge tone="green">Done</StatusBadge> },
+      { seq: "20", op: "Sandblasting", wc: "Sand Blasting Room", time: "2 min/pc", order: "After Previous", status: <StatusBadge tone="green">Done</StatusBadge> },
+      { seq: "30", op: "Inspection", wc: "Inspection Station", time: "10 min/pc", order: "After Previous", status: <StatusBadge tone="green">Done</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+<Steps>
+
+<Step>
+**Find the bottleneck.** Some work centers are in higher demand than others. Acme has three
+Burn Tables (PA1, PA2, TX1) for Flame Cut but only one Sand Blasting Room — so sandblasting is
+the constraint everything flame-cut has to squeeze through. The schedule view shows each work
+center's load so you can spot where work is piling up.
+</Step>
+
+<Step>
+**Balance the load.** When a process has more than one work center, you can move an operation
+to a less-busy machine. Flame Cut work, for instance, can run on Burn Table PA1, PA2 *or* the
+Texas table — so a backlog at PA2 can shift to PA1 without changing the method.
+</Step>
+
+<Step>
+**Respect the sequence.** Because operations are *After Previous*, scheduling step 20 earlier
+does nothing if step 10 hasn't finished. Carbon keeps operations in order automatically; your
+job is to decide where the *whole chain* fits relative to other jobs.
+</Step>
+
+<Step>
+**Watch the location.** Work centers belong to a [location](/manual/inventory/locations-and-stock)
+— Acme's Headquarters or Texas. A job at Headquarters schedules onto Headquarters work centers.
+J000097 ran entirely at Headquarters (`loc_CZUGEFrKS1CCvUruMgY9CA`).
+</Step>
+
+</Steps>
+
+<Callout type="tip">
+  Work-center rates aren't just for scheduling — they're how Carbon costs your jobs. Every
+  minute booked against Burn Table PA2 absorbs labor at $50/hr and machine time at $25/hr.
+  That's why J000097's tiny per-piece cost rolled up from *recorded shop time*, not a guess.
+  More on costing in [Accounting overview](/manual/accounting/overview).
+</Callout>
+
+## Prioritizing what runs first
+
+When more work wants a machine than the machine can handle, something has to go first. Carbon
+gives every job a **priority** (a number — lower means more urgent) and a **due date** with a
+**deadline type**: a *Hard Deadline* can't slip, a *Soft Deadline* has some give. Together with
+status, these tell you — and the scheduler — what to push to the front.
+
+Here's Acme's live Counterweight Hook backlog. Three jobs for the same part, the same customer,
+stacked up:
+
+<AppShot title="Jobs — Counterweight Hook backlog" url="app.carbon.ms/x/production/jobs?item=CWH-A36-15" caption="Radiant Aerospace keeps ordering hooks — three jobs in the queue, due in sequence." flush>
+  <DataTable
+    columns={[
+      { key: "job", label: "Job", mono: true },
+      { key: "so", label: "Sales order", mono: true },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "due", label: "Due date" },
+      { key: "deadline", label: "Deadline" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { job: "J000097", so: "SO000069", qty: "500 EA", due: "2026-06-26", deadline: "Hard", status: <StatusBadge tone="green">Completed</StatusBadge> },
+      { job: "J000098", so: "SO000070", qty: "1,500 EA", due: "2026-07-01", deadline: "—", status: <StatusBadge tone="amber">In Progress</StatusBadge> },
+      { job: "J000099", so: "SO000071", qty: "3,000 EA", due: "2026-07-21", deadline: "—", status: <StatusBadge tone="blue">Ready</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+Read that as a plan: J000097 finished first (earliest due date), J000098 is running now, and
+J000099 is staged and *Ready* to release once capacity frees up. Because all three flow through
+the single Sand Blasting Room, sequencing them by due date keeps that bottleneck from becoming
+a missed deadline.
+
+<Callout type="warn">
+  A job has to be **released** before the shop floor can touch it. The statuses you'll see
+  walk in order: *Draft* → *Planned* → *Ready* → *In Progress* → *Completed*. *Ready* means
+  "everything's lined up, release it when you want it to start" — J000099 above is sitting at
+  *Ready*. Releasing is covered on the [Jobs](/manual/manufacturing/jobs) page.
+</Callout>
+
+## Tracking progress across the shop
+
+The payoff of all this planning is a single place to answer "how are we doing?" The jobs list
+is your production dashboard: filter by status, location or due date, and read completion at a
+glance. The numbers update themselves as operators record finished pieces in the
+[shop floor app](/manual/manufacturing/shop-floor) — you never type a percentage by hand.
+
+<AppShot title="Production dashboard" url="app.carbon.ms/x/production/jobs" caption="A live cross-section of Acme's shop — what's done, what's running, what's queued." flush>
+  <DataTable
+    columns={[
+      { key: "job", label: "Job", mono: true },
+      { key: "item", label: "Item", mono: true },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "done", label: "Complete", align: "right" },
+      { key: "due", label: "Due date" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { job: "J000094", item: "TEN-722INC-005", qty: "10,000 EA", done: "10,000", due: "—", status: <StatusBadge tone="green">Completed</StatusBadge> },
+      { job: "J000095", item: "BBB-360-2-01", qty: "1,000 EA", done: "in progress", due: "2026-04-23", status: <StatusBadge tone="amber">In Progress</StatusBadge> },
+      { job: "J000096", item: "INV-MNT-BRKT.D", qty: "4,000 EA", done: "0", due: "2026-07-01", status: <StatusBadge tone="neutral">Planned</StatusBadge> },
+      { job: "J000097", item: "CWH-A36-15", qty: "500 EA", done: "500", due: "2026-06-26", status: <StatusBadge tone="green">Completed</StatusBadge> },
+      { job: "J000098", item: "CWH-A36-15", qty: "1,500 EA", done: "in progress", due: "2026-07-01", status: <StatusBadge tone="amber">In Progress</StatusBadge> },
+      { job: "J000099", item: "CWH-A36-15", qty: "3,000 EA", done: "0", due: "2026-07-21", status: <StatusBadge tone="blue">Ready</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+A few things to read off this screen:
+
+- **Completion is real, not estimated.** J000097 shows 500 of 500 because operators clocked
+  off all 500 pieces. The *In Progress* jobs show a partial count that climbs on its own as the
+  floor reports finished pieces — you never type a number in by hand.
+- **Status tells you where to look.** *In Progress* jobs are on the floor right now —
+  J000095 and J000098 are where today's attention goes. *Planned* and *Ready* jobs aren't
+  consuming capacity yet.
+- **Due dates flag risk.** J000095 is due **2026-04-23** — already in the past — while it's
+  still *In Progress*. A row whose due date has slipped behind today is your cue to investigate
+  before it turns into a missed commitment.
+
+A quick KPI strip at the top of the dashboard summarizes the same picture as headline numbers:
+
+<StatGrid cols={4}>
+  <Stat label="Open jobs" value="4" hint="not yet completed" />
+  <Stat label="In progress" value="2" hint="J000095 · J000098" />
+  <Stat label="Past due" value="1" hint="J000095 — needs attention" />
+  <Stat label="Work centers" value="19" hint="across 2 locations" />
+</StatGrid>
+
+<Steps>
+
+<Step>
+**Filter to what matters.** Narrow the list to *In Progress* at *Headquarters* to see only
+the work happening in front of you right now. Save the filter and it becomes your daily view.
+</Step>
+
+<Step>
+**Drill into a job.** Click any row to open the [job](/manual/manufacturing/jobs). Its
+**Operations** tab shows which step is live and which work center it's on; the **Materials**
+tab shows whether the parts it needs are on hand.
+</Step>
+
+<Step>
+**Trace a shortage back.** If a job is stalled waiting on material, follow the link to the
+[purchase order](/manual/buying/purchasing-basics) covering it — for J000097 that's PO000057
+to Ryerson — and check its expected receipt date.
+</Step>
+
+<Step>
+**Re-plan when things change.** New orders arrive, dates move, a job scraps a batch. Re-run
+the planning screen and Carbon recomputes demand vs supply against the latest reality,
+surfacing any *new* shortages as fresh suggestions.
+</Step>
+
+</Steps>
+
+<Callout type="info">
+  **The loop, in one sentence.** Demand creates suggestions, you turn suggestions into jobs
+  and purchase orders, you schedule those jobs across work centers, operators run them, and
+  the dashboard reflects progress in real time — then new demand restarts the loop. Planning
+  isn't a one-time setup; it's the rhythm of running the shop.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Jobs" href="/manual/manufacturing/jobs" description="Create, release and manage a single production job in detail." icon={<Factory className="size-4" />} />
+  <IconCard title="The shop floor (MES)" href="/manual/manufacturing/shop-floor" description="How operators clock on, record quantities and complete operations." icon={<Workflow className="size-4" />} />
+  <IconCard title="Replenishment" href="/manual/items/replenishment" description="Set Make vs Buy and the rules that drive planning suggestions." icon={<Package className="size-4" />} />
+</Cards>

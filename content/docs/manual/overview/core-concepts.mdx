@@ -1,0 +1,451 @@
+---
+title: "Core concepts"
+description: "The handful of ideas that make everything else click: items, methods, jobs, orders and traceability."
+---
+
+Carbon has a lot of screens, but it's built on a small set of ideas. Learn these eight and
+the rest of the manual is just detail. This page defines each one in plain language and shows
+it on the same real example you met in the [walkthrough](/manual/walkthrough) — a
+**Counterweight Hook** that Acme makes for **Radiant Aerospace**. Read it once, top to
+bottom, and the vocabulary you'll see everywhere else in Carbon will already make sense.
+
+<Callout type="info">
+  **Before you start.** This is the mental-model page. You don't need to do anything in the
+  app yet — just read along. If you'd rather see the whole flow in motion first, the
+  [15-minute walkthrough](/manual/walkthrough) follows one order from quote to cash. Either
+  order works; this page goes a level deeper on the *why*.
+</Callout>
+
+## The big picture
+
+Almost everything in Carbon is a **record** — an item, a quote, a job, a purchase order — and
+the records **link to each other**. You enter information once, and it follows the work
+everywhere it goes. Here's how the main records connect for our hook:
+
+<Mermaid
+  chart={`flowchart LR
+  ITEM[Item CWH-A36-15] --> METHOD[Method BOM plus Routing]
+  Q[Quote Q000061] --> SO[Sales Order SO000069]
+  SO --> JOB[Job J000097]
+  METHOD --> JOB
+  JOB --> PO[Purchase Order PO000057]
+  JOB --> INV[Sales Invoice AR000025]`}
+/>
+
+The rest of this page walks each box. Don't worry about memorizing the diagram — by the end
+it'll feel obvious.
+
+## 1. The Item
+
+An **[item](/manual/overview/glossary)** is anything you make, buy, store, or sell. It's the
+noun the whole system is built around. Every part on a quote, every material on a purchase
+order, every line on an invoice points back to an item.
+
+Our hero is the item `CWH-A36-15`, the Counterweight Hook. Two settings on it matter most:
+
+- **Item type** — *what kind of thing it is* (see the six types below).
+- **Replenishment** — *how you get it*: you either **make** it or **buy** it (covered in
+  section 3).
+
+<AppShot title="Item · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw…" caption="The Counterweight Hook item record — the noun everything else references.">
+  <RecordPanel
+    title="Counterweight Hook"
+    subtitle="Part · CWH-A36-15"
+    status={<StatusBadge tone="green">Active</StatusBadge>}
+    tabs={["Details", "Manufacturing", "Costing", "Inventory"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Part ID" value="CWH-A36-15" mono />
+      <Field label="Type" value="Part" />
+      <Field label="Replenishment" value="Make" />
+      <Field label="Tracking" value="Inventory" />
+      <Field label="Unit of measure" value="EA (Each)" />
+      <Field label="Customer part no." value="730562" mono />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+### The six item types
+
+Every item is exactly one of these types. The type tells Carbon how the item behaves — what
+screens it shows, whether it can have a recipe, and where it shows up.
+
+<DataTable
+  columns={[
+    { key: "type", label: "Type" },
+    { key: "what", label: "What it is" },
+    { key: "example", label: "Acme example", mono: true },
+  ]}
+  rows={[
+    { type: <Tag>Part</Tag>, what: "A finished or in-process item you make or buy and sell or use in another part.", example: "CWH-A36-15" },
+    { type: <Tag>Material</Tag>, what: "Raw stock consumed to make parts — sheet, bar, billet, tube.", example: "A36-STEEL-PLT-1\".96x240" },
+    { type: <Tag>Tool</Tag>, what: "A reusable instrument used on the floor; not consumed by a job.", example: "TOL-CAL (Digital Calipers)" },
+    { type: <Tag>Consumable</Tag>, what: "A supply used up during work but not part of the finished item.", example: "GRD-WHL (Grinding Wheels)" },
+    { type: <Tag>Service</Tag>, what: "Outside work or labor you buy or sell rather than a physical thing.", example: "Anodizing, plating, freight" },
+    { type: <Tag>Fixture</Tag>, what: "A jig or holding device that positions a part during an operation.", example: "A weld fixture or burn-table jig" },
+  ]}
+/>
+
+<Callout type="tip">
+  Don't overthink the type at first. The two you'll use most are **Part** (the things you
+  sell) and **Material** (the raw stock you cut them from). Full detail on every field lives
+  in [Defining an item](/manual/items/defining-an-item).
+</Callout>
+
+### Unit of measure and tracking
+
+Two more item settings show up constantly:
+
+- **Unit of measure (UoM)** — how you count it. The hook is counted in `EA` (Each); its steel
+  is measured in `LB` (pounds). Carbon converts between a purchase UoM and a stock UoM when
+  they differ.
+- **Tracking type** — whether Carbon keeps a stock balance for it. The hook is *Inventory*
+  tracked (Carbon counts how many are on hand). Some items are *Non-Inventory* (bought
+  straight to a job and never counted on a shelf).
+
+## 2. The Method — BOM + Routing
+
+A **[method](/manual/overview/glossary)** is the recipe for a *made* item. It has two halves,
+and you'll hear both terms constantly:
+
+<Callout type="info">
+  **Bill of Materials (BOM)** — *what the item is made of.* The list of materials and
+  sub-parts that go into one unit, with quantities. The hook's BOM is one line: 40 lb of A36
+  steel plate.
+</Callout>
+
+<Callout type="info">
+  **Routing** — *how the item is made.* The ordered list of [operations](/manual/overview/glossary)
+  (shop steps), each run at a [work center](/manual/overview/glossary). The hook's routing is
+  three operations: Flame Cut, then Sandblasting, then Inspection.
+</Callout>
+
+Carbon shows the BOM and routing together as a single **method tree** — materials and
+operations nested under the item they build. Here's the hook's method:
+
+<AppShot title="Method · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw…/manufacturing" caption="One material plus three operations — the complete recipe for one hook." flush>
+  <MethodTree
+    nodes={[
+      {
+        kind: "assembly",
+        label: "CWH-A36-15",
+        detail: "Counterweight Hook — make 1 EA",
+        qty: "1 EA",
+        children: [
+          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ — pulled from stock", qty: "40 LB" },
+          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
+          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
+          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station", qty: "10 min/pc" },
+        ],
+      },
+    ]}
+  />
+</AppShot>
+
+Two things to notice, because they explain a lot of Carbon's "magic":
+
+- **The method drives cost and price.** Carbon adds up the material (40 lb of steel) and the
+  shop time (45 + 2 + 10 minutes per piece, at each work center's labor and machine rates) to
+  estimate what one hook costs to make. That estimate is what you price a quote against.
+- **The method drives the plan.** When you make this part, Carbon copies the method onto the
+  job — so the shop knows exactly what to consume and which steps to run, in order.
+
+<Callout type="tip">
+  A method can nest. If a part is built from sub-assemblies that you *also* make, each one
+  brings its own BOM and routing, and the tree grows another level deep. The hook is simple —
+  one material, three steps — but the same structure scales to complex assemblies. See
+  [Methods: BOM & routing](/manual/items/methods).
+</Callout>
+
+## 3. Make vs Buy (replenishment)
+
+**[Replenishment](/manual/overview/glossary)** answers one question for every item: *when you
+need this, how do you get more?* There are exactly two answers, and they decide which part of
+Carbon does the work.
+
+<DataTable
+  columns={[
+    { key: "mode", label: "Replenishment" },
+    { key: "means", label: "What it means" },
+    { key: "needs", label: "What the item needs" },
+    { key: "creates", label: "Demand creates a…" },
+  ]}
+  rows={[
+    { mode: <Tag>Make</Tag>, means: "You produce it in-house.", needs: "A method (BOM + routing).", creates: "Job" },
+    { mode: <Tag>Buy</Tag>, means: "You purchase it from a supplier.", needs: "A supplier and a price.", creates: "Purchase Order" },
+  ]}
+/>
+
+This is why our two items behave differently:
+
+- The **hook** `CWH-A36-15` is **Make** — so demand for it produces a **job** (section 5).
+- Its **steel** `A36-STEEL-PLT-1".96x240` is **Buy** — so demand for it produces a
+  **purchase order** (section 7).
+
+A single order can pull both levers at once: making the hook *creates* demand for the steel,
+which Carbon then suggests buying. You'll see that chain play out below.
+
+<Callout type="tip">
+  Replenishment isn't only Make-vs-Buy — it also governs *when* and *how much* to reorder
+  (reorder points, lead time, lot sizing). Those settings live in
+  [Replenishment & planning](/manual/items/replenishment).
+</Callout>
+
+## 4. Demand — Quote and Sales Order
+
+Everything Acme makes or buys starts with **demand**: someone wants something. On the sell
+side, demand comes in two records that link together.
+
+<Callout type="info">
+  **Quote** — a *priced offer*, before the customer commits. You add lines (item, quantity,
+  price) and send it. Carbon's [configurators](/manual/selling/quoting) can even price
+  made-to-order parts from the customer's choices. Our hook was quoted as `Q000061`.
+</Callout>
+
+<Callout type="info">
+  **Sales Order (SO)** — the customer's *commitment*. It records who's buying, what, how
+  many, when it's due, and at what price. When a quote is accepted you convert it to a sales
+  order in one click — no re-typing. Our quote became `SO000069`.
+</Callout>
+
+<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/so_Fx6F…" caption="Demand: Radiant Aerospace committed to 500 hooks at $73.14 each.">
+  <RecordPanel
+    title="SO000069 — Radiant Aerospace"
+    subtitle="Order date 2026-06-11 · from Quote Q000061"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Lines", "Shipments", "Invoices"]}
+    activeTab="Lines"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Customer" value="Radiant Aerospace" />
+      <Field label="Order total" value="$36,820.00" />
+      <Field label="Payment terms" value="Net 30" />
+    </FieldGrid>
+    <div className="mt-4">
+      <DataTable
+        columns={[
+          { key: "part", label: "Part", mono: true },
+          { key: "qty", label: "Qty", align: "right" },
+          { key: "price", label: "Unit price", align: "right" },
+          { key: "method", label: "Fulfillment" },
+        ]}
+        rows={[
+          { part: "CWH-A36-15", qty: "500 EA", price: "$73.14", method: <Tag>Make to Order</Tag> },
+        ]}
+      />
+    </div>
+  </RecordPanel>
+</AppShot>
+
+The **fulfillment method** on the line — *Make to Order* — is the hinge between selling and
+making. Because the hook is a *Make* item, that setting tells Carbon the next step is a job,
+not a pick from the shelf. Learn the sell side in [Quoting](/manual/selling/quoting) and
+[Sales orders](/manual/selling/sales-orders).
+
+## 5. The Job — a production order
+
+A **[job](/manual/overview/glossary)** is a *production order*: the instruction to actually
+make a quantity of a part. When you release a job, Carbon copies the item's method onto it, so
+the job carries its **own** snapshot of the BOM and routing. (That copy is why changing a
+part's master method later doesn't rewrite jobs already in progress.)
+
+For our order, Carbon created job `J000097` for 500 hooks. The operations are the routing from
+the method; the shop floor reports against them.
+
+<AppShot title="Job · J000097" url="app.carbon.ms/x/job/job_8m3Y…" caption="One production order, carrying its own copy of the hook's method.">
+  <RecordPanel
+    title="J000097 — Counterweight Hook"
+    subtitle="For SO000069 · Radiant Aerospace · Make to Order"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Method", "Operations", "Materials"]}
+    activeTab="Operations"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Quantity" value="500 EA" />
+      <Field label="Complete" value="500 of 500" />
+      <Field label="Due date" value="2026-06-26" />
+    </FieldGrid>
+    <div className="mt-4">
+      <DataTable
+        columns={[
+          { key: "seq", label: "Seq", align: "right" },
+          { key: "op", label: "Operation" },
+          { key: "wc", label: "Work center" },
+          { key: "time", label: "Time", align: "right" },
+          { key: "status", label: "Status", align: "right" },
+        ]}
+        rows={[
+          { seq: "10", op: "Flame Cut", wc: "Burn Table — PA2", time: "45 min/pc", status: <StatusBadge tone="green">Done</StatusBadge> },
+          { seq: "20", op: "Sandblasting", wc: "Sand Blasting Room", time: "2 min/pc", status: <StatusBadge tone="green">Done</StatusBadge> },
+          { seq: "30", op: "Inspection", wc: "Inspection Station", time: "10 min/pc", status: <StatusBadge tone="green">Done</StatusBadge> },
+        ]}
+      />
+    </div>
+  </RecordPanel>
+</AppShot>
+
+A job moves through statuses as it goes — **Draft → Ready → In Progress → Completed** (you'll
+also see *Planned* for jobs scheduled but not yet released). The same hook runs on other jobs
+too: `J000098` (1,500 EA, In Progress) and `J000099` (3,000 EA, Ready) are queued for Radiant
+right behind this one. Full detail in [Jobs](/manual/manufacturing/jobs); the operator side
+is the [shop floor (MES)](/manual/manufacturing/shop-floor).
+
+## 6. Supply — the Purchase Order
+
+A job needs materials. The hook's BOM calls for 40 lb of A36 steel per piece — **20,000 lb**
+for the batch of 500 — and the steel is a **Buy** item. So Carbon raises supply with a
+purchase order.
+
+<Callout type="info">
+  **Purchase Order (PO)** — your *commitment to a supplier* to buy specified items at agreed
+  prices and dates. It's the buy-side mirror of a sales order. The steel for our hook was
+  ordered on `PO000057` from **Ryerson**.
+</Callout>
+
+<AppShot title="Purchase Order · PO000057" url="app.carbon.ms/x/purchase-order/po_VJGJ…" caption="Supply: A36 steel ordered from Ryerson to feed the job.">
+  <RecordPanel
+    title="PO000057 — Ryerson"
+    subtitle="Order date 2026-06-12 · steel for Job J000097"
+    status={<StatusBadge tone="amber">Needs Approval</StatusBadge>}
+    tabs={["Details", "Lines", "Delivery"]}
+    activeTab="Lines"
+  >
+    <DataTable
+      columns={[
+        { key: "part", label: "Material", mono: true },
+        { key: "qty", label: "Qty", align: "right" },
+        { key: "price", label: "Unit price", align: "right" },
+        { key: "ext", label: "Extended", align: "right" },
+      ]}
+      rows={[
+        { part: "A36-STEEL-PLT-1\"", qty: "54,001 LB", price: "$0.25", ext: "$13,500.25" },
+      ]}
+    />
+  </RecordPanel>
+</AppShot>
+
+When the steel arrives, a **receipt** adds it to inventory. That single act does two things:
+it raises the on-hand balance, and — because A36 plate is batch-tracked — it records exactly
+which batch of steel came in. Hold that thought; it's the foundation of traceability in
+section 8. Learn the buy side in [Purchasing basics](/manual/buying/purchasing-basics).
+
+## 7. Location and Shelf — where stock lives
+
+Physical items have to *be somewhere*. Carbon answers "where?" at two levels of detail:
+
+<Callout type="info">
+  **Location** — a site or warehouse. Acme has two: **Headquarters** and **Texas**. Stock,
+  work centers, and orders all belong to a location. Everything in our hero thread happens at
+  Headquarters.
+</Callout>
+
+<Callout type="info">
+  **Shelf** (also called a bin or storage unit) — a specific spot *inside* a location: a rack,
+  shelf, or bin. Acme's A36 steel lives on shelf `R02-B01-01`; finished hooks land on shelf
+  `8-1-H`.
+</Callout>
+
+<AppShot title="Inventory · A36 Steel Plate" url="app.carbon.ms/x/inventory/item_Mqv4…" caption="The same material, located down to the shelf at the Headquarters site.">
+  <DataTable
+    columns={[
+      { key: "item", label: "Item", mono: true },
+      { key: "loc", label: "Location" },
+      { key: "shelf", label: "Shelf", mono: true },
+      { key: "onhand", label: "On hand", align: "right" },
+    ]}
+    rows={[
+      { item: "A36-STEEL-PLT-1\"", loc: "Headquarters", shelf: "R02-B01-01", onhand: "20,000 LB" },
+      { item: "CWH-A36-15", loc: "Headquarters", shelf: "8-1-H", onhand: "500 EA" },
+    ]}
+  />
+</AppShot>
+
+Knowing the exact shelf is what lets the shop pick material fast and lets Carbon tell you not
+just *how much* you have but *where it is*. More in
+[Locations & stock](/manual/inventory/locations-and-stock).
+
+## 8. Traceability — the genealogy
+
+The last big idea ties the others together. **[Traceability](/manual/overview/glossary)** (or
+*genealogy*) is Carbon's ability to answer, after the fact: *what exactly went into this?* and
+*where did this end up?*
+
+It works because of two kinds of tracking you can turn on for an item:
+
+<DataTable
+  columns={[
+    { key: "kind", label: "Tracking" },
+    { key: "what", label: "What it records" },
+    { key: "when", label: "When you use it" },
+  ]}
+  rows={[
+    { kind: <Tag>Batch</Tag>, what: "A lot number shared by many units made or received together.", when: "Bulk material like steel plate, paint, chemicals." },
+    { kind: <Tag>Serial</Tag>, what: "A unique number for each individual unit.", when: "High-value or regulated parts tracked one-by-one." },
+  ]}
+/>
+
+A36 steel plate is **batch-tracked**. So when Ryerson's steel was received against `PO000057`,
+Carbon stamped that incoming lot with a batch number. When job `J000097` consumed the steel,
+Carbon linked that *exact batch* to those *exact 500 hooks* — and through the sales order and
+shipment, to *Radiant Aerospace*.
+
+<Mermaid
+  chart={`flowchart LR
+  PO[PO000057 Ryerson] --> RCPT[Receipt batch number]
+  RCPT --> JOB[Job J000097 consumes steel]
+  JOB --> HOOKS[500 hooks]
+  HOOKS --> CUST[Radiant Aerospace SO000069]`}
+/>
+
+That unbroken chain is worth real money. If Ryerson later reports a defect in that heat of
+steel, Acme can answer "which finished parts are affected, and which customer got them?" in
+seconds — instead of recalling everything. The same chain runs the other way too: from a
+customer complaint back to the raw material. Quality records like inspections and
+[non-conformances](/manual/quality/tracking-quality) hang off this genealogy.
+
+<Callout type="tip">
+  You don't have to track everything. Turn on batch or serial tracking only for items where it
+  earns its keep — regulated, high-value, or warranty-sensitive parts. For everything else,
+  plain inventory tracking is enough.
+</Callout>
+
+## How it all connects
+
+Here's the whole vocabulary on one screen, mapped to our hook. Every row is a record you can
+open, and each one links to the next:
+
+<DataTable
+  columns={[
+    { key: "concept", label: "Concept" },
+    { key: "record", label: "Hook example", mono: true },
+    { key: "role", label: "Its role" },
+  ]}
+  rows={[
+    { concept: "Item", record: "CWH-A36-15", role: "The thing — a Make Part, counted in EA" },
+    { concept: "Method", record: "BOM + Routing", role: "The recipe — 40 lb steel, 3 operations" },
+    { concept: "Quote", record: "Q000061", role: "The priced offer to Radiant" },
+    { concept: "Sales Order", record: "SO000069", role: "Demand — the customer's commitment" },
+    { concept: "Job", record: "J000097", role: "The production order to make 500" },
+    { concept: "Purchase Order", record: "PO000057", role: "Supply — buy steel from Ryerson" },
+    { concept: "Location / Shelf", record: "HQ · R02-B01-01", role: "Where the stock physically sits" },
+    { concept: "Traceability", record: "batch → hooks", role: "What went into what, both directions" },
+  ]}
+/>
+
+<Callout type="info">
+  That linking is the entire point of a *system of record*: enter information once, and it
+  follows the work everywhere. Every Carbon page from here on is just a closer look at one of
+  these records.
+</Callout>
+
+## Next steps
+
+You now have the mental model. Pick where to go next:
+
+<Cards>
+  <IconCard title="Navigating Carbon" href="/manual/overview/navigating" description="Find your way around the app — modules, search, and the layout of a record." icon={<Compass className="size-4" />} />
+  <IconCard title="Defining an item" href="/manual/items/defining-an-item" description="Create your first item and choose its type, UoM, and replenishment." icon={<Package className="size-4" />} />
+  <IconCard title="Carbon in 15 minutes" href="/manual/walkthrough" description="See all of these concepts move together in one real order." icon={<PlayCircle className="size-4" />} />
+  <IconCard title="Glossary" href="/manual/overview/glossary" description="Quick definitions for every Carbon term in one place." icon={<BookOpen className="size-4" />} />
+</Cards>

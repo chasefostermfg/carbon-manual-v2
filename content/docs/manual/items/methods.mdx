@@ -1,0 +1,383 @@
+---
+title: "Methods: BOM & routing"
+description: "Tell Carbon how a part is made with a bill of materials and a routing."
+---
+
+A **method** is Carbon's word for the recipe that makes a part. Once you've created an
+[item](/manual/items/defining-an-item) that you *make* (rather than buy), the method is how
+you teach Carbon what that part is made *of* and what steps turn raw stock into a finished
+piece. Get the method right once, and every future quote, job and cost estimate for that
+part is built from it automatically — no re-typing, no guesswork.
+
+This page builds the method for Acme's hero part, the **Counterweight Hook**
+(`CWH-A36-15`), the same heavy steel hook that runs all the way through the
+[15-minute walkthrough](/manual/walkthrough). By the end you'll know how to add materials,
+lay out a sequence of operations, point each step at the right machine, and keep older
+versions of a method around as the part evolves.
+
+<Callout type="info">
+  **Where this fits.** A method lives on an item. So the order is: first
+  [define the item](/manual/items/defining-an-item), then give it a method (this page), then
+  Carbon can [quote it](/manual/selling/quoting) and turn an order into a
+  [job](/manual/manufacturing/jobs) on the shop floor. A method is the bridge between *"we
+  sell this"* and *"here's exactly how we build it."*
+</Callout>
+
+## The two halves of a method
+
+Every method is made of two parts that work together. Keep them straight and the rest of
+this page is easy:
+
+- The **bill of materials (BOM)** — *what the part is made of.* A list of the materials,
+  sub-parts and sub-assemblies that go into one finished piece, each with a quantity. For
+  the hook, that's a single line: 40 lb of A36 steel plate.
+- The **routing** — *how the part is made.* An ordered list of [operations](/manual/overview/glossary)
+  (shop-floor steps), each run at a [work center](/manual/overview/glossary) and each with a
+  time. For the hook: flame cut, then sandblast, then inspect.
+
+<Mermaid
+  chart={`flowchart LR
+  M[Method CWH-A36-15] --> BOM[Bill of Materials]
+  M --> R[Routing]
+  BOM --> Mat[40 LB A36 Steel Plate]
+  R --> O1[10 Flame Cut]
+  R --> O2[20 Sandblasting]
+  R --> O3[30 Inspection]`}
+/>
+
+Carbon shows both halves together as a **method tree** — the BOM and routing nested under
+the part. Here's the whole recipe for the Counterweight Hook on one screen. We'll build it
+piece by piece below.
+
+<AppShot title="Method · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw.../manufacturing" caption="The finished method: one material, three operations." flush>
+  <MethodTree
+    nodes={[
+      {
+        kind: "assembly",
+        label: "CWH-A36-15",
+        detail: "Counterweight Hook · Make to Order",
+        qty: "1 EA",
+        children: [
+          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ — Pull from Inventory", qty: "40 LB" },
+          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
+          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
+          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station", qty: "10 min/pc" },
+        ],
+      },
+    ]}
+  />
+</AppShot>
+
+<Callout type="tip">
+  You'll find a part's method under its **Manufacturing** tab. The part itself (name, unit
+  of measure, whether it's Make or Buy) is set on the item — see
+  [Defining an item](/manual/items/defining-an-item). The method is where the *making* lives.
+</Callout>
+
+## Build the bill of materials
+
+The BOM answers one question: *to make one of these, what do I consume?* You add a line for
+every material or sub-part, with the quantity needed for a **single** finished piece. Carbon
+does the multiplication later — when a job is for 500 hooks, it scales every BOM line by 500.
+
+For each material line you also choose how Carbon should *get* that material when a job
+runs. This is the line's **method type**, and the two you'll use most are:
+
+- **Pull from Inventory** — the material is already stocked (or will be); the job pulls it
+  off the shelf. This is what the hook uses for its steel plate.
+- **Make** — the material is itself something you manufacture, so it has its own method.
+  That's a **sub-assembly** (more on that below).
+
+<Steps>
+
+<Step>
+### Open the part's Manufacturing tab
+
+Go to **Items**, open the Counterweight Hook (`CWH-A36-15`), and select the
+**Manufacturing** tab. A brand-new make part starts with an empty method — just the root
+part and nowhere for materials or operations yet.
+</Step>
+
+<Step>
+### Add a material line
+
+Under **Bill of Materials**, click **Add Material**. Search for and pick the raw material —
+here, **A36 Steel Plate 1″** (`A36-STEEL-PLT-1".96x240`). Carbon pulls in its description and
+unit of measure automatically.
+</Step>
+
+<Step>
+### Set the quantity per piece
+
+Enter how much one finished hook consumes: **40** in the unit **LB** (pounds). This is the
+*per-each* figure. Don't multiply by your batch size — Carbon scales it when it creates a
+job.
+</Step>
+
+<Step>
+### Choose the method type
+
+Set the line to **Pull from Inventory**. That tells Carbon the steel comes off the shelf
+rather than being made. (If stock runs short when a job is planned, Carbon flags the
+shortage so you can raise a [purchase order](/manual/buying/purchasing-basics) — exactly what
+happened on `PO000057` to Ryerson in the walkthrough.)
+</Step>
+
+</Steps>
+
+<AppShot title="Bill of Materials · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw.../manufacturing" caption="One material line: 40 lb of A36 steel plate per hook." flush>
+  <DataTable
+    columns={[
+      { key: "material", label: "Material", mono: true },
+      { key: "desc", label: "Description" },
+      { key: "qty", label: "Qty / piece", align: "right" },
+      { key: "method", label: "Method type" },
+    ]}
+    rows={[
+      { material: "A36-STEEL-PLT-1\"", desc: "A36 Steel Plate 1″ (96×240 sheet)", qty: "40 LB", method: <Tag>Pull from Inventory</Tag> },
+    ]}
+  />
+</AppShot>
+
+<Callout type="tip">
+  **40 lb per piece, 20,000 lb per job.** Because you entered the quantity *per piece*, a job
+  for 500 hooks automatically needs 40 × 500 = **20,000 lb** of plate. Enter the small number
+  once and let Carbon scale it — that's the whole point of a per-each BOM.
+</Callout>
+
+<Callout type="warn">
+  A36 steel plate is **batch-tracked** at Acme. That means each receipt of plate gets a batch
+  number, and when a job consumes it, Carbon records exactly which batch went into which
+  hooks. You don't set that up on the method — it's a property of the *material item* — but
+  it's why the hook earns full [traceability](/manual/quality/tracking-quality) downstream.
+</Callout>
+
+## Build the routing
+
+The routing is the ordered list of shop-floor steps. Each step is an **operation**, and an
+operation answers four things: *what* you do, *where* you do it, *how long* it takes, and
+*when* it can start relative to the other steps.
+
+A couple of terms before we add the steps:
+
+- A [**work center**](/manual/overview/glossary) is a specific machine or station — for
+  example *Burn Table — PA2* or *Inspection Station*. It carries its own labor and machine
+  rates, which Carbon uses to cost the operation.
+- A [**process**](/manual/overview/glossary) is the *kind* of work — *Flame Cut*,
+  *Sandblasting*, *Quality Inspection*. A work center can perform one or more processes.
+  When you add an operation you pick the process, and Carbon offers the work centers that can
+  run it.
+
+The hook's routing is three operations, in this order:
+
+<AppShot title="Routing · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw.../manufacturing" caption="Three operations run back-to-back, each at its own work center." flush>
+  <DataTable
+    columns={[
+      { key: "seq", label: "Seq", align: "right" },
+      { key: "op", label: "Operation" },
+      { key: "process", label: "Process" },
+      { key: "wc", label: "Work center" },
+      { key: "setup", label: "Setup", align: "right" },
+      { key: "run", label: "Run time", align: "right" },
+      { key: "order", label: "Order" },
+    ]}
+    rows={[
+      { seq: "10", op: "Flame Cut", process: <Tag>Flame Cut</Tag>, wc: "Burn Table — PA2", setup: "0 min", run: "45 min/pc", order: "After Previous" },
+      { seq: "20", op: "Sandblasting", process: <Tag>Sandblasting</Tag>, wc: "Sand Blasting Room", setup: "0 min", run: "2 min/pc", order: "After Previous" },
+      { seq: "30", op: "Inspection", process: <Tag>Quality Inspection</Tag>, wc: "Inspection Station", setup: "0 min", run: "10 min/pc", order: "After Previous" },
+    ]}
+  />
+</AppShot>
+
+Here's how to add each one.
+
+<Steps>
+
+<Step>
+### Add the first operation
+
+Under **Routing**, click **Add Operation**. Pick the process **Flame Cut**, then choose the
+work center **Burn Table — PA2**. Carbon assigns it sequence number **10** — routings are
+numbered in tens (10, 20, 30…) so you have room to slot a step in between later without
+renumbering everything.
+</Step>
+
+<Step>
+### Enter setup and run time
+
+Every operation can carry two kinds of time:
+
+- **Setup time** — a one-time amount per job, no matter the quantity (e.g. fixturing a part,
+  loading a program). The hook's flame cut has **0** setup.
+- **Run time** (labor time) — the per-piece time to actually do the work. For flame cut,
+  that's **45 Minutes/Piece**.
+
+The *unit* matters as much as the number. `Minutes/Piece` multiplies by the job quantity;
+`Total Minutes` does not. So 45 Minutes/Piece on a 500-piece job is 375 hours of cutting,
+while a setup entered as Total Minutes stays fixed. Carbon uses these times plus the work
+center's rates to estimate the job's cost and schedule.
+</Step>
+
+<Step>
+### Set the operation order
+
+Leave the order as **After Previous**. That tells Carbon this step can't start until the one
+before it finishes — the natural sequence for the hook (you can't sandblast before you've
+cut). The alternative, *With Previous*, lets two steps run in parallel; you'd use it when,
+say, two stations work the same part at once.
+</Step>
+
+<Step>
+### Add the remaining operations
+
+Repeat for the other two steps, in order:
+
+- **20 · Sandblasting** — process *Sandblasting*, work center *Sand Blasting Room*,
+  **2 Minutes/Piece**, *After Previous*.
+- **30 · Inspection** — process *Quality Inspection*, work center *Inspection Station*,
+  **10 Minutes/Piece**, *After Previous*.
+
+The last step being an inspection is deliberate: it's the quality gate before the hooks can
+ship. More on that in [Tracking quality](/manual/quality/tracking-quality).
+</Step>
+
+</Steps>
+
+<Callout type="tip">
+  **Inside vs. outside operations.** All three hook operations are *Inside* — Acme does them
+  in its own shop. If a step is sent to a vendor (anodizing, heat treat, plating), you'd mark
+  it an **Outside** operation, and Carbon can raise a purchase order to the subcontractor for
+  that service. See [Advanced purchasing](/manual/buying/advanced-purchasing).
+</Callout>
+
+## Setup vs. run time, in plain numbers
+
+Because setup and run time behave differently, it's worth seeing what they do to a real
+batch. For the hook's flame-cut step at a 500-piece job:
+
+<StatGrid cols={3}>
+  <Stat label="Setup" value="0 min" hint="one-time, fixed per job" />
+  <Stat label="Run rate" value="45 min/pc" hint="scales with quantity" />
+  <Stat label="500-piece run" value="375 hr" hint="45 × 500 ÷ 60" />
+</StatGrid>
+
+The takeaway: **run time scales with quantity, setup doesn't.** Spreading a fixed setup over
+more pieces is why larger batches usually cost less per piece — and Carbon does that math for
+you the moment you set a job quantity.
+
+## Multi-level methods (sub-assemblies)
+
+The hook is a *single-level* method — raw material straight to finished part. But many
+products are built from sub-parts that are themselves manufactured. Carbon handles this with
+**multi-level methods**: a BOM line can point at another *make* part, which brings its own
+BOM and routing along.
+
+The mechanism is the material line's **method type** again. Set a BOM line to **Make** (instead
+of *Pull from Inventory*) and that line becomes a **sub-assembly** — Carbon nests the child
+part's whole method underneath it in the tree. When a job runs, Carbon can create
+sub-jobs to build those sub-assemblies first.
+
+Here's the *idea*, using a made-up two-level part so you can see the shape (the hook itself
+stays single-level):
+
+<AppShot title="Multi-level method (illustration)" caption="A make part whose BOM includes another make part — a sub-assembly." flush>
+  <MethodTree
+    nodes={[
+      {
+        kind: "assembly",
+        label: "ASSY-TOP",
+        detail: "Finished assembly · Make",
+        qty: "1 EA",
+        children: [
+          { kind: "operation", label: "10 · Final Assembly", detail: "Assembly Station", qty: "30 min/pc" },
+          {
+            kind: "assembly",
+            label: "SUB-WELDMENT",
+            detail: "Welded sub-assembly · Make",
+            qty: "1 EA",
+            children: [
+              { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "Pull from Inventory", qty: "12 LB" },
+              { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "20 min/pc" },
+              { kind: "operation", label: "20 · Welding", detail: "Weld Station", qty: "15 min/pc" },
+            ],
+          },
+          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "Pull from Inventory", qty: "8 LB" },
+        ],
+      },
+    ]}
+  />
+</AppShot>
+
+<Callout type="info">
+  You don't redefine a sub-assembly's recipe each time you use it. Define its method once on
+  its own item, then drop it into as many parent BOMs as you like. Update it in one place and
+  every parent picks up the change on its next job.
+</Callout>
+
+## Versions and revisions
+
+Methods aren't frozen — parts change. Carbon keeps history so a change today doesn't rewrite
+what you already built and shipped.
+
+- A **revision** is a deliberate, named iteration of the part itself (Rev 0, Rev A, Rev B…),
+  usually driven by an engineering change. The hook is at revision **0**. Each revision can
+  carry its own method, so you can quote and build an old revision long after a new one
+  exists.
+- A **version** is Carbon's internal snapshot of a method. When a [job](/manual/manufacturing/jobs)
+  is created, it takes its **own copy** of the method as it stands at that moment — a *job make
+  method*. After that, editing the part's master method does **not** change a job already in
+  flight.
+
+This copy-on-create behavior is the safety net behind the whole walkthrough: job `J000097`
+made 500 hooks against the method exactly as it was the day it was released, even if
+engineering tweaks the master method next month.
+
+<Callout type="warn">
+  **Editing the master method only affects future jobs.** If a hook already running on the
+  shop floor needs a routing change, edit it on **that job's** method, not (only) on the part.
+  Changing the part's master method updates the recipe new jobs will copy — it does not reach
+  back into jobs already created.
+</Callout>
+
+<AppShot title="Method versions · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw.../manufacturing" flush>
+  <DataTable
+    columns={[
+      { key: "rev", label: "Revision", mono: true },
+      { key: "ver", label: "Version", align: "right" },
+      { key: "used", label: "Used by" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { rev: "0", ver: "1", used: "J000097 · J000098 · J000099", status: <StatusBadge tone="green">Active</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+## A quick recap
+
+You've now built a complete method for the Counterweight Hook:
+
+<DataTable
+  columns={[
+    { key: "half", label: "Half of the method" },
+    { key: "what", label: "What you entered" },
+    { key: "why", label: "Why it matters" },
+  ]}
+  rows={[
+    { half: "Bill of Materials", what: "40 LB A36 steel plate, Pull from Inventory", why: "Scales to 20,000 LB on a 500-piece job; drives material shortages and POs" },
+    { half: "Routing — 10", what: "Flame Cut @ Burn Table — PA2, 45 min/pc", why: "First step; sets cost and schedule from work-center rates" },
+    { half: "Routing — 20", what: "Sandblasting @ Sand Blasting Room, 2 min/pc", why: "Runs After Previous — only after cutting is done" },
+    { half: "Routing — 30", what: "Inspection @ Inspection Station, 10 min/pc", why: "Quality gate before the hooks can ship" },
+  ]}
+/>
+
+With the method in place, Carbon can estimate a price, plan the work, and create a job the
+moment an order lands — which is exactly what happens next in the flow.
+
+## Next steps
+
+<Cards>
+  <IconCard title="Defining an item" href="/manual/items/defining-an-item" description="Create the part a method hangs off — and choose Make vs. Buy." icon={<Package className="size-4" />} />
+  <IconCard title="Jobs" href="/manual/manufacturing/jobs" description="Turn a method into a production order on the shop floor." icon={<Factory className="size-4" />} />
+  <IconCard title="Managing production" href="/manual/manufacturing/managing-production" description="Schedule, track and cost jobs as they run their operations." icon={<ClipboardList className="size-4" />} />
+</Cards>

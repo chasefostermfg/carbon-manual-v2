@@ -1,0 +1,359 @@
+---
+title: "Purchasing basics"
+description: "Purchase orders, receiving and supplier quotes."
+---
+
+When a job needs material you don't have on the shelf, you **buy** it. In Carbon you do that
+with a [**purchase order**](/manual/overview/glossary) (PO): a document that tells a
+[supplier](/manual/buying/suppliers) exactly what you want, how much, at what price, and when
+you need it. This page walks you through raising one, getting it approved, sending it, and —
+the part that actually puts material on your shelf — **receiving** the goods against it.
+
+We'll follow a real example from Acme: **PO000057**, a purchase order to **Ryerson** (Acme's
+steel supplier) for the **A36 Steel Plate** that goes into the Counterweight Hooks on job
+`J000097`. Each hook eats 40 lb of plate, and the batch of 500 needs 20,000 lb — far more
+than Acme keeps in stock — so Carbon flagged the shortage and Acme bought the steel.
+
+<Callout type="info">
+  **Where this fits.** Buying sits in the middle of the end-to-end flow. A [job](/manual/manufacturing/jobs)
+  (or low stock) creates a need for material → you raise a **purchase order** here → you
+  [**receive**](/manual/inventory/shipping-receiving) the goods, which adds them to inventory →
+  the material is consumed by the job, and the order eventually gets billed by an
+  [accounts-payable invoice](/manual/accounting/overview). This is the buy-side mirror of the
+  sell-side flow you saw in [Carbon in 15 minutes](/manual/walkthrough).
+</Callout>
+
+## The shape of a purchase order
+
+A purchase order has two parts, and they map to the tabs you'll see on the record:
+
+- **Header** (the *Details* tab) — who you're buying from, the order date, where it's
+  delivered, the currency, and the payment terms. One supplier per PO.
+- **Lines** (the *Lines* tab) — one row per thing you're buying. Each line names an
+  [item](/manual/overview/glossary), a quantity, a unit price, and a **required date** (when
+  you need it on site). Line totals add up to the order total.
+
+A *Delivery* tab holds the ship-to location and any delivery notes. Here is Acme's finished
+PO000057 so you can see the whole record before we build one:
+
+<AppShot title="Purchase Order · PO000057" url="app.carbon.ms/x/purchase-order/po_VJGJ…" caption="Acme's purchase order to Ryerson for A36 steel plate — the steel that feeds job J000097.">
+  <RecordPanel
+    title="PO000057 — Ryerson"
+    subtitle="Purchase · Order date 2026-06-12 · Headquarters"
+    status={<StatusBadge tone="amber">Needs Approval</StatusBadge>}
+    tabs={["Details", "Lines", "Delivery"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Supplier" value="Ryerson" />
+      <Field label="PO number" value="PO000057" mono />
+      <Field label="Order date" value="2026-06-12" />
+      <Field label="Required date" value="2026-06-21" />
+      <Field label="Payment terms" value="Net 30" />
+      <Field label="Deliver to" value="Headquarters" />
+      <Field label="Currency" value="USD" />
+      <Field label="Order total" value="$13,500.25" />
+      <Field label="Created by" value="Chase Foster" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+<Callout type="tip">
+  **Get a price first (the supplier quote).** Before committing, you can ask one or more
+  suppliers "what would this cost?" with a **supplier quote** (Carbon calls it a *request for
+  quote*, or RFQ). You send the item and quantity, suppliers send back a price and lead time,
+  and you turn the best response into a purchase order without re-typing the lines. Acme knows
+  A36 plate runs about **$0.25/LB** at Ryerson because that price came from earlier quotes and
+  orders — Carbon remembers a supplier's last price on an item and pre-fills it for you.
+</Callout>
+
+## Create the purchase order
+
+You can start a PO three ways: by hand, from a job's material shortage, or straight from a
+supplier quote. We'll do it by hand so you see every field, then point out the shortcuts.
+
+<Steps>
+
+<Step>
+### Open Purchasing and start a new order
+
+Go to the **Purchasing** module in the left rail and choose **Purchase Orders**. Click
+**New Purchase Order**. Carbon assigns the next number automatically — Acme's became
+`PO000057` — and opens it in **Draft** status. Nothing is committed yet; a draft is just a
+work-in-progress you can edit or delete freely.
+</Step>
+
+<Step>
+### Pick the supplier
+
+Choose the **supplier** you're buying from. Acme selects **Ryerson**. Picking the supplier
+does a lot of quiet work: Carbon fills in that supplier's **currency** (USD), default
+**payment terms** (Net 30), and the contact and address on file, so you don't re-enter them.
+
+<Callout type="warn">
+  If the supplier doesn't exist yet, create it first — see
+  [Suppliers](/manual/buying/suppliers). A PO must point at a real supplier record, because
+  that's where the payment terms, addresses, and the supplier's prices live.
+</Callout>
+</Step>
+
+<Step>
+### Set the header dates and delivery location
+
+On the **Details** tab, confirm the **order date** (2026-06-12 for Acme) and pick the
+**deliver-to location** — Acme ships to **Headquarters** (`loc_CZUGEF…`), the same location
+the job runs at. The **payment terms** carried over from the supplier; leave **Net 30** or
+override it for this order.
+</Step>
+
+</Steps>
+
+## Add the lines
+
+The lines are where you say *what* you're buying. Each line is one item at one price.
+
+<Steps>
+
+<Step>
+### Add a line and choose the item
+
+On the **Lines** tab, click **Add Line**. Set the line type to **Part** (Carbon uses "Part"
+as the generic line type for any stocked item, including materials), then search for the item.
+Acme picks **A36 Steel Plate 1"** — readable ID `A36-STEEL-PLT-1".96x240`. Carbon pulls in the
+description and the purchase unit of measure (**LB**, pounds) from the item record.
+</Step>
+
+<Step>
+### Enter quantity, unit price and required date
+
+Fill in the three numbers that matter:
+
+- **Quantity** — how much to buy. Acme orders **54,001 LB** (a round buy of plate that covers
+  this job's 20,000 lb need and tops up stock for the next ones).
+- **Unit price** — what the supplier charges per unit. Ryerson's price is **$0.25/LB**.
+  Carbon pre-fills the supplier's last known price, so often you just confirm it.
+- **Required date** — the date you need it on site. Acme sets **2026-06-21**. This drives
+  Carbon's planning and tells you which lines are at risk of being late.
+
+Carbon multiplies quantity × unit price into the **extended price** automatically:
+54,001 × $0.25 = **$13,500.25**.
+</Step>
+
+<Step>
+### Review the line total
+
+Your single line now reads like this. Carbon rolls the line extended prices up into the
+**order total** in the header.
+
+<AppShot title="Purchase Order · PO000057 — Lines" url="app.carbon.ms/x/purchase-order/po_VJGJ…/lines" caption="One line: 54,001 LB of A36 steel plate at $0.25/LB." flush>
+  <DataTable
+    columns={[
+      { key: "line", label: "#", align: "right" },
+      { key: "type", label: "Type" },
+      { key: "item", label: "Material", mono: true },
+      { key: "desc", label: "Description" },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "price", label: "Unit price", align: "right" },
+      { key: "req", label: "Required", align: "right" },
+      { key: "ext", label: "Extended", align: "right" },
+    ]}
+    rows={[
+      { line: "1", type: <Tag>Part</Tag>, item: "A36-STEEL-PLT-1\"", desc: "A36 Steel Plate 1\"", qty: "54,001 LB", price: "$0.25", req: "2026-06-21", ext: "$13,500.25" },
+    ]}
+  />
+</AppShot>
+</Step>
+
+</Steps>
+
+<Callout type="tip">
+  **The shortcut: buy straight from a job.** Acme didn't really type this line from scratch.
+  When job `J000097` was planned, Carbon saw it needed 20,000 lb of A36 plate that wasn't in
+  stock and surfaced a **shortage**. From there you can generate the purchase order with the
+  item, quantity, and supplier already filled in — see [Jobs](/manual/manufacturing/jobs) and
+  [Advanced purchasing](/manual/buying/advanced-purchasing). Buying and making then run in
+  parallel: the steel is on its way while the shop gets set up.
+</Callout>
+
+## Approve it and send it
+
+A draft PO commits Acme to nothing. Two steps turn it into a real order: approval, then sending.
+
+<Steps>
+
+<Step>
+### Submit for approval
+
+When the order is ready, you **submit it for approval**. Carbon moves it from **Draft** to
+**Needs Approval** — exactly where PO000057 sits in the screenshot above. This is a control:
+spending above a threshold can require a manager's sign-off before the order goes out, so
+nobody accidentally commits the company to a five-figure steel buy. Who needs to approve what
+is configured in company settings — see [Users & permissions](/manual/getting-started/users-permissions).
+
+The PO status walks through these stages as it progresses:
+
+<DataTable
+  columns={[
+    { key: "status", label: "Status" },
+    { key: "means", label: "What it means" },
+  ]}
+  rows={[
+    { status: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Being built. Editable, not yet committed." },
+    { status: <StatusBadge tone="amber">Needs Approval</StatusBadge>, means: "Submitted; waiting for sign-off." },
+    { status: <StatusBadge tone="blue">To Receive</StatusBadge>, means: "Approved and sent; goods are on the way." },
+    { status: <StatusBadge tone="blue">To Invoice</StatusBadge>, means: "Goods received; waiting on the supplier's bill." },
+    { status: <StatusBadge tone="green">Completed</StatusBadge>, means: "Received and invoiced in full. Closed." },
+  ]}
+/>
+</Step>
+
+<Step>
+### Approve
+
+An authorized approver opens the order, checks the lines and total, and **approves** it.
+Approval is what unlocks sending. If something's wrong, they can reject it back to Draft for
+edits instead.
+</Step>
+
+<Step>
+### Send it to the supplier
+
+Once approved, click **Send**. Carbon generates a clean PO document (PDF) and emails it to the
+supplier's contact on file — for Acme, that's Ryerson's contact — using the PO number as the
+reference. The order moves to **To Receive**: Carbon is now waiting for the steel to show up.
+You can also download the PDF to send yourself, or share a supplier portal link.
+</Step>
+
+</Steps>
+
+<Callout type="warn">
+  **Sending is not receiving.** Sending the PO tells the supplier what you want; it does **not**
+  add anything to your inventory. Material only lands on your shelf when you *receive* it
+  against the PO — that's the next step, and it's the one beginners most often forget.
+</Callout>
+
+## Receive the goods
+
+This is the step that actually changes your stock. When the truck arrives, you create a
+**receipt** against the purchase order. Receiving does three things at once:
+
+1. **Adds the material to inventory** at the deliver-to location, so it's available for the
+   job to consume.
+2. **Records how much arrived** on each PO line (`quantityReceived`), so Carbon knows what's
+   still outstanding if the supplier ships short or in parts.
+3. **For batch-tracked items, records the lot** — the supplier's batch or heat number — so
+   you keep full [traceability](/manual/quality/tracking-quality) from raw steel to finished part.
+
+A36 Steel Plate is **batch-tracked** (`requiresBatchTracking: true`), so the receipt will ask
+you for a lot number. That's not bureaucracy: months later, if a hook ever fails inspection,
+Acme can trace it back to the exact heat of steel it came from — and find every other part
+made from that same batch.
+
+<Steps>
+
+<Step>
+### Start a receipt from the PO
+
+Open PO000057 and choose **Receive** (you can also start from the **Inventory → Receipts**
+list and pick the PO). Carbon opens a new **receipt** and pre-loads the open lines with the
+quantity still outstanding — here, the full 54,001 LB, since nothing has been received yet.
+</Step>
+
+<Step>
+### Confirm what actually arrived
+
+Count what came off the truck and enter the **received quantity** per line. If the supplier
+shipped everything, accept the suggested amount. If they shipped part of it, enter the smaller
+number — Carbon leaves the remainder open on the PO so you can receive the rest later. Pick the
+**location** and **shelf/bin** the material goes to; Acme's A36 plate lives in bin
+**R02-B01-01** at Headquarters.
+</Step>
+
+<Step>
+### Enter the batch (lot) number
+
+Because A36 plate is batch-tracked, Carbon requires a **lot number** for the quantity you're
+receiving. Type the supplier's heat or batch number from the mill certificate (the steel's
+paperwork). This lot is now permanently linked to this material — when the job pulls the plate,
+Carbon records which lot it consumed.
+
+<AppShot title="Receipt · A36 Steel Plate against PO000057" url="app.carbon.ms/x/receipt/…" caption="Receiving 54,001 LB into bin R02-B01-01, with the supplier's batch recorded for traceability." flush>
+  <DataTable
+    columns={[
+      { key: "item", label: "Material", mono: true },
+      { key: "ordered", label: "Ordered", align: "right" },
+      { key: "received", label: "Received", align: "right" },
+      { key: "shelf", label: "Shelf / bin", mono: true },
+      { key: "lot", label: "Batch / lot", mono: true },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { item: "A36-STEEL-PLT-1\"", ordered: "54,001 LB", received: "54,001 LB", shelf: "R02-B01-01", lot: "HEAT-A36-0612", status: <StatusBadge tone="green">Received</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+<Callout type="info">
+  The lot number shown (`HEAT-A36-0612`) is illustrative — you enter whatever batch identifier
+  the supplier's mill certificate gives you. Items that aren't batch- or serial-tracked (most
+  consumables and hardware) skip this step entirely.
+</Callout>
+</Step>
+
+<Step>
+### Post the receipt
+
+Click **Post**. At that moment Carbon:
+
+- Increases **on-hand stock** of A36 plate at Headquarters by the received quantity.
+- Stamps the PO line's `quantityReceived` and flips the order to **To Receive** (still open if
+  partial) or onward toward **To Invoice** once everything's in.
+- Posts the **inventory value** to your books at the purchase cost, so accounting reflects the
+  new asset.
+
+The steel is now real, on the shelf, and ready for job `J000097` to consume.
+
+<StatGrid cols={3}>
+  <Stat label="Received" value="54,001 LB" hint="A36 Steel Plate" />
+  <Stat label="On hand at HQ" value="↑ 54,001 LB" hint="bin R02-B01-01" />
+  <Stat label="Inventory value" value="+ $13,500.25" hint="at $0.25/LB" />
+</StatGrid>
+</Step>
+
+</Steps>
+
+## What happens next
+
+With the material received, the loop closes on its own:
+
+<Mermaid
+  chart={`flowchart LR
+  N[Job needs material] --> PO[Purchase Order PO000057]
+  PO --> AP[Approve and send to Ryerson]
+  AP --> R[Receive 54,001 LB]
+  R --> INV[A36 plate in inventory]
+  INV --> J[Job J000097 consumes it]
+  R --> BILL[Supplier invoice to pay]`}
+/>
+
+- The job **consumes** the A36 plate as it runs, drawing down the stock you just received and
+  carrying the lot number forward into the finished hooks.
+- The supplier sends a **bill**, which you match to the PO and receipt as an
+  [accounts-payable invoice](/manual/accounting/overview). Three-way matching (PO ↔ receipt ↔
+  bill) is what lets you catch a supplier overcharging before you pay.
+
+<Callout type="tip">
+  **Receiving is the hinge between buying and inventory.** Everything before the receipt is
+  paperwork; the receipt is the moment material becomes real stock you can use and value. For
+  the full picture of stock, shelves, bins and receipts, see
+  [Locations & stock](/manual/inventory/locations-and-stock) and
+  [Shipping & receiving](/manual/inventory/shipping-receiving).
+</Callout>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Suppliers" href="/manual/buying/suppliers" description="Set up the supplier records, contacts and prices a PO relies on." icon={<Building className="size-4" />} />
+  <IconCard title="Advanced purchasing" href="/manual/buying/advanced-purchasing" description="Supplier quotes, buying from job shortages, partial receipts and more." icon={<Truck className="size-4" />} />
+  <IconCard title="Shipping & receiving" href="/manual/inventory/shipping-receiving" description="Receipts, shipments and how goods move in and out of stock." icon={<PackageCheck className="size-4" />} />
+</Cards>

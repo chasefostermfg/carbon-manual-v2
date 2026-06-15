@@ -1,0 +1,299 @@
+---
+title: "Suppliers"
+description: "Set up the vendors you buy materials and services from."
+---
+
+A **supplier** (also called a *vendor*) is any company you buy from — the steel mill that
+sells you plate, the electronics distributor that ships you resistors, the anodizer that
+finishes your parts. Before you can raise a [purchase order](/manual/overview/glossary),
+Carbon needs to know who the supplier is, how to reach them, where to send the order, and
+how you've agreed to pay. This page walks you through creating a supplier and filling in
+those details, using Acme's real vendor list as the example.
+
+<Callout type="info">
+  **Where this fits.** Suppliers are the foundation of the whole **buying** flow. Once a
+  supplier exists, you can raise purchase orders against it
+  ([Purchasing basics](/manual/buying/purchasing-basics)), receive what they send, and pay
+  their invoices. In the [hero thread](/manual/walkthrough), Acme buys A36 steel plate from
+  **Ryerson** on purchase order `PO000057` — and that only works because Ryerson was set up
+  as a supplier first.
+</Callout>
+
+## What a supplier record holds
+
+A supplier in Carbon is a small folder of related information. You don't have to fill it all
+in at once — a name is enough to start — but the more you add, the less you re-type later.
+
+<DataTable
+  columns={[
+    { key: "part", label: "Part of the record" },
+    { key: "what", label: "What it holds" },
+  ]}
+  rows={[
+    { part: "Details", what: "Name, supplier type, status, currency, and tax info" },
+    { part: "Contacts", what: "The people you email and call (sales rep, AP contact)" },
+    { part: "Locations", what: "Ship-from / remit-to addresses for the supplier" },
+    { part: "Payment", what: "Default payment terms and remittance settings" },
+    { part: "Supplier parts", what: "The supplier's own part numbers and prices for your items" },
+  ]}
+/>
+
+Carbon gives every supplier a short **readable ID** like `SUP000013` so you can refer to it
+quickly, while still showing the friendly name everywhere. You'll see both throughout the app.
+
+## Acme's suppliers
+
+Here's the vendor list a real shop keeps. Notice the mix: metal mills, electronics
+distributors, industrial-supply catalogs, fasteners, and outside-service shops. The
+**Type** column groups them so you can filter the list later.
+
+<AppShot title="Suppliers" url="app.carbon.ms/x/purchasing/suppliers" caption="Acme's supplier list, grouped by type." flush>
+  <DataTable
+    columns={[
+      { key: "name", label: "Supplier" },
+      { key: "id", label: "ID", mono: true },
+      { key: "type", label: "Type" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { name: "Ryerson", id: "SUP000013", type: <Tag>Metals and Raw Materials</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "Olympic Steel", id: "SUP000004", type: <Tag>Metals and Raw Materials</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "Sendcutsend", id: "SUP000016", type: <Tag>Subcontractors and Service Providers</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "Allen's Anodizing", id: "SUP000006", type: <Tag>Subcontractors and Service Providers</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "DigiKey", id: "SUP000014", type: <Tag>Electronics and Components</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "Arrow Electronics", id: "SUP000010", type: <Tag>Electronics and Components</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "Fastenal", id: "SUP000011", type: <Tag>Hardware and Fasteners</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "McMaster-Carr", id: "SUP000002", type: <Tag>Hardware and Fasteners</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "Grainger", id: "SUP000005", type: <Tag>Maintenance, Repair, and Operations</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "MSC Industrial", id: "SUP000007", type: <Tag>Maintenance, Repair, and Operations</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+<Callout type="tip">
+  The supplier **ID** values shown here (`SUP0000xx`) follow Carbon's sequential numbering.
+  Your own shop's IDs will differ — what matters is that each supplier has one, and that
+  it stays stable even if you rename the company.
+</Callout>
+
+## Supplier types and statuses
+
+Two small fields shape how a supplier behaves in the app.
+
+**Supplier type** is a label you assign so you can group and filter vendors. It's purely
+organizational — it doesn't change pricing or accounting. Acme uses five types:
+
+<DataTable
+  columns={[
+    { key: "type", label: "Supplier type" },
+    { key: "example", label: "Example vendors" },
+  ]}
+  rows={[
+    { type: <Tag>Metals and Raw Materials</Tag>, example: "Ryerson, Olympic Steel, MetalMart, Reliance Steel" },
+    { type: <Tag>Electronics and Components</Tag>, example: "DigiKey, Arrow Electronics" },
+    { type: <Tag>Hardware and Fasteners</Tag>, example: "Fastenal, McMaster-Carr" },
+    { type: <Tag>Maintenance, Repair, and Operations</Tag>, example: "Grainger, MSC Industrial" },
+    { type: <Tag>Subcontractors and Service Providers</Tag>, example: "Sendcutsend, Allen's Anodizing, Zebra Painters" },
+  ]}
+/>
+
+**Status** controls whether you can buy from a vendor right now. An **Active** supplier is
+available everywhere you pick a vendor; an **Inactive** one is hidden from new purchase
+orders but kept for history. This is how you retire a supplier you no longer use without
+deleting years of records.
+
+<Callout type="tip">
+  You define the list of supplier *types* yourself in **Settings**, so you can make them
+  match how your shop thinks about its vendors. There's no fixed list — these five are just
+  the ones Acme chose.
+</Callout>
+
+## Create a supplier
+
+Let's add a new vendor from scratch. We'll use **Ryerson**, Acme's steel mill, as the
+worked example.
+
+<Steps>
+
+<Step>
+
+### Open the new-supplier form
+
+Go to **Purchasing → Suppliers** and click **New**. Carbon opens a short form. The only
+field you *must* fill in is the **Name** — everything else can wait.
+
+</Step>
+
+<Step>
+
+### Fill in the core details
+
+Give the supplier a name, pick its **type**, and confirm the **currency** you'll trade in.
+Carbon defaults the currency to your company's base currency (USD for Acme); change it only
+if you pay this vendor in another currency.
+
+<AppShot title="New Supplier" url="app.carbon.ms/x/supplier/new" caption="Creating the Ryerson supplier record.">
+  <FieldGrid cols={2}>
+    <Field label="Name" value="Ryerson" />
+    <Field label="Supplier type" value="Metals and Raw Materials" />
+    <Field label="Currency" value="USD" />
+    <Field label="Status" value="Active" />
+  </FieldGrid>
+</AppShot>
+
+Click **Save**. Carbon assigns the next ID (`SUP000013` for Ryerson) and opens the full
+record, where the remaining tabs — Contacts, Locations, Payment, and more — become available.
+
+</Step>
+
+<Step>
+
+### Add a contact
+
+A **contact** is a person at the supplier you actually deal with — a salesperson who quotes
+you steel, or an accounts-receivable clerk you send payment questions to. Open the
+**Contacts** tab and click **New** to add one with a name, email, and phone.
+
+The contact you mark as the **purchasing contact** is the one Carbon emails when you send a
+purchase order, so make sure it's the person who takes orders. A supplier can have as many
+contacts as you like — keep the right people on file and you never have to dig through old
+emails for an address.
+
+</Step>
+
+<Step>
+
+### Add a location
+
+A **location** is a supplier address — typically where they ship from, or where you send
+remittance. Open the **Locations** tab, click **New**, and enter the address. If a vendor
+ships from several plants, add one location per site and pick the right one on each purchase
+order.
+
+<Callout type="tip">
+  For Acme, Ryerson and most vendors have a single location, so Carbon fills it in
+  automatically on every purchase order. You only have to choose when a supplier has more
+  than one.
+</Callout>
+
+</Step>
+
+<Step>
+
+### Set payment terms
+
+**Payment terms** describe *when* you've agreed to pay — for example, **Net 30** means the
+invoice is due 30 days after it's issued. Setting a default here means every new purchase
+order and supplier invoice starts with the right terms, so your accounting team isn't
+guessing.
+
+Open the **Payment** tab and choose from the terms your company has defined:
+
+<DataTable
+  columns={[
+    { key: "term", label: "Payment term" },
+    { key: "meaning", label: "What it means" },
+  ]}
+  rows={[
+    { term: "COD", meaning: "Cash on delivery — pay when the goods arrive" },
+    { term: "Net 15", meaning: "Due 15 days after the invoice date" },
+    { term: "Net 30", meaning: "Due 30 days after the invoice date" },
+    { term: "Net 60", meaning: "Due 60 days after the invoice date" },
+    { term: "2% 10 Net 30", meaning: "2% discount if paid within 10 days, otherwise due in 30" },
+    { term: "Net EOM 10th", meaning: "Due the 10th of the month following the invoice" },
+  ]}
+/>
+
+Acme buys from Ryerson on **Net 30** — the same terms that carry onto purchase order
+`PO000057` in the hero thread.
+
+</Step>
+
+<Step>
+
+### Link supplier part numbers
+
+Your vendor almost never calls a part by *your* part number. Ryerson has its own catalog
+number for the steel plate that Acme knows as `A36-STEEL-PLT-1".96x240`. A **supplier part**
+links the two: it records the supplier's part number and their price for one of *your*
+[items](/manual/overview/glossary), so the right number prints on the purchase order and the
+price fills in automatically.
+
+You can add supplier parts from either side:
+
+- **From the supplier**, on the **Supplier Parts** tab — useful when onboarding a vendor's
+  full catalog.
+- **From the item**, on the item's **Suppliers** / **Purchasing** tab — useful when you want
+  to know "who can sell me this, and for how much?"
+
+For each link you record the supplier, their part number, the price (and optional
+**price breaks** for larger quantities), and the supplier's unit of measure. With that in
+place, picking Ryerson on a purchase order line for A36 plate auto-fills the `$0.25/LB`
+price Acme negotiated.
+
+</Step>
+
+</Steps>
+
+## The finished supplier
+
+Here's what Ryerson looks like once it's fully set up — the record that the rest of the
+buying flow leans on.
+
+<AppShot title="Supplier · Ryerson" url="app.carbon.ms/x/supplier/sup_VecEhHfuqC413x5r48ALFT">
+  <RecordPanel
+    title="Ryerson"
+    subtitle="Supplier · SUP000013"
+    status={<StatusBadge tone="green">Active</StatusBadge>}
+    tabs={["Details", "Contacts", "Locations", "Payment", "Supplier Parts"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={2}>
+      <Field label="Supplier ID" value="SUP000013" mono />
+      <Field label="Type" value="Metals and Raw Materials" />
+      <Field label="Currency" value="USD" />
+      <Field label="Payment terms" value="Net 30" />
+      <Field label="Purchase orders" value="10" />
+      <Field label="Supplier parts on file" value="8" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+Once a supplier is this complete, raising a purchase order is mostly point-and-click: pick
+Ryerson, pick the material, and Carbon already knows the contact to email, the address to
+ship from, the terms to bill on, and the price to expect.
+
+<Callout type="warn">
+  Don't create a second supplier record for a vendor you already have — for example a
+  separate "Ryerson Inc." alongside "Ryerson." Duplicates split your purchase history and
+  spending across two records and make reporting unreliable. Search the supplier list first;
+  if the vendor exists, reuse it.
+</Callout>
+
+## How a purchase order pulls it together
+
+Every supplier field you fill in shows up downstream. When Acme raises `PO000057`, the
+supplier record does the work:
+
+<Mermaid
+  chart={`flowchart LR
+  S[Supplier Ryerson] --> C[Contact emailed]
+  S --> L[Ship-from location]
+  S --> T[Payment terms Net 30]
+  S --> P[Supplier part price]
+  C --> PO[Purchase Order PO000057]
+  L --> PO
+  T --> PO
+  P --> PO`}
+/>
+
+That's the payoff for setting suppliers up carefully: the data you enter once flows into
+every order, receipt, and payment that follows.
+
+## Next steps
+
+<Cards>
+  <IconCard title="Purchasing basics" href="/manual/buying/purchasing-basics" description="Raise a purchase order against a supplier and receive what they send." icon={<Truck className="size-4" />} />
+  <IconCard title="Advanced purchasing" href="/manual/buying/advanced-purchasing" description="Supplier quotes, price breaks, and outside-service POs." icon={<Layers className="size-4" />} />
+  <IconCard title="Materials" href="/manual/items/materials" description="Set up the raw materials you buy from these suppliers." icon={<Package className="size-4" />} />
+</Cards>

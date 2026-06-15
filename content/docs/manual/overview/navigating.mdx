@@ -1,0 +1,333 @@
+---
+title: "Navigating Carbon"
+description: "A tour of the app: modules, layout, search and where to find things."
+---
+
+The first time you open Carbon there's a lot on screen — a column of icons down the left,
+a search box up top, and a big table in the middle. The good news: the whole app is built
+from a handful of repeating pieces. Learn those pieces once and every screen, from a
+purchase order to a quality inspection, suddenly feels familiar. This page is the guided
+tour: what's where, how to jump anywhere in two keystrokes, and how to read the two screens
+you'll see most — the **list** and the **record**.
+
+<Callout type="info">
+  **Before you start.** This page assumes you can sign in to Carbon (or you're following
+  along with the live demo). If you haven't yet, your administrator sets you up in
+  [Users & permissions](/manual/getting-started/users-permissions). New to the *ideas*
+  behind Carbon — items, jobs, orders? Read [Core concepts](/manual/overview/core-concepts)
+  alongside this page; here we focus only on driving the interface.
+</Callout>
+
+## The big picture
+
+Every page in Carbon shares the same frame. A **module rail** runs down the left edge — that's
+how you switch between big areas of the business like Sales, Purchasing or Production. Across
+the top sits the **search bar** (your fastest way to jump anywhere) plus your account and
+notifications. Everything else — the list, the record you opened, the form you're filling in —
+loads in the large **content area** in the middle.
+
+<CarbonShell
+  modules={[
+    { label: "Sales" },
+    { label: "Purchasing" },
+    { label: "Items" },
+    { label: "Production", active: true },
+    { label: "Inventory" },
+    { label: "Quality" },
+    { label: "Accounting" },
+    { label: "Resources" },
+    { label: "People" },
+    { label: "Settings" },
+  ]}
+>
+  <DataTable
+    columns={[
+      { key: "job", label: "Job", mono: true },
+      { key: "item", label: "Item" },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "due", label: "Due" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { job: "J000097", item: "Counterweight Hook", qty: "500", due: "2026-06-26", status: <StatusBadge tone="green">Completed</StatusBadge> },
+      { job: "J000098", item: "Counterweight Hook", qty: "1,500", due: "2026-07-01", status: <StatusBadge tone="amber">In Progress</StatusBadge> },
+      { job: "J000099", item: "Counterweight Hook", qty: "3,000", due: "2026-07-21", status: <StatusBadge tone="blue">Ready</StatusBadge> },
+      { job: "J000096", item: "Inverter Mounting Bracket", qty: "4,000", due: "2026-07-01", status: <StatusBadge tone="neutral">Planned</StatusBadge> },
+    ]}
+  />
+</CarbonShell>
+
+Above, the **Production** module is selected (highlighted in the rail) and its **Jobs** list
+fills the content area. Click a different icon in the rail and the whole middle swaps to that
+area's lists. The frame never moves — only the content does.
+
+### The module rail, area by area
+
+Each icon in the left rail opens one part of Carbon. Here's what lives behind each one, so
+you know where to head:
+
+<DataTable
+  columns={[
+    { key: "mod", label: "Module" },
+    { key: "what", label: "What you do here" },
+    { key: "eg", label: "Records you'll find", mono: true },
+  ]}
+  rows={[
+    { mod: "Sales", what: "Quote, sell and ship to customers", eg: "Quotes, Sales Orders, Customers" },
+    { mod: "Purchasing", what: "Buy materials and services from suppliers", eg: "Purchase Orders, Suppliers" },
+    { mod: "Items", what: "Define the parts and materials you make and buy", eg: "Parts, Materials, Methods" },
+    { mod: "Production", what: "Plan and run jobs on the shop floor", eg: "Jobs, Operations" },
+    { mod: "Inventory", what: "Track stock across locations and bins", eg: "Quantities, Shipments, Receipts" },
+    { mod: "Quality", what: "Inspect work and log issues", eg: "Non-Conformances, Inspections" },
+    { mod: "Accounting", what: "Invoice, get paid and post to the books", eg: "Sales Invoices, Payments" },
+    { mod: "Resources", what: "Set up your shop's capabilities", eg: "Work Centers, Processes, Procedures" },
+    { mod: "People", what: "Manage employees and shop-floor users", eg: "Employees, Abilities" },
+    { mod: "Settings", what: "Configure your company and account", eg: "Company, Locations, Integrations" },
+  ]}
+/>
+
+<Callout type="tip">
+  You don't need every module from day one. Most people live in one or two — a buyer almost
+  never leaves **Purchasing**; a planner lives in **Production**. What you can see is also
+  governed by your [permissions](/manual/getting-started/users-permissions), so your rail may
+  be shorter than the one above.
+</Callout>
+
+## Jump anywhere with search (⌘K)
+
+The single most useful habit in Carbon is the **command palette**. Press <kbd>⌘K</kbd> (on
+Windows, <kbd>Ctrl</kbd>+<kbd>K</kbd>) — or click the search bar at the top — and a search
+box opens over whatever you're doing. Start typing and Carbon searches everything at once:
+records by number, parts by name, and the app's own navigation.
+
+<AppShot title="Search" url="app.carbon.ms/x/search" caption="Typing the part name surfaces the item, the open jobs, and the orders that use it." flush>
+  <DataTable
+    columns={[
+      { key: "type", label: "Type" },
+      { key: "id", label: "Result", mono: true },
+      { key: "desc", label: "Description" },
+    ]}
+    rows={[
+      { type: <Tag>Part</Tag>, id: "CWH-A36-15", desc: "Counterweight Hook" },
+      { type: <Tag>Sales Order</Tag>, id: "SO000069", desc: "Radiant Aerospace · 500 EA" },
+      { type: <Tag>Job</Tag>, id: "J000097", desc: "Counterweight Hook · Completed" },
+      { type: <Tag>Quote</Tag>, id: "Q000061", desc: "Radiant Aerospace · 500 EA" },
+      { type: <Tag>Invoice</Tag>, id: "AR000025", desc: "Radiant Aerospace · Paid" },
+    ]}
+  />
+</AppShot>
+
+Type a record number you already know — `SO000069`, `J000097`, `Q000061` — and press
+<kbd>Enter</kbd> to land straight on it. Type a part name like *Counterweight Hook* and you'll
+get the item plus every order and job that touches it. You can also search for screens
+themselves: typing *Suppliers* or *Work Centers* jumps you to that list without ever touching
+the rail.
+
+<Callout type="tip">
+  ⌘K is faster than clicking once you trust it. Think of it the way you'd use a browser's
+  address bar: don't navigate to a thing — just name it.
+</Callout>
+
+## Lists vs records: the two screens you'll always see
+
+Almost everything you open in Carbon is one of two screens. Understanding the difference is
+most of what "knowing the app" means.
+
+- A **list** (also called a *table* or *index*) shows *many* records of one kind — every job,
+  every customer, every purchase order — one per row. You use it to find, filter and scan.
+- A **record** (also called a *detail* view) shows *one* of those records in full, with all
+  its fields, tabs and related documents. You use it to read or edit a single thing.
+
+You move between them constantly: open a list, click a row, and you're in that record. The
+flow below is the same everywhere in Carbon.
+
+<Mermaid
+  chart={`flowchart LR
+  Rail[Module rail] --> List[List view]
+  List -->|click a row| Record[Record view]
+  Record -->|back| List`}
+/>
+
+### The list view
+
+A list is a table. Every row is one record; the columns are its most important fields. At the
+top you'll find a **search/filter** bar to narrow the rows, and a **New** button to create one.
+Status columns use color-coded [badges](/manual/overview/glossary) so you can scan the health
+of dozens of records at a glance.
+
+<AppShot title="Sales Orders" url="app.carbon.ms/x/sales-orders" caption="The Sales Orders list — one row per order, filterable, with a New button top-right." flush>
+  <DataTable
+    columns={[
+      { key: "so", label: "Order", mono: true },
+      { key: "cust", label: "Customer" },
+      { key: "date", label: "Order date" },
+      { key: "total", label: "Total", align: "right" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { so: "SO000071", cust: "Radiant Aerospace", date: "2026-06-11", total: "$237,690.00", status: <StatusBadge tone="blue">To Ship and Invoice</StatusBadge> },
+      { so: "SO000070", cust: "Radiant Aerospace", date: "2026-06-11", total: "$127,995.00", status: <StatusBadge tone="blue">To Ship and Invoice</StatusBadge> },
+      { so: "SO000069", cust: "Radiant Aerospace", date: "2026-06-11", total: "$36,820.00", status: <StatusBadge tone="green">Completed</StatusBadge> },
+      { so: "SO000068", cust: "Tesla", date: "2026-06-08", total: "$98,000.00", status: <StatusBadge tone="blue">Confirmed</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+A few things to know about every list in Carbon:
+
+- **Click a row** to open that record. The row number, like `SO000069`, is also a clickable
+  link.
+- **Search and filter** at the top narrow the rows — by status, customer, date, and more.
+- **Sort** by clicking a column header.
+- **Columns are yours to arrange.** You can show, hide and reorder columns, and Carbon
+  remembers your choice for that list.
+
+### The record view
+
+Click `SO000069` and you land on its **record**. A record gathers everything about one thing:
+its key fields up top, a **status** badge showing where it stands, and a set of **tabs** that
+group related information — and related documents, like the lines on an order or the
+shipments against it.
+
+<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/so_Fx6FCeSpx9sxut9Qns6y91">
+  <RecordPanel
+    title="SO000069 — Radiant Aerospace"
+    subtitle="Order date 2026-06-11 · PO reference 55557777"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Lines", "Shipments", "Invoices"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Customer" value="Radiant Aerospace" />
+      <Field label="Order total" value="$36,820.00" />
+      <Field label="Payment terms" value="Net 30" />
+      <Field label="Location" value="Headquarters" />
+      <Field label="Order date" value="2026-06-11" />
+      <Field label="Status" value="Completed" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+The **tabs** are the key to a record. On this sales order, *Details* holds the header you see
+above; *Lines* holds the parts ordered; *Shipments* and *Invoices* hold the documents created
+from it. Different record types have different tabs — a Job has *Operations* and *Materials*,
+a Part has *Manufacturing* and *Costing* — but the pattern is always the same: header on top,
+related detail in tabs.
+
+<Callout type="tip">
+  Records are **linked**. From SO000069 you can hop straight to the job that makes it
+  (J000097), the shipment that sent it, or the invoice that billed it (AR000025) — usually
+  by clicking the linked number. This is the heart of how Carbon works: one continuous chain
+  of records, each a click from the next. You can watch the whole chain unfold in the
+  [15-minute walkthrough](/manual/walkthrough).
+</Callout>
+
+## Reading status badges
+
+Carbon uses small colored **status badges** everywhere — in lists, on records, in search.
+They're shorthand for "where is this in its lifecycle?" The colors are consistent across the
+app, so once you learn them you can read any screen at a glance:
+
+<DataTable
+  columns={[
+    { key: "badge", label: "Looks like" },
+    { key: "means", label: "Roughly means" },
+    { key: "eg", label: "Example" },
+  ]}
+  rows={[
+    { badge: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Started, not yet finalized", eg: "A quote you're still building" },
+    { badge: <StatusBadge tone="blue">Ready</StatusBadge>, means: "Open / awaiting action", eg: "A job ready for the floor" },
+    { badge: <StatusBadge tone="amber">In Progress</StatusBadge>, means: "Underway right now", eg: "A job being worked" },
+    { badge: <StatusBadge tone="green">Completed</StatusBadge>, means: "Done / active / paid", eg: "SO000069, AR000025" },
+    { badge: <StatusBadge tone="purple">On Hold</StatusBadge>, means: "Paused on purpose", eg: "A customer on credit hold" },
+    { badge: <StatusBadge tone="red">Cancelled</StatusBadge>, means: "Stopped / rejected", eg: "A cancelled order" },
+  ]}
+/>
+
+<Callout type="info">
+  Each record type has its own exact set of statuses — a purchase order moves through *Draft →
+  Needs Approval → To Receive → To Invoice*, for instance, while a quote moves *Draft → Sent →
+  Accepted*. The **colors** stay consistent even when the words differ, so amber always means
+  "in motion" and green always means "good / done".
+</Callout>
+
+## Creating a new record
+
+Wherever there's a list, there's a way to add to it. The pattern is always the same:
+
+<Steps>
+  <Step>
+    **Go to the right list.** Pick the module in the left rail, then the list you want — for a
+    new order, **Sales → Sales Orders**. Or just press <kbd>⌘K</kbd> and type the list name.
+  </Step>
+  <Step>
+    **Click `New`** (top-right of the list). Carbon opens a blank record — often as a panel that
+    slides in — and assigns the next number automatically. You don't pick the number; Carbon
+    hands you `SO000072` after `SO000071`.
+  </Step>
+  <Step>
+    **Fill in the header.** Choose the customer or supplier, the location, dates and terms.
+    Required fields are marked; Carbon won't let you save without them.
+  </Step>
+  <Step>
+    **Save, then add the detail.** Once the header is saved the record opens in full, with its
+    tabs. Now add the **lines** — the parts, quantities and prices — under the *Lines* tab.
+  </Step>
+  <Step>
+    **Advance the status when you're ready.** A new record starts as a <StatusBadge tone="neutral">Draft</StatusBadge>.
+    Actions like *Confirm*, *Release* or *Send* (usually a button near the status) move it
+    forward and trigger the next steps — like creating a job from a confirmed order.
+  </Step>
+</Steps>
+
+<Callout type="warn">
+  Many records start in **Draft** and do nothing until you advance them. A purchase order sitting
+  in <StatusBadge tone="neutral">Draft</StatusBadge> hasn't been sent to the supplier; a quote in
+  Draft hasn't reached the customer. If something "didn't happen," check its status first — it's
+  the most common surprise for new users.
+</Callout>
+
+## "Where do I find…?"
+
+A quick cheat-sheet for the things people hunt for first. When in doubt, ⌘K and type it.
+
+<DataTable
+  columns={[
+    { key: "want", label: "You want to…" },
+    { key: "go", label: "Go to" },
+    { key: "link", label: "Learn more", mono: true },
+  ]}
+  rows={[
+    { want: "Add a customer", go: "Sales → Customers → New", link: <a href="/manual/selling/customers">Customers</a> },
+    { want: "Price a job for a customer", go: "Sales → Quotes → New", link: <a href="/manual/selling/quoting">Quoting</a> },
+    { want: "Take a confirmed order", go: "Sales → Sales Orders → New", link: <a href="/manual/selling/sales-orders">Sales orders</a> },
+    { want: "Define a part you make or buy", go: "Items → Parts → New", link: <a href="/manual/items/defining-an-item">Defining an item</a> },
+    { want: "Set how a part is made", go: "Items → open a part → Manufacturing", link: <a href="/manual/items/methods">Methods</a> },
+    { want: "Plan production", go: "Production → Jobs", link: <a href="/manual/manufacturing/jobs">Jobs</a> },
+    { want: "Buy raw material", go: "Purchasing → Purchase Orders → New", link: <a href="/manual/buying/purchasing-basics">Purchasing</a> },
+    { want: "Add a supplier", go: "Purchasing → Suppliers → New", link: <a href="/manual/buying/suppliers">Suppliers</a> },
+    { want: "Check stock on hand", go: "Inventory → open a location", link: <a href="/manual/inventory/locations-and-stock">Locations &amp; stock</a> },
+    { want: "Ship or receive goods", go: "Inventory → Shipments / Receipts", link: <a href="/manual/inventory/shipping-receiving">Shipping &amp; receiving</a> },
+    { want: "Log a quality issue", go: "Quality → Non-Conformances", link: <a href="/manual/quality/tracking-quality">Tracking quality</a> },
+    { want: "Bill a shipped order", go: "Accounting → Sales Invoices", link: <a href="/manual/accounting/overview">Accounting</a> },
+    { want: "Set up a work center", go: "Resources → Work Centers", link: <a href="/manual/getting-started/setup-company">Set up your company</a> },
+    { want: "Add a teammate", go: "Settings → Users (or People → Employees)", link: <a href="/manual/getting-started/users-permissions">Users &amp; permissions</a> },
+  ]}
+/>
+
+<Callout type="tip">
+  Lost? Two reliable resets: press <kbd>⌘K</kbd> to search from anywhere, or click the Carbon
+  logo at the top-left to return to your home dashboard. You can't get truly stuck — every record
+  is always reachable by its number.
+</Callout>
+
+## Next steps
+
+You can now drive the interface. Next, get the *ideas* behind the screens, then start setting
+things up.
+
+<Cards>
+  <IconCard title="Core concepts" href="/manual/overview/core-concepts" description="Items, methods, jobs and orders — the vocabulary behind every screen you just toured." icon={<BookOpen className="size-4" />} />
+  <IconCard title="Set up your company" href="/manual/getting-started/setup-company" description="Locations, work centers and the basics, so the modules have something to show." icon={<Settings className="size-4" />} />
+  <IconCard title="Carbon in 15 minutes" href="/manual/walkthrough" description="Follow one real order from quote to cash and see records link end to end." icon={<Workflow className="size-4" />} />
+</Cards>

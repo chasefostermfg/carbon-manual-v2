@@ -1,0 +1,168 @@
+---
+title: "Glossary"
+description: "Plain-English definitions of every Carbon and manufacturing term in this manual."
+---
+
+This page is your dictionary. Carbon (and manufacturing in general) uses a lot of words that
+sound technical but turn out to be simple once someone explains them in plain language. That's
+what this page does: one sentence per term, and wherever it helps, a real example from **Acme
+Inc.** — the demo company you'll see throughout this manual.
+
+You don't need to read this top to bottom. Skim it once to get a feel for the vocabulary, then
+come back and look things up whenever a page uses a word you're not sure about. Most pages link
+their jargon straight here.
+
+<Callout type="info">
+  **Where this fits.** This is a reference, not a tutorial. If you're brand new, start with
+  [What is Carbon?](/manual/overview/what-is-carbon) for the big picture, then watch one real
+  order move through the whole system in [Carbon in 15 minutes](/manual/walkthrough). The
+  example used in most definitions below — the *Counterweight Hook* `CWH-A36-15` that Acme
+  makes for Radiant Aerospace — is that same walkthrough thread.
+</Callout>
+
+## The three letters: ERP, MES, QMS
+
+Carbon is described as "an ERP + MES + QMS." Those three acronyms each cover one slice of running
+a shop, and Carbon rolls all three into a single system that shares one set of data.
+
+<DataTable
+  columns={[
+    { key: "term", label: "Term", mono: true },
+    { key: "stands", label: "Stands for" },
+    { key: "means", label: "What it does for you" },
+  ]}
+  rows={[
+    { term: "ERP", stands: "Enterprise Resource Planning", means: "The business side — customers, suppliers, sales orders, purchase orders, invoices, inventory and costs. The system of record for what you sell, buy and own." },
+    { term: "MES", stands: "Manufacturing Execution System", means: "The shop-floor side — what operators see and do: clocking onto a job, recording good and scrapped pieces, following work instructions." },
+    { term: "QMS", stands: "Quality Management System", means: "The quality side — inspections, non-conformances, corrective actions, gauge calibration and full traceability of what went into each part." },
+  ]}
+/>
+
+Because they live in one system, finishing a shop-floor operation (MES) updates the job cost
+(ERP) and records which material went in (QMS) — all at once, with no re-typing.
+
+## The full A–Z
+
+Every term used in the manual, alphabetical. Real Acme examples are woven in where they make a
+definition click.
+
+<DataTable
+  columns={[
+    { key: "term", label: "Term" },
+    { key: "means", label: "What it means" },
+  ]}
+  rows={[
+    { term: <b>API key</b>, means: "A secret token that lets an outside program sign in to Carbon and read or change your data through the API, instead of a person clicking the screen. You create one in Settings and treat it like a password. See Using the API." },
+    { term: <b>Batch / Lot</b>, means: "A group of identical units that share a history — same material, same run, same supplier delivery. Carbon's A36 steel plate is batch-tracked, so the 20,000 LB that went into job J000097 is tied to the exact delivery it came from." },
+    { term: <b>Bill of Materials (BOM)</b>, means: "The 'ingredients list' for a part — what it's made of and how much of each. The Counterweight Hook's BOM is short: 40 LB of A36 steel plate per piece. Half of a Method." },
+    { term: <b>Bin</b>, means: "See Shelf / Bin." },
+    { term: <b>CAPA</b>, means: "Corrective and Preventive Action — the follow-up after a quality problem: fix what went wrong (corrective) and change the process so it doesn't happen again (preventive). Often opened from a Non-Conformance." },
+    { term: <b>Configurator</b>, means: "A set of rules that builds a custom part from customer choices (size, material, finish) and prices it automatically. Acme has a 'Flame Cut Part Configurator' (FLAME CONFIG) for made-to-order plate parts." },
+    { term: <b>Consumable</b>, means: "An item you use up that isn't part of the finished product — gloves, coolant, sandpaper, welding wire. A type of Item. Acme stocks things like Nitrile Gloves (GLV-NIT) and Coolant (CHM-CLN)." },
+    { term: <b>ERP</b>, means: "Enterprise Resource Planning — the business backbone (sales, purchasing, inventory, accounting). See the section above." },
+    { term: <b>Fixture</b>, means: "A device that holds a part in place while you work on it, so every piece is positioned the same way. A type of Item, like a Tool." },
+    { term: <b>Genealogy</b>, means: "See Traceability / Genealogy." },
+    { term: <b>Gauge / Calibration</b>, means: "A gauge is a measuring instrument (calipers, a micrometer, a dial indicator). Calibration is checking it against a known standard on a schedule so you can trust its readings. Acme's tools include Digital Calipers (TOL-CAL) and a Micrometer (TOL-MIC)." },
+    { term: <b>Inventory</b>, means: "The physical stock you own and where it sits. Carbon tracks how many of each item are on hand, at which Location, and on which Shelf." },
+    { term: <b>Item</b>, means: "The master term for anything Carbon tracks: a Part, Material, Consumable, Tool, Fixture or Service. The Counterweight Hook is an item; so is the steel plate it's made from." },
+    { term: <b>Item Ledger</b>, means: "The running log of every movement of an item in and out of inventory — receipts, issues to jobs, shipments, adjustments. It's the audit trail behind your On Hand number." },
+    { term: <b>Job</b>, means: "A production order — the instruction to actually make a quantity of a part, carrying its own copy of the Method. Acme released job J000097 to make 500 Counterweight Hooks for SO000069." },
+    { term: <b>Lead Time</b>, means: "How long something takes to arrive or be made, measured from when you order or start it. Used to plan when to buy material or release a job so it finishes on time." },
+    { term: <b>Location</b>, means: "A physical site that holds inventory and runs work — a plant or warehouse. Acme has two: Headquarters and Texas. The whole hero order ran at Headquarters." },
+    { term: <b>Lot</b>, means: "See Batch / Lot." },
+    { term: <b>Make to Order</b>, means: "A fulfillment method where you make the part only after a customer orders it. SO000069 is Make to Order, which is why ordering it caused Carbon to create job J000097." },
+    { term: <b>Make to Stock</b>, means: "Making parts ahead of demand and putting them on the shelf, so you can ship from inventory the moment an order arrives. Acme ran job J000094 to build 10,000 Thermal Exhaust Nozzles to stock." },
+    { term: <b>Material</b>, means: "Raw stock that gets consumed and transformed into a part — bar, plate, billet, tube. A type of Item. A36 Steel Plate 1\" (A36-STEEL-PLT-1\".96x240) is the material in the hero example." },
+    { term: <b>MCP server</b>, means: "Model Context Protocol — a built-in interface that lets AI assistants read and operate Carbon directly, the same way a person would. This manual's Acme data was pulled through Carbon's MCP server. See MCP & AI." },
+    { term: <b>MES</b>, means: "Manufacturing Execution System — the shop-floor app where operators clock onto operations and report progress. See the section above and Shop floor." },
+    { term: <b>Method</b>, means: "The full recipe for making a part: its Bill of Materials (what it's made of) plus its Routing (the steps to make it). The Counterweight Hook's method is one material and three operations." },
+    { term: <b>MRP / Planning</b>, means: "Material Requirements Planning — Carbon's engine that looks at demand (orders, jobs) versus supply (stock, incoming POs) and tells you what to buy or make, and when. It's what flags a material shortage before you run out." },
+    { term: <b>Non-Conformance (NCR)</b>, means: "A record that something didn't meet spec — a part out of tolerance, a wrong material, a process miss. The 'NCR' (Non-Conformance Report) captures what happened so it can be dispositioned and, if needed, escalated to a CAPA." },
+    { term: <b>On Hand</b>, means: "How many units of an item you physically have available right now at a Location. The number the Item Ledger adds up to." },
+    { term: <b>Operation</b>, means: "A single step in a Routing, performed at a Work Center. Job J000097 has three operations in sequence: Flame Cut, Sandblasting, then Inspection." },
+    { term: <b>Opportunity</b>, means: "A potential piece of business that ties a quote and its eventual order together — a sales thread. SO000069 and its invoice both point back to one opportunity." },
+    { term: <b>Part</b>, means: "An item you make or buy and sell as a finished or semi-finished product (as opposed to raw Material). A type of Item. The Counterweight Hook is a Part; the steel it's cut from is a Material." },
+    { term: <b>Process</b>, means: "A category of work — Flame Cut, 3-Axis CNC, Sandblasting, Quality Inspection. A Work Center is capable of one or more processes; an Operation uses a process. Acme defines 16 processes." },
+    { term: <b>Pull from Inventory</b>, means: "A line setting meaning 'take this from existing stock' rather than buying or making it fresh. On the hook's BOM, the A36 steel plate is pulled from inventory." },
+    { term: <b>Purchase Invoice</b>, means: "A bill you receive from a supplier (also called accounts payable, prefixed AP), recording what you owe for goods or services. Acme's steel buys from Ryerson generate AP invoices such as AP000023." },
+    { term: <b>Purchase Order (PO)</b>, means: "Your formal order to a supplier — what you're buying, how much, at what price, and when you need it. Acme raised PO000057 to Ryerson for A36 steel at $0.25/LB." },
+    { term: <b>QMS</b>, means: "Quality Management System — inspections, non-conformances, calibration and traceability. See the section above and Tracking quality." },
+    { term: <b>Quote</b>, means: "A priced offer to a customer before they commit — 'here's what that would cost.' Acme quoted 500 Counterweight Hooks to Radiant Aerospace as Q000061, then converted it to a sales order." },
+    { term: <b>Receipt</b>, means: "The act (and record) of accepting goods into inventory when they arrive from a supplier. Receiving against PO000057 is what adds the A36 steel to stock and starts its batch history." },
+    { term: <b>Reorder Point</b>, means: "A stock level that, when you drop to it, signals 'time to buy or make more.' One of the simple rules Carbon uses to keep stocked items from running out. See Replenishment." },
+    { term: <b>Replenishment</b>, means: "How you keep an item in supply — either Make it or Buy it. Set per item. The Counterweight Hook's replenishment is Make; its steel plate's is Buy (from Ryerson)." },
+    { term: <b>RFQ</b>, means: "Request for Quote — when you ask a supplier for their price before you order. The supplier's reply is a Supplier Quote. See Supplier Quote / RFQ." },
+    { term: <b>Routing</b>, means: "The ordered list of steps (Operations) to make a part, and where each runs. Half of a Method. The hook's routing: Flame Cut → Sandblasting → Inspection." },
+    { term: <b>Sales Invoice</b>, means: "Your bill to a customer (accounts receivable, prefixed AR), built from what shipped. AR000025 billed Radiant Aerospace $36,820 for the 500 hooks and was marked Paid." },
+    { term: <b>Sales Order (SO)</b>, means: "A customer's firm commitment to buy — the anchor that the job, shipment and invoice all hang off. SO000069 locked in 500 hooks at $73.14 each for Radiant Aerospace." },
+    { term: <b>Serial</b>, means: "A unique number assigned to a single individual unit, so it can be tracked one piece at a time (versus a Batch, which tracks a group). Used for high-value or regulated parts." },
+    { term: <b>Service</b>, means: "Work you sell or buy that isn't a physical thing — outside plating, an inspection, a subcontracted operation. A type of Item. Acme's suppliers include service providers like Allen's Anodizing." },
+    { term: <b>Shelf / Bin</b>, means: "The specific spot inside a Location where stock physically lives — a labelled shelf, bin or rack position. Acme's A36 steel sits in bin R02-B01-01 at Headquarters." },
+    { term: <b>Shipment</b>, means: "The record of goods leaving your dock to a customer — what was picked, how many, and to whom. The 500 finished hooks shipped to Radiant on a shipment linked to SO000069 and invoice AR000025." },
+    { term: <b>Supplier</b>, means: "A company you buy from. Acme's primary steel supplier is Ryerson; others include McMaster-Carr, Fastenal and Grainger. See Suppliers." },
+    { term: <b>Supplier Quote / RFQ</b>, means: "A price you've requested from (and received from) a supplier before committing to a purchase order. You send an RFQ; the answer is a supplier quote you can turn into a PO." },
+    { term: <b>Tool</b>, means: "An instrument used to perform work that isn't consumed into the product — a drill, a wrench, a caliper. A type of Item. Acme tracks tools like the Cordless Drill (TOL-CDL) and Torque Wrench (TOL-TRQ)." },
+    { term: <b>Traceability / Genealogy</b>, means: "Being able to answer 'exactly what went into this part, and where did it go?' Because the hook's steel is batch-tracked, Acme can trace Radiant's 500 hooks back to the specific steel delivery — and forward to the shipment." },
+    { term: <b>UoM</b>, means: "Unit of Measure — how you count or weigh an item: EA (each), LB (pounds), FT, and so on. The Counterweight Hook is counted in EA; its steel is consumed in LB." },
+    { term: <b>Work Center</b>, means: "A specific place or machine where Operations happen, with its own labor and machine cost rates. The hook's Flame Cut ran at 'Burn Table — PA2'; its Inspection at the 'Inspection Station.'" },
+  ]}
+/>
+
+## How the big terms connect
+
+If a few of these still feel abstract, this is the chain they form in real life. Each box is a
+record in Carbon, and each one links to the next automatically — the same thread the
+[walkthrough](/manual/walkthrough) follows end to end.
+
+<Mermaid
+  chart={`flowchart LR
+  Item[Item CWH-A36-15] --> Method[Method BOM plus Routing]
+  Quote[Quote Q000061] --> SO[Sales Order SO000069]
+  SO --> Job[Job J000097]
+  Method --> Job
+  Job --> PO[Purchase Order PO000057]
+  Job --> Ship[Shipment]
+  Ship --> Invoice[Sales Invoice AR000025]`}
+/>
+
+<Callout type="tip">
+  A quick way to remember the item types: **Part** and **Material** become the product (one is
+  made/sold, one is consumed into it), while **Tool**, **Fixture** and **Consumable** are what
+  you use to do the work. A **Service** is work itself rather than a thing.
+</Callout>
+
+## A worked example, term by term
+
+Here's the hero order again, but this time as a glossary in motion — every record below is one of
+the terms above, filled with real Acme data.
+
+<AppShot title="The hook thread" url="app.carbon.ms/x/…" caption="One order, expressed entirely in glossary terms." flush>
+  <DataTable
+    columns={[
+      { key: "term", label: "Term" },
+      { key: "record", label: "Record", mono: true },
+      { key: "value", label: "Real Acme value" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { term: "Item (Part)", record: "CWH-A36-15", value: "Counterweight Hook · made, sold in EA", status: <StatusBadge tone="green">Active</StatusBadge> },
+      { term: "Material", record: "A36-STEEL-PLT-1\"", value: "40 LB per hook · pulled from inventory", status: <Tag>Buy</Tag> },
+      { term: "Quote", record: "Q000061", value: "Priced 500 hooks for Radiant Aerospace", status: <StatusBadge tone="neutral">Converted</StatusBadge> },
+      { term: "Sales Order", record: "SO000069", value: "500 EA @ $73.14 = $36,820", status: <StatusBadge tone="green">Completed</StatusBadge> },
+      { term: "Job", record: "J000097", value: "Made 500 of 500 pieces", status: <StatusBadge tone="green">Completed</StatusBadge> },
+      { term: "Purchase Order", record: "PO000057", value: "A36 steel from Ryerson · $13,500.25", status: <StatusBadge tone="amber">Needs Approval</StatusBadge> },
+      { term: "Sales Invoice", record: "AR000025", value: "Billed $36,820 to Radiant Aerospace", status: <StatusBadge tone="green">Paid</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+Read that table top to bottom and you've just used a dozen glossary terms in one breath — which
+is exactly how Carbon strings them together for real.
+
+## Next steps
+
+<Cards>
+  <IconCard title="What is Carbon?" href="/manual/overview/what-is-carbon" description="The big picture — what Carbon is and who it's for, in plain language." icon={<BookOpen className="size-4" />} />
+  <IconCard title="Carbon in 15 minutes" href="/manual/walkthrough" description="Watch every term above come to life in one real order, quote to cash." icon={<Workflow className="size-4" />} />
+  <IconCard title="Core concepts" href="/manual/overview/core-concepts" description="A deeper look at items, methods, jobs and orders — the ideas behind the words." icon={<Boxes className="size-4" />} />
+</Cards>

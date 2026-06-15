@@ -1,0 +1,278 @@
+---
+title: "Carbon in 15 minutes"
+description: "Follow one real order from quote to cash — the whole Carbon flow, end to end, using a real Acme part."
+---
+
+The fastest way to understand Carbon is to watch one order move through it. This page
+follows a single real part — a **Counterweight Hook** that Acme makes for **Radiant
+Aerospace** — from the first price request all the way to a paid invoice. You don't need
+to *do* anything here; just read along and you'll have the whole map. Every later section
+zooms in on one of these stops.
+
+<Mermaid
+  chart={`flowchart LR
+  Q[Quote Q000061] --> SO[Sales Order SO000069]
+  SO --> J[Job J000097]
+  J --> PO[Purchase Order PO000057]
+  PO --> J
+  J --> SH[Shipment]
+  SH --> INV[Invoice AR000025]`}
+/>
+
+<Callout type="info">
+  **Meet the part.** The *Counterweight Hook* (part number `CWH-A36-15`) is a heavy steel
+  hook flame-cut from 1-inch A36 steel plate. Radiant Aerospace orders them 500 at a time.
+  Carbon calls anything you make or buy an [**item**](/manual/overview/glossary) — this one
+  is a *Part* that Acme **makes** (rather than buys).
+</Callout>
+
+## Step 1 — A customer asks for a price (the Quote)
+
+It starts when Radiant Aerospace asks "what would 500 of these cost?" In Carbon you answer
+with a **quote**: you add a line for the part, the quantity, and a price. Carbon adds up the
+cost of materials and shop time behind the scenes so you can price the work with confidence.
+
+<AppShot title="Quote · Q000061" url="app.carbon.ms/x/quote/…" caption="Acme's quote to Radiant Aerospace for 500 Counterweight Hooks." flush>
+  <DataTable
+    columns={[
+      { key: "line", label: "Line", align: "right" },
+      { key: "part", label: "Part", mono: true },
+      { key: "desc", label: "Description" },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "price", label: "Unit price", align: "right" },
+      { key: "ext", label: "Extended", align: "right" },
+    ]}
+    rows={[
+      { line: "1", part: "CWH-A36-15", desc: "Counterweight Hook", qty: "500 EA", price: "$73.14", ext: "$36,570.00" },
+    ]}
+  />
+</AppShot>
+
+When the customer says yes, you **convert the quote into a sales order** with one click —
+no re-typing. Carbon keeps the quote and the order linked, so you can always trace a job
+back to the price you promised.
+
+<Callout type="tip">
+  Quotes are also where Carbon's **configurators** shine — for made-to-order parts the
+  customer's choices (size, material, finish) can drive the price automatically. More in
+  [Quoting & estimating](/manual/selling/quoting).
+</Callout>
+
+## Step 2 — You win the work (the Sales Order)
+
+The **sales order** is the customer's commitment: who's buying, what, how many, when it's
+due, and at what price. It's the anchor everything else hangs off — the job that makes the
+part, the shipment that sends it, and the invoice that bills for it all point back here.
+
+<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/…">
+  <RecordPanel
+    title="SO000069 — Radiant Aerospace"
+    subtitle="Order date 2026-06-11 · PO reference 55557777"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Lines", "Shipments", "Invoices"]}
+    activeTab="Lines"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Customer" value="Radiant Aerospace" />
+      <Field label="Order total" value="$36,820.00" />
+      <Field label="Payment terms" value="Net 30" />
+    </FieldGrid>
+    <div className="mt-4">
+      <DataTable
+        columns={[
+          { key: "part", label: "Part", mono: true },
+          { key: "qty", label: "Qty", align: "right" },
+          { key: "price", label: "Unit price", align: "right" },
+          { key: "method", label: "Fulfillment" },
+          { key: "status", label: "Status", align: "right" },
+        ]}
+        rows={[
+          { part: "CWH-A36-15", qty: "500 EA", price: "$73.14", method: <Tag>Make to Order</Tag>, status: <StatusBadge tone="green">Shipped</StatusBadge> },
+        ]}
+      />
+    </div>
+  </RecordPanel>
+</AppShot>
+
+Notice the **fulfillment method** on the line: *Make to Order*. That single setting tells
+Carbon this part isn't sitting on a shelf — it has to be **made** — so the next step happens
+almost automatically.
+
+## Step 3 — Carbon knows how it's made (the Method)
+
+Every part you make has a **method**: a recipe with two halves.
+
+- The **bill of materials (BOM)** — what it's made *of*.
+- The **routing** — the steps to make it, and where each step happens.
+
+For the Counterweight Hook, the recipe is short: take a slab of 1-inch A36 steel plate,
+then run it through three shop operations.
+
+<AppShot title="Method · CWH-A36-15" url="app.carbon.ms/x/part/…/manufacturing" caption="The method tree: one material, three operations." flush>
+  <MethodTree
+    nodes={[
+      {
+        kind: "assembly",
+        label: "CWH-A36-15",
+        detail: "Counterweight Hook",
+        qty: "1 EA",
+        children: [
+          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ — pulled from stock", qty: "40 LB" },
+          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
+          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
+          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station", qty: "10 min/pc" },
+        ],
+      },
+    ]}
+  />
+</AppShot>
+
+Each hook needs **40 lb** of steel, so a batch of 500 needs **20,000 lb**. Carbon already
+knows that — and it knows Acme doesn't keep that much on hand. Watch what happens next.
+
+## Step 4 — Carbon plans the work (the Job)
+
+Because the order is *Make to Order*, Carbon creates a **job** — a production order that
+carries its own copy of the method. Acme **releases** job `J000097` for 500 pieces and it's
+ready for the shop floor.
+
+<AppShot title="Job · J000097" url="app.carbon.ms/x/job/…">
+  <RecordPanel
+    title="J000097 — Counterweight Hook"
+    subtitle="For SO000069 · Radiant Aerospace"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Method", "Operations", "Materials"]}
+    activeTab="Operations"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Quantity" value="500 EA" />
+      <Field label="Complete" value="500 of 500" />
+      <Field label="Due date" value="2026-06-26" />
+    </FieldGrid>
+    <div className="mt-4">
+      <DataTable
+        columns={[
+          { key: "seq", label: "Seq", align: "right" },
+          { key: "op", label: "Operation" },
+          { key: "wc", label: "Work center" },
+          { key: "time", label: "Time", align: "right" },
+          { key: "status", label: "Status", align: "right" },
+        ]}
+        rows={[
+          { seq: "10", op: "Flame Cut", wc: "Burn Table — PA2", time: "45 min/pc", status: <StatusBadge tone="green">Done</StatusBadge> },
+          { seq: "20", op: "Sandblasting", wc: "Sand Blasting Room", time: "2 min/pc", status: <StatusBadge tone="green">Done</StatusBadge> },
+          { seq: "30", op: "Inspection", wc: "Inspection Station", time: "10 min/pc", status: <StatusBadge tone="green">Done</StatusBadge> },
+        ]}
+      />
+    </div>
+  </RecordPanel>
+</AppShot>
+
+On the shop floor, operators open the [**MES app**](/manual/manufacturing/shop-floor),
+clock onto each operation, and record how many good pieces they finished. That's how the
+"Done" statuses above got there — and how the 282 seconds of recorded labor rolled up into
+the job's real cost.
+
+## Step 5 — Buy the material you don't have (the Purchase Order)
+
+Acme is short on 1-inch steel plate, so Carbon flags the shortage and Acme raises a
+**purchase order** to its steel supplier, **Ryerson**. Buying and making run in parallel —
+the steel is on its way while the shop gets set up.
+
+<AppShot title="Purchase Order · PO000057" url="app.carbon.ms/x/purchase-order/…">
+  <RecordPanel
+    title="PO000057 — Ryerson"
+    subtitle="Order date 2026-06-12 · for Job J000097"
+    status={<StatusBadge tone="amber">Needs Approval</StatusBadge>}
+    tabs={["Details", "Lines", "Delivery"]}
+    activeTab="Lines"
+  >
+    <DataTable
+      columns={[
+        { key: "part", label: "Material", mono: true },
+        { key: "qty", label: "Qty", align: "right" },
+        { key: "price", label: "Unit price", align: "right" },
+        { key: "ext", label: "Extended", align: "right" },
+      ]}
+      rows={[
+        { part: "A36-STEEL-PLT-1\"", qty: "54,001 LB", price: "$0.25", ext: "$13,500.25" },
+      ]}
+    />
+  </RecordPanel>
+</AppShot>
+
+When the steel arrives, a quick **receipt** adds it to inventory — and because A36 plate is
+**batch-tracked**, Carbon records exactly which heat of steel went into this batch of hooks.
+That's the start of full [traceability](/manual/quality/tracking-quality): months later you
+can answer "which material went into Radiant's order?" in seconds.
+
+## Step 6 — Check it, ship it (Quality & Shipment)
+
+The last operation on the job was **Inspection** — a quality gate. With the parts inspected
+and accepted, Acme creates a **shipment**, picks the 500 finished hooks, and sends them.
+Carbon marks the sales order line *Shipped*.
+
+<StatGrid cols={3}>
+  <Stat label="Made" value="500" hint="all operations Done" />
+  <Stat label="Shipped" value="500" hint="to Radiant Aerospace" />
+  <Stat label="On-time" value="Yes" hint="ahead of 2026-06-26 due date" />
+</StatGrid>
+
+## Step 7 — Get paid (the Invoice)
+
+Finally, Acme bills the order. The **sales invoice** `AR000025` pulls its lines straight
+from what shipped — no re-keying — and once Radiant pays, Carbon marks it **Paid** and posts
+the revenue to the books.
+
+<AppShot title="Sales Invoice · AR000025" url="app.carbon.ms/x/sales-invoice/…">
+  <RecordPanel
+    title="AR000025 — Radiant Aerospace"
+    subtitle="Issued 2026-06-11 · Paid 2026-06-11"
+    status={<StatusBadge tone="green">Paid</StatusBadge>}
+  >
+    <FieldGrid cols={3}>
+      <Field label="Subtotal" value="$36,570.00" />
+      <Field label="Shipping" value="$250.00" />
+      <Field label="Invoice total" value="$36,820.00" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+## The whole thread, in one place
+
+That's Carbon end to end. One part, one continuous chain of linked records — each one a tap
+away from the next:
+
+<DataTable
+  columns={[
+    { key: "stage", label: "Stage" },
+    { key: "record", label: "Record", mono: true },
+    { key: "what", label: "What happened" },
+  ]}
+  rows={[
+    { stage: "Quote", record: "Q000061", what: "Priced 500 hooks for Radiant Aerospace" },
+    { stage: "Sales Order", record: "SO000069", what: "Customer ordered — $36,820, Make to Order" },
+    { stage: "Job", record: "J000097", what: "Released, made and completed 500 pieces" },
+    { stage: "Purchase Order", record: "PO000057", what: "Bought A36 steel from Ryerson" },
+    { stage: "Shipment", record: "—", what: "Picked and shipped all 500" },
+    { stage: "Invoice", record: "AR000025", what: "Billed $36,820 — marked Paid" },
+  ]}
+/>
+
+<Callout type="info">
+  Every record above linked itself to the next automatically. That's the whole idea of a
+  *system of record*: enter information once, and it follows the work everywhere it goes.
+</Callout>
+
+## Go deeper
+
+Now that you've seen the whole flow, dive into any stop along the way:
+
+<Cards>
+  <IconCard title="Core concepts" href="/manual/overview/core-concepts" description="Items, methods, jobs and orders — the ideas behind what you just saw." icon={<BookOpen className="size-4" />} />
+  <IconCard title="Quoting & estimating" href="/manual/selling/quoting" description="Build and price a quote like Q000061." icon={<FileText className="size-4" />} />
+  <IconCard title="Methods: BOM & routing" href="/manual/items/methods" description="Define how a part is made." icon={<Workflow className="size-4" />} />
+  <IconCard title="Jobs" href="/manual/manufacturing/jobs" description="Turn an order into shop-floor work." icon={<Factory className="size-4" />} />
+  <IconCard title="Purchasing basics" href="/manual/buying/purchasing-basics" description="Raise and receive a purchase order." icon={<Truck className="size-4" />} />
+  <IconCard title="Tracking quality" href="/manual/quality/tracking-quality" description="Inspections, non-conformances and traceability." icon={<ShieldCheck className="size-4" />} />
+</Cards>

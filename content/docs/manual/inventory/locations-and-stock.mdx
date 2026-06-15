@@ -1,0 +1,365 @@
+---
+title: "Locations & stock"
+description: "Warehouses, shelves, on-hand quantities and the item ledger."
+---
+
+Carbon always knows two things about your physical stuff: **where it is** and **how much
+you have**. This page explains how Carbon models your warehouse — locations, then shelves
+and bins inside them — how it tracks the on-hand quantity of every [item](/manual/overview/glossary),
+and how it keeps a complete history of every movement in the **item ledger**. You'll also
+learn to correct a count that's wrong (an *inventory adjustment*) and to verify stock with a
+*cycle count*.
+
+<Callout type="info">
+  **Where this fits.** Stock is the thing every other part of Carbon pushes and pulls.
+  [Receiving a purchase order](/manual/inventory/shipping-receiving) *adds* stock; a
+  [job](/manual/manufacturing/jobs) *consumes* raw material and *produces* finished parts;
+  a [shipment](/manual/inventory/shipping-receiving) *removes* stock when it goes out the
+  door. This page is the foundation underneath all of that — it's how Carbon answers
+  "do we have it, and where?"
+</Callout>
+
+## The two questions inventory answers
+
+Throughout this page we'll follow Acme's stock of **A36 Steel Plate 1″** (part number
+`A36-STEEL-PLT-1".96x240`) — the raw material that becomes the
+[Counterweight Hook](/manual/walkthrough) on job `J000097`. Acme buys it by the pound, stores
+it on a rack, and pulls 40 lb into every hook it makes.
+
+<StatGrid cols={3}>
+  <Stat label="On hand" value="17,507 LB" hint="A36 Steel Plate 1″ at Headquarters" />
+  <Stat label="Location" value="Headquarters" hint="of 2 locations" />
+  <Stat label="Bin" value="R02-B01-01" hint="Rack 02, Row B, Level 01, Position 01" />
+</StatGrid>
+
+Two simple numbers — *17,507 lb* and *bin R02-B01-01* — but Carbon tracks them for every
+item, in every location, and remembers every transaction that ever changed them. Let's build
+that up one layer at a time.
+
+## Layer 1 — Locations
+
+A **location** is a physical site where you hold stock: a warehouse, a plant, a building.
+Most small shops run a single location; larger ones run several. Acme has **two**:
+
+<AppShot title="Locations" url="app.carbon.ms/x/inventory/locations" caption="Acme operates two physical sites." flush>
+  <DataTable
+    columns={[
+      { key: "name", label: "Location" },
+      { key: "id", label: "Location ID", mono: true },
+      { key: "role", label: "Used for" },
+    ]}
+    rows={[
+      { name: "Headquarters", id: "loc_CZUGEFr…", role: "Main site — shop floor, racks, finished goods" },
+      { name: "Texas", id: "loc_DWGsF8R…", role: "Secondary site — laser & burn tables" },
+    ]}
+  />
+</AppShot>
+
+Locations matter because **on-hand quantity is always *per location***. The same item can
+have 17,507 lb at Headquarters and a different amount in Texas, and Carbon never mixes them
+up. When you create a [sales order](/manual/selling/sales-orders),
+[purchase order](/manual/buying/purchasing-basics) or [job](/manual/manufacturing/jobs), you
+pick the location it draws from or delivers to — every hero-thread document for the
+Counterweight Hook uses **Headquarters** (`loc_CZUGEFr…`).
+
+<Callout type="tip">
+  Moving stock between locations is a **transfer**, not an adjustment — Carbon has dedicated
+  *stock transfer* and *warehouse transfer* records so the quantity that leaves one site is
+  the exact quantity that arrives at the other. Reach for those when relocating physical
+  stock; reserve adjustments (below) for *correcting* a count, not moving it.
+</Callout>
+
+## Layer 2 — Shelves & bins (storage units)
+
+Inside a location, Carbon lets you pinpoint exactly where something sits using **storage
+units** — the general term for any shelf, rack, row or bin. They can nest: a *warehouse*
+contains *rows*, a row contains *bins*. Acme's Headquarters mixes both styles:
+
+- **Flat rack bins** named by position — for example `R02-B01-01` means **R**ack 02, Row **B**,
+  Level **01**, Position **01**. Acme has many of these spread across racks `R01`–`R05`.
+- **Nested storage** — a broad "A Warehouse" zone that contains "Row H", which in turn
+  contains a specific bin "H-12".
+
+<AppShot title="Storage units — Headquarters" url="app.carbon.ms/x/inventory/storage-units" caption="Some bins are flat; others nest warehouse → row → bin.">
+  <MethodTree
+    nodes={[
+      { kind: "fixture", label: "R02-B01-01", detail: "Rack 02 · Row B · Level 01 · Pos 01 — holds A36 Steel Plate 1″", qty: "" },
+      { kind: "fixture", label: "R01-A01-01", detail: "Rack 01 · Row A · Level 01 · Pos 01", qty: "" },
+      { kind: "fixture", label: "R05-H02-05", detail: "Rack 05 · Row H · Level 02 · Pos 05", qty: "" },
+      {
+        kind: "fixture",
+        label: "A Warehouse",
+        detail: "Nested zone",
+        children: [
+          {
+            kind: "fixture",
+            label: "Row H",
+            detail: "Aisle within A Warehouse",
+            children: [
+              { kind: "fixture", label: "H-12", detail: "Individual bin" },
+            ],
+          },
+        ],
+      },
+    ]}
+  />
+</AppShot>
+
+A storage unit is just a label for a place — naming it well (a consistent
+`Rack-Row-Level-Position` scheme like Acme's) is what makes a part findable on a busy floor.
+Each item can have a **default storage unit**, so Carbon suggests the right bin automatically
+when you receive or pick it. The A36 Steel Plate's default is `R02-B01-01`
+(`KgTNPORwzkxDG2z_wGLcI`).
+
+<Callout type="info">
+  **Item vs. storage unit.** An *item* is *what* the thing is (A36 Steel Plate 1″). A
+  *storage unit* is *where* a quantity of it sits (bin `R02-B01-01`). One item can live in
+  several bins; one bin can hold several items. The combination — item × location × storage
+  unit — is what Carbon counts.
+</Callout>
+
+## Layer 3 — On-hand quantities
+
+Now the numbers. Open any stock item and Carbon shows its **on-hand quantity** broken down
+by location, plus a set of related quantities that tell you what's already promised or
+inbound. Here's Acme's stock-on-hand list at Headquarters — the most-stocked materials and
+parts in the demo:
+
+<AppShot title="Inventory — Headquarters" url="app.carbon.ms/x/inventory/items?location=Headquarters" caption="On-hand quantity per item at one location." flush>
+  <DataTable
+    columns={[
+      { key: "id", label: "Item", mono: true },
+      { key: "name", label: "Description" },
+      { key: "type", label: "Type" },
+      { key: "onHand", label: "On hand", align: "right" },
+      { key: "uom", label: "UoM" },
+    ]}
+    rows={[
+      { id: "A36-STEEL-PLT-1\".96x240", name: "A36 Steel Plate 1″", type: <Tag>Material</Tag>, onHand: "17,507", uom: "LB" },
+      { id: "A36-STEEL-PLT-2\".240x96", name: "A36 Steel Plate 2″", type: <Tag>Material</Tag>, onHand: "40,100", uom: "LB" },
+      { id: "A36-STEEL-PLT-3\".96x240", name: "A36 Steel Plate 3″", type: <Tag>Material</Tag>, onHand: "15,180", uom: "LB" },
+      { id: "304-SS-PLT-1\".40x40", name: "304 Stainless Steel Plate 1″", type: <Tag>Material</Tag>, onHand: "249,050", uom: "LB" },
+      { id: "722-INC-BIL-4\" x 4\"", name: "722 Inconel Billet 4″×4″", type: <Tag>Material</Tag>, onHand: "3,120", uom: "EA" },
+      { id: "360-BR-SQBAR-2\"", name: "360 Brass Square Bar 2″", type: <Tag>Material</Tag>, onHand: "4,575", uom: "EA" },
+      { id: "NOZ-722INC-005", name: "Thermal Inconel Cone", type: <Tag>Part</Tag>, onHand: "9,970", uom: "EA" },
+      { id: "COP-PLT-A36-10", name: "Crane Outrigger Pad", type: <Tag>Part</Tag>, onHand: "225", uom: "EA" },
+      { id: "CWH-A36-15", name: "Counterweight Hook", type: <Tag>Part</Tag>, onHand: "100", uom: "EA" },
+    ]}
+  />
+</AppShot>
+
+### Reading an item's quantities tab
+
+On-hand is only one of several numbers Carbon tracks. Open the **Counterweight Hook** and the
+quantities tab tells a fuller story: 100 finished hooks are sitting in stock, but **4,500** are
+already spoken for by open sales orders to Radiant Aerospace — and Carbon has two more jobs
+lined up to build them (`J000098` for 1,500, in progress, and `J000099` for 3,000, ready to
+start). That gap between what you have and what you owe is exactly what Carbon's
+[replenishment](/manual/items/replenishment) logic watches.
+
+<AppShot title="Item · CWH-A36-15" url="app.carbon.ms/x/part/…/inventory" caption="The quantities tab — on hand vs. committed vs. inbound.">
+  <RecordPanel
+    title="Counterweight Hook — CWH-A36-15"
+    subtitle="Part · Make · Inventory-tracked · UoM EA"
+    status={<StatusBadge tone="green">Active</StatusBadge>}
+    tabs={["Details", "Manufacturing", "Inventory", "Purchasing"]}
+    activeTab="Inventory"
+  >
+    <FieldGrid cols={2}>
+      <Field label="Location" value="Headquarters" />
+      <Field label="Default storage unit" value="8-1-H" />
+      <Field label="On hand" value="100 EA" />
+      <Field label="On sales-order demand" value="4,500 EA" />
+      <Field label="On production order" value="0 EA" />
+      <Field label="On hold" value="0 EA" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+Here's what each quantity means, in plain terms:
+
+<DataTable
+  columns={[
+    { key: "field", label: "Quantity" },
+    { key: "means", label: "What it means" },
+  ]}
+  rows={[
+    { field: "On hand", means: "Physically in stock right now — what you'd find if you walked out and counted." },
+    { field: "On sales-order demand", means: "Already promised to customers on open sales orders. Not yet shipped, but committed." },
+    { field: "On production order", means: "Being made on an open job — will become on hand when the job finishes." },
+    { field: "On purchase order", means: "Ordered from a supplier and inbound — not arrived yet, so not on hand." },
+    { field: "On hold", means: "Physically present but quarantined — e.g. failed inspection, awaiting disposition." },
+  ]}
+/>
+
+<Callout type="tip">
+  **Available** is the number that actually matters for promising work: roughly
+  *on hand minus what's committed, plus what's confidently inbound*. With 100 hooks on hand
+  but 4,500 committed, Acme is deep in the hole on finished stock — which is fine, because the
+  hook is a **Make-to-Order** part: Carbon builds each batch on a job rather than stocking
+  ahead. For a *buy-to-stock* material like A36 plate, a low available number is the trigger
+  to reorder.
+</Callout>
+
+## The item ledger — every movement, forever
+
+Behind those live quantities sits the **item ledger**: an append-only log of every single
+transaction that has ever changed an item's stock. Receipts, job consumption, job output,
+shipments, adjustments — each writes one entry. The on-hand quantity isn't stored as a
+guess; it's the **running sum of the ledger**. That's why Carbon's numbers reconcile: you can
+always trace a balance back to the events that produced it.
+
+<AppShot title="Item ledger · A36-STEEL-PLT-1″" url="app.carbon.ms/x/inventory/ledger" caption="Each row is one stock movement. The balance is the running total." flush>
+  <DataTable
+    columns={[
+      { key: "date", label: "Date" },
+      { key: "type", label: "Entry type" },
+      { key: "ref", label: "Reference", mono: true },
+      { key: "bin", label: "Bin", mono: true },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "bal", label: "Balance", align: "right" },
+    ]}
+    rows={[
+      { date: "2026-06-02", type: <Tag>Receipt</Tag>, ref: "PO-receipt", bin: "R02-B01-01", qty: "+23,000", bal: "37,507" },
+      { date: "2026-06-11", type: <Tag>Consumption</Tag>, ref: "J000097", bin: "R02-B01-01", qty: "−20,000", bal: "17,507" },
+      { date: "2026-06-12", type: <Tag>Adjustment</Tag>, ref: "Cycle count", bin: "R02-B01-01", qty: "0", bal: "17,507" },
+    ]}
+  />
+</AppShot>
+
+<Callout type="info">
+  The rows above illustrate the *shape* of a ledger — a positive receipt, the 20,000 lb that
+  job `J000097` consumed to make 500 hooks (40 lb × 500), then a count that confirmed the
+  balance. Every entry names the **document that caused it**, so the ledger doubles as an
+  audit trail: "who moved this, when, and why" is never a mystery.
+</Callout>
+
+## Batch & lot tracking (a quick note)
+
+Some items demand more than a quantity — they need **traceability** down to the specific
+batch you received. A36 Steel Plate is one: it has `requiresBatchTracking` turned on. That
+means when you receive it, Carbon records a **batch number** (often the supplier's heat or
+lot number), and when a job consumes it, Carbon remembers *which batch* went into *which
+finished parts*.
+
+- A **batch** (or **lot**) is a quantity received together that shares a property — a steel
+  *heat*, a chemical *mix date*, a casting *pour*.
+- **Serial tracking** goes one step further: every individual unit gets its own unique
+  serial number (think a numbered turbine blade), rather than a shared batch.
+
+The payoff is **genealogy**: months later you can answer "which heat of steel went into
+Radiant Aerospace's order?" — or, if a supplier recalls a heat, "which of our finished parts
+are affected?" — in seconds. Full detail lives in
+[Tracking quality](/manual/quality/tracking-quality).
+
+## Fixing the numbers: inventory adjustments
+
+Sometimes the physical count and Carbon's number disagree — a drop, a miscount, scrap that
+was never recorded. An **inventory adjustment** is how you make Carbon match reality. It
+writes one ledger entry (so the change is traceable) and posts the value difference to the
+**Inventory Adjustment** account (`5310`) in the books, keeping accounting honest too.
+
+<Steps>
+
+<Step>
+**Open the item at the right location.** Find the item (for example A36 Steel Plate 1″) and
+make sure you're looking at the correct location — adjustments are always per location.
+Adjusting at Headquarters never touches Texas.
+</Step>
+
+<Step>
+**Start a new adjustment.** Choose *Adjust quantity* (sometimes labelled *Positive
+adjustment* / *Negative adjustment*). Pick the **storage unit** the change happened in — say
+`R02-B01-01`.
+</Step>
+
+<Step>
+**Enter the corrected quantity, not the delta.** Tell Carbon what's *actually* there. If the
+system says 17,507 lb but you physically counted 17,450 lb, enter the new on-hand and Carbon
+computes the −57 lb movement for you. If the item is batch-tracked, pick **which batch** you're
+adjusting.
+</Step>
+
+<Step>
+**Record a reason and post.** Pick a reason (damaged, miscount, found stock) and a note so
+the entry explains itself later. Posting writes the ledger entry, updates the on-hand
+quantity, and books the value change.
+</Step>
+
+</Steps>
+
+<Callout type="warn">
+  Adjustments are for **corrections**, not routine flow. Don't adjust stock down to "use it
+  up" — that's what consuming material on a [job](/manual/manufacturing/jobs) is for — and
+  don't adjust it to move stock between sites — that's a transfer. Misusing adjustments hides
+  the real reason stock changed and muddies your costs. Each adjustment should answer a clear
+  "why was the count wrong?"
+</Callout>
+
+## Verifying the numbers: cycle counts
+
+A **cycle count** is a scheduled physical count of part of your inventory — a few bins at a
+time, rotating through everything over weeks, rather than shutting the whole shop for one big
+annual count. The goal is to catch drift early and keep the ledger trustworthy without
+stopping production.
+
+<Steps>
+
+<Step>
+**Decide what to count.** Pick a slice — one rack, one item class, or your highest-value
+materials. Acme might count the steel racks (`R02-B01-*`) one week and the stainless racks
+the next. Counting your costliest stock most often (an "ABC" approach) catches the errors
+that matter most.
+</Step>
+
+<Step>
+**Print or pull the count sheet.** Carbon lists what it *thinks* is in each bin. A counter
+walks the floor and writes down what's *actually* there — ideally without seeing the expected
+number, so the count stays honest.
+</Step>
+
+<Step>
+**Enter the counted quantities.** Type each counted figure back in. Carbon compares it to the
+expected on-hand and flags any **variance**. A bin with no variance needs nothing further.
+</Step>
+
+<Step>
+**Reconcile variances into adjustments.** For each bin that differs, Carbon posts an
+inventory adjustment (the same mechanism as above) so the ledger, the on-hand quantity, and
+the books all move together. After posting, Carbon's number once again matches the shelf.
+</Step>
+
+</Steps>
+
+<Callout type="tip">
+  Treat repeat variances as a signal, not just a number to fix. If the same bin is always
+  short, the cause is usually upstream — material consumed but never recorded on a job, scrap
+  that skipped the system, or a picking step done by hand. Counting tells you *that* you're
+  off; the [item ledger](#the-item-ledger--every-movement-forever) tells you *why*.
+</Callout>
+
+## Recap
+
+<DataTable
+  columns={[
+    { key: "concept", label: "Concept" },
+    { key: "what", label: "What it is" },
+  ]}
+  rows={[
+    { concept: "Location", what: "A physical site (Headquarters, Texas). On-hand is always per location." },
+    { concept: "Storage unit", what: "A shelf, rack, row or bin inside a location — e.g. R02-B01-01. Can nest." },
+    { concept: "On hand", what: "Physical quantity in stock; the running sum of the item ledger." },
+    { concept: "Item ledger", what: "Append-only log of every stock movement, each tied to its source document." },
+    { concept: "Batch / lot", what: "A traceable group received together; the basis for genealogy." },
+    { concept: "Adjustment", what: "A correction that makes Carbon match reality and posts the value change." },
+    { concept: "Cycle count", what: "A rotating physical count that catches drift without stopping work." },
+  ]}
+/>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Shipping & receiving" href="/manual/inventory/shipping-receiving" description="Receive a PO to add stock and ship a sales order to remove it — the moves that drive the ledger." icon={<Truck className="size-4" />} />
+  <IconCard title="Defining an item" href="/manual/items/defining-an-item" description="Turn on inventory tracking, set the default storage unit, and require batch tracking." icon={<Package className="size-4" />} />
+  <IconCard title="Tracking quality" href="/manual/quality/tracking-quality" description="Batch genealogy, holds and full traceability from heat of steel to finished part." icon={<ShieldCheck className="size-4" />} />
+</Cards>

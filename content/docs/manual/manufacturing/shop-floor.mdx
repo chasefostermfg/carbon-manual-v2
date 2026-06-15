@@ -1,0 +1,352 @@
+---
+title: "The shop floor (MES)"
+description: "How operators run jobs: clock in, record quantities and complete operations."
+---
+
+So far the manual has planned the work — quoting it, ordering it, releasing a [**job**](/manual/overview/glossary).
+This page is where the work actually gets *done*. It covers Carbon's **MES** — the
+*Manufacturing Execution System* — the part of Carbon a machine operator opens at a station
+on the shop floor. The MES turns a planned job into real activity: an operator picks an
+operation, **clocks on**, follows the written instructions, records how many good and scrap
+pieces they made, and **clocks off**. Every one of those taps feeds real labor time and cost
+back to the job — no clipboards, no end-of-day data entry.
+
+<Callout type="info">
+  **Where this fits.** A [job](/manual/manufacturing/jobs) is *planned* by a scheduler and
+  *run* by operators. [Managing production](/manual/manufacturing/managing-production) is the
+  manager's view — releasing and tracking jobs. **This page is the operator's view**: the MES
+  is the screen on the floor where the hours actually get logged. The last operation here is
+  usually a quality gate, which leads into [tracking quality](/manual/quality/tracking-quality).
+</Callout>
+
+## The MES is its own app
+
+Carbon ships as two front ends that share one database:
+
+- The **ERP** — the full office app you've seen on every other page (Sales, Purchasing,
+  Items, Production). This is where jobs are planned, scheduled and costed.
+- The **MES** — a stripped-down, touch-friendly app built for a shop-floor tablet or kiosk.
+  It shows an operator only what they need: the operations waiting at their
+  [work center](/manual/overview/glossary), the instructions for each, and big buttons to
+  start, pause and finish.
+
+Both look at the same job. When an operator finishes an operation in the MES, a manager sees
+it update in the ERP a moment later. You don't enter anything twice.
+
+<Callout type="tip">
+  Operators reach the MES at its own address (think `mes.carbon.ms`) and sign in with their
+  own account. A worker who only runs machines never needs to learn the full ERP — they live
+  entirely in this one focused screen. Permissions are covered in
+  [Users & permissions](/manual/getting-started/users-permissions).
+</Callout>
+
+We'll follow the same real job as the rest of the manual: **J000097**, the batch of 500
+**Counterweight Hooks** (`CWH-A36-15`) for Radiant Aerospace. It runs three operations in
+order — Flame Cut, Sandblasting, then Inspection — and Carbon recorded the whole thing
+finishing in about **282 seconds** of logged shop time.
+
+## What an operator sees
+
+When an operator signs in, the MES doesn't show them the whole factory. It shows the
+**operations queued at the work center(s) they're assigned to**, newest deadlines first. Each
+row is one operation on one job. Operator Fred Flame works the burn tables, so his queue is led
+by the Flame Cut on J000097.
+
+<AppShot title="MES — Operations at Burn Table - PA2" url="mes.carbon.ms/x/operations" caption="Fred's work queue: operations waiting at his work center, with the job, part and quantity for each." flush>
+  <DataTable
+    columns={[
+      { key: "job", label: "Job", mono: true },
+      { key: "op", label: "Operation" },
+      { key: "part", label: "Part", mono: true },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "due", label: "Due", align: "right" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { job: "J000097", op: "Flame Cut", part: "CWH-A36-15", qty: "500 EA", due: "2026-06-08", status: <StatusBadge tone="blue">Ready</StatusBadge> },
+      { job: "J000098", op: "Flame Cut", part: "CWH-A36-15", qty: "1,500 EA", due: "2026-07-01", status: <StatusBadge tone="neutral">Waiting</StatusBadge> },
+      { job: "J000096", op: "Flame Cut", part: "INV-MNT-BRKT.D", qty: "4,000 EA", due: "2026-07-01", status: <StatusBadge tone="neutral">Waiting</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+A couple of things to notice:
+
+- The MES filters by **work center**, not by job. Fred sees Flame Cut work from several
+  different jobs together, because they all run on his Burn Table. A different operator at the
+  Sand Blasting Room (here, Carlos Axis) sees a completely different list.
+- An operation only becomes **Ready** once the operation before it is done (the routing on
+  J000097 says each step runs *After Previous*). Sandblasting won't show as Ready in the
+  blast-room queue until Flame Cut is finished. This is why the same job's three operations
+  light up one at a time, in sequence.
+
+<Callout type="info">
+  Carbon defines an [**operation**](/manual/overview/glossary) as one step in a job's
+  *routing*, performed at one *work center*. J000097 has three: Flame Cut at **Burn Table -
+  PA2**, Sandblasting at the **Sand Blasting Room**, and Inspection at the **Inspection
+  Station**. Each has a planned time per piece, which is what Carbon expects the operation to
+  take.
+</Callout>
+
+## Run an operation, start to finish
+
+Here's the full loop an operator does for one operation. Fred will run the Flame Cut on
+J000097: 500 hooks, 45 minutes planned per piece, on Burn Table - PA2.
+
+<Steps>
+
+<Step>
+### Open the operation
+
+Tap the **Flame Cut** row for **J000097**. The MES opens an *operation card* — everything for
+this one step on one screen. It tells the operator what to make, how many, from what, and how.
+
+<AppShot title="MES — Operation J000097 · Flame Cut" url="mes.carbon.ms/x/operation/jo_Bf5EXUYE…">
+  <RecordPanel
+    title="Flame Cut — J000097"
+    subtitle="Counterweight Hook · CWH-A36-15 · Burn Table - PA2"
+    status={<StatusBadge tone="blue">Ready</StatusBadge>}
+    tabs={["Instructions", "Materials", "Tools", "Activity"]}
+    activeTab="Instructions"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Quantity to make" value="500 EA" />
+      <Field label="Planned time" value="45 min / piece" />
+      <Field label="Work center" value="Burn Table - PA2" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+The **Materials** tab shows what to pull and from where — for this part, **40 LB** of
+*A36 Steel Plate 1″* per piece, drawn from bin **R02-B01-01**. The **Tools** tab lists any
+tooling or fixtures the step needs. Because the steel is batch-tracked, the operator will be
+asked which batch they consumed — that's what makes full
+[traceability](/manual/quality/tracking-quality) possible later.
+</Step>
+
+<Step>
+### Read the standard procedure
+
+Most operations have a **procedure** attached — Carbon's name for a standard work instruction.
+Acme keeps **12 procedures**, one for each kind of process, so the same job done by two
+different operators is done the same way. The procedure for a Flame Cut / CNC-style operation
+walks through setup and run as a checklist the operator ticks off:
+
+<AppShot title="MES — Procedure: 3-Axis CNC - Standard Procedure" url="mes.carbon.ms/x/operation/jo_Bf5EXUYE…/procedure" caption="A procedure is a checklist of steps. The operator checks each one off as they go." flush>
+  <DataTable
+    columns={[
+      { key: "n", label: "#", align: "right" },
+      { key: "step", label: "Step" },
+      { key: "type", label: "Type" },
+      { key: "done", label: "", align: "right" },
+    ]}
+    rows={[
+      { n: "1", step: "Load Tools and Workpiece", type: <Tag>Checkbox</Tag>, done: <StatusBadge tone="green">Done</StatusBadge> },
+      { n: "2", step: "Set offsets", type: <Tag>Checkbox</Tag>, done: <StatusBadge tone="green">Done</StatusBadge> },
+      { n: "3", step: "Load the Program", type: <Tag>Checkbox</Tag>, done: <StatusBadge tone="green">Done</StatusBadge> },
+      { n: "4", step: "Run a Simulation", type: <Tag>Checkbox</Tag>, done: <StatusBadge tone="amber">In progress</StatusBadge> },
+      { n: "5", step: "Execute", type: <Tag>Checkbox</Tag>, done: <StatusBadge tone="neutral">To do</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+Steps aren't only checkboxes. A procedure step can also ask the operator to **type a
+measurement** (with an allowed minimum and maximum, so an out-of-range value is caught on the
+spot), **pick from a list**, or **attach a photo or file**. That's how a written instruction
+becomes recorded, checkable data instead of a laminated sheet on the wall.
+
+<Callout type="tip">
+  Procedures are **versioned**. Acme's *Quality Inspection* procedure, for example, has an
+  Active version 1 and a newer Draft version 2 — operators always run the Active version, and
+  managers can revise the draft without disrupting the floor. Build and manage them from the
+  ERP's Production module.
+</Callout>
+</Step>
+
+<Step>
+### Clock ON
+
+When the operator is ready to cut, they tap **Start**. This is the moment that matters: it
+**clocks them ON** to the operation and Carbon starts a timer. From here, every minute counts
+against this job — at Burn Table - PA2's labor rate of **$50/hour**, that time is becoming real
+cost on J000097 as the operator works.
+
+<AppShot title="MES — Flame Cut · clocked on" url="mes.carbon.ms/x/operation/jo_Bf5EXUYE…/run">
+  <RecordPanel
+    title="Flame Cut — J000097"
+    subtitle="Fred Flame · clocked on at 14:09"
+    status={<StatusBadge tone="amber">In Progress</StatusBadge>}
+    tabs={["Run", "Instructions", "Materials"]}
+    activeTab="Run"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Elapsed" value="00:38:12" mono />
+      <Field label="Good so far" value="408" />
+      <Field label="Scrap so far" value="0" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+If the operator stops for a break or to switch tasks, they tap **Pause** — the timer stops, so
+breaks don't get billed to the job. They can clock off one operation and onto another at any
+time; Carbon keeps each operation's time separate.
+
+<Callout type="warn">
+  An operator can only be clocked on to **one operation at a time**. If Fred forgets to clock
+  off Flame Cut before lunch, his time keeps running against J000097. Encourage the habit:
+  **Pause** when you step away, **Finish** when the step is done. A manager can correct a
+  bad time entry later from the ERP, but it's far cleaner to get it right on the floor.
+</Callout>
+</Step>
+
+<Step>
+### Record good and scrap quantities
+
+As pieces come off the table, the operator reports them. Carbon tracks two numbers:
+
+- **Good quantity** — pieces that passed and move on to the next operation.
+- **Scrap quantity** — pieces that failed and won't continue. Each scrap is tagged with a
+  **reason** so the shop can see *why* parts are being lost.
+
+Acme keeps three scrap reasons — **Damaged**, **Defective**, and **Quality** — and the
+operator picks one whenever they scrap a piece.
+
+<AppShot title="MES — Report quantities" url="mes.carbon.ms/x/operation/jo_Bf5EXUYE…/report" caption="The operator enters good and scrap counts; scrap requires a reason." flush>
+  <DataTable
+    columns={[
+      { key: "field", label: "Reported" },
+      { key: "value", label: "Value", align: "right" },
+      { key: "note", label: "Note" },
+    ]}
+    rows={[
+      { field: "Good quantity", value: "500", note: "All pieces accepted" },
+      { field: "Scrap quantity", value: "0", note: "—" },
+      { field: "Scrap reason", value: "—", note: "Damaged · Defective · Quality" },
+    ]}
+  />
+</AppShot>
+
+On J000097 every hook was good — **500 made, 0 scrapped** — so the job's `scrapQuantity` stayed
+at zero. When scrap *does* happen, those reasons roll up into reports so a manager can spot, say,
+a run of *Defective* parts at one work center and dig into the cause.
+
+<Callout type="info">
+  Scrapping a piece does more than count it. It can also feed the
+  [quality](/manual/quality/tracking-quality) side of Carbon — repeated failures of the same
+  kind are exactly what a *non-conformance* (NCR) is for. Scrap reasons and failure modes are
+  the raw material for quality analysis.
+</Callout>
+</Step>
+
+<Step>
+### Clock OFF and complete the operation
+
+When the count is in and the work is finished, the operator taps **Finish**. This **clocks them
+off**, stops the timer, and marks the operation **Done**. The finished good quantity is now
+available to the *next* operation — so the moment Fred finishes Flame Cut, Sandblasting flips
+to **Ready** in the blast-room queue.
+
+<AppShot title="MES — Operations on J000097" url="mes.carbon.ms/x/job/job_8m3YTfc2…/operations" caption="The three operations of J000097, run in sequence. Each clock-off advances the next." flush>
+  <DataTable
+    columns={[
+      { key: "seq", label: "Seq", align: "right" },
+      { key: "op", label: "Operation" },
+      { key: "wc", label: "Work center" },
+      { key: "time", label: "Planned", align: "right" },
+      { key: "made", label: "Made", align: "right" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { seq: "1", op: "Flame Cut", wc: "Burn Table - PA2", time: "45 min/pc", made: "500 / 500", status: <StatusBadge tone="green">Done</StatusBadge> },
+      { seq: "2", op: "Sandblasting", wc: "Sand Blasting Room", time: "2 min/pc", made: "500 / 500", status: <StatusBadge tone="green">Done</StatusBadge> },
+      { seq: "3", op: "Inspection", wc: "Inspection Station", time: "10 min/pc", made: "500 / 500", status: <StatusBadge tone="green">Done</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+The other two operators do the same thing in turn. Carlos Axis runs the Sandblasting operation
+(2 min/piece) at the Sand Blasting Room and clocks off; then Terry Tolerance, the inspector at
+the Inspection Station, runs the **Quality Inspection** procedure (10 min/piece) and clocks off
+the last operation.
+</Step>
+
+</Steps>
+
+## What clocking off feeds back
+
+Each clock-on/clock-off pair is a **production event** — a timestamped record of *who* worked
+*which* operation, for *how long*, and *how many* good and scrap pieces resulted. These events
+are the heart of the MES. They do three jobs at once:
+
+<StatGrid cols={3}>
+  <Stat label="Labor time" value="~282 s" hint="total recorded on J000097" />
+  <Stat label="Good pieces" value="500" hint="across 3 operations" />
+  <Stat label="Scrap" value="0" hint="nothing lost" />
+</StatGrid>
+
+1. **They cost the job.** Recorded minutes are multiplied by the work center's labor and
+   machine rates (Burn Table - PA2 bills **$50/hr labor + $25/hr machine**) and posted to the
+   job as *actual* cost. That's how Carbon compares what a job was *estimated* to cost against
+   what it *really* cost — and the gap shows up as a variance you can act on.
+2. **They advance the work.** Reported good quantity flows to the next operation; the routing's
+   *After Previous* rule means the floor naturally runs steps in order.
+3. **They build the record.** Who ran each step and when is stored for good — useful for
+   [traceability](/manual/quality/tracking-quality), payroll, and answering "what happened on
+   this job?" months later.
+
+<Mermaid
+  chart={`flowchart LR
+  A[Operator clocks ON] --> B[Follow procedure]
+  B --> C[Record good and scrap]
+  C --> D[Clock OFF operation Done]
+  D --> E[Production event]
+  E --> F[Labor time and cost on job]
+  E --> G[Next operation Ready]`}
+/>
+
+### Finishing the last operation finishes the job
+
+The operations run in sequence, and the **last** one is special. When the inspector clocks off
+the final **Inspection** operation on J000097, there's nothing left to do — all three
+operations are Done and all 500 pieces are made. Carbon rolls the job up: the finished hooks are
+received into inventory, the job's actual cost is locked in from the production events, and the
+job moves to **Completed**.
+
+<AppShot title="Job · J000097 (ERP view after the floor finishes)" url="app.carbon.ms/x/job/job_8m3YTfc2…">
+  <RecordPanel
+    title="J000097 — Counterweight Hook"
+    subtitle="For SO000069 · Radiant Aerospace · completed 2026-06-11"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Operations", "Materials", "Costs"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Quantity" value="500 EA" />
+      <Field label="Complete" value="500 of 500" />
+      <Field label="Scrap" value="0" />
+      <Field label="Received to inventory" value="500" />
+      <Field label="Recorded shop time" value="~282 s" />
+      <Field label="Status" value="Completed" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+This is the hand-off back to the office: a Completed job means the parts exist, ready to be
+picked and shipped against [sales order SO000069](/manual/selling/sales-to-shipment) and billed
+on [invoice AR000025](/manual/accounting/overview). The shop floor did its part, and every
+minute it spent is now visible to the rest of Carbon.
+
+<Callout type="tip">
+  **Why clock time at all?** Because guessed labor is the most common reason a shop loses money
+  without knowing it. When operators clock real time on the MES, every quote you build next
+  rests on what work *actually* takes — not a hopeful estimate. The MES is where Carbon's costing
+  gets honest.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Jobs" href="/manual/manufacturing/jobs" description="How a sales order becomes a job, and how its method drives the operations operators run." icon={<Factory className="size-4" />} />
+  <IconCard title="Managing production" href="/manual/manufacturing/managing-production" description="The manager's side: releasing, scheduling and tracking jobs across the floor." icon={<ClipboardList className="size-4" />} />
+  <IconCard title="Tracking quality" href="/manual/quality/tracking-quality" description="Inspections, scrap, non-conformances and full traceability back to the batch." icon={<ShieldCheck className="size-4" />} />
+</Cards>

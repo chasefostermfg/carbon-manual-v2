@@ -1,0 +1,383 @@
+---
+title: "Jobs"
+description: "Create production jobs from a sales order or from scratch."
+---
+
+A **job** is a production order: Carbon's instruction to the shop floor to *make* a
+specific quantity of a part by a specific date. If a [sales order](/manual/selling/sales-orders)
+is the promise you made to a customer, the job is how you keep it. This page follows one
+real job — `J000097`, where Acme makes **500 Counterweight Hooks** for Radiant Aerospace —
+so you can see exactly how a job is born, what it carries, and how you turn it loose on the
+shop floor.
+
+<Callout type="info">
+  **Where this fits.** A job sits in the middle of the end-to-end flow:
+  Quote → Sales Order → **Job** → Purchasing → Quality → Shipment → Invoice. The job we follow here
+  comes straight from [sales order SO000069](/manual/selling/sales-orders) and feeds
+  [purchase order PO000057](/manual/buying/purchasing-basics) (the steel it needs).
+  Once it's released, operators run it in the [shop-floor app](/manual/manufacturing/shop-floor),
+  and you track its day-to-day progress in [managing production](/manual/manufacturing/managing-production).
+</Callout>
+
+## What a job is
+
+When you make something rather than buy it, that work has to be planned, tracked, costed
+and finished. A job is the record that holds all of it together. A single job answers:
+
+- **What** are we making? (the part — here, `CWH-A36-15`, the Counterweight Hook)
+- **How many?** (the production quantity — 500 each)
+- **By when?** (the due date — 2026-06-26)
+- **How is it made?** (the [method](/manual/items/methods) — a recipe of materials and steps)
+- **Where are we?** (the status, and how many good pieces are done)
+
+The big idea: **a job carries its own copy of the method.** When the job is created, Carbon
+*snapshots* the part's bill of materials and routing onto the job. From that moment the job
+is self-contained — even if someone later edits the part's master method, this job keeps the
+recipe it was created with. That's what lets you trust a finished job's cost and
+[traceability](/manual/quality/tracking-quality) months later.
+
+<Callout type="tip">
+  **Method = BOM + Routing.** The [**bill of materials (BOM)**](/manual/overview/glossary)
+  is *what the part is made of*; the **routing** is *the ordered steps to make it*. A job
+  copies both. We cover authoring methods in depth in
+  [Methods: BOM & routing](/manual/items/methods).
+</Callout>
+
+## How a job gets created
+
+There are two ways a job comes into being. Most jobs at Acme are created the first way,
+without anyone lifting a finger.
+
+### 1. Automatically, from a Make-to-Order sales order line
+
+When a sales order line is set to **Make to Order** — meaning "don't ship this from stock,
+make it fresh for this order" — Carbon offers to spin up a job for that line directly from
+the sales order. The job is pre-filled with the part, the quantity, the customer and the due
+date from the order, and it stays linked back to the line it came from.
+
+This is exactly how `J000097` was born. Look at the source line on `SO000069`:
+
+<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/so_Fx6FCeSpx9sxut9Qns6y91" caption="The Make-to-Order line on SO000069 — the seed of the job.">
+  <RecordPanel
+    title="SO000069 — Radiant Aerospace"
+    subtitle="Order date 2026-06-11 · PO reference 55557777"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Lines", "Jobs", "Shipments"]}
+    activeTab="Lines"
+  >
+    <DataTable
+      columns={[
+        { key: "part", label: "Part", mono: true },
+        { key: "desc", label: "Description" },
+        { key: "qty", label: "Qty", align: "right" },
+        { key: "method", label: "Fulfillment" },
+        { key: "job", label: "Job", mono: true },
+      ]}
+      rows={[
+        { part: "CWH-A36-15", desc: "Counterweight Hook", qty: "500 EA", method: <Tag>Make to Order</Tag>, job: "J000097" },
+      ]}
+    />
+  </RecordPanel>
+</AppShot>
+
+Because the line says *Make to Order*, Carbon links job `J000097` to it. The job knows it's
+working for `SO000069`, and the order knows the job is making its 500 hooks. You never typed
+the part number or quantity into the job — they flowed in from the order.
+
+<Callout type="info">
+  The same automatic link happens for the other two Radiant orders for this part:
+  `SO000070` created job `J000098` (1,500 EA) and `SO000071` created job `J000099`
+  (3,000 EA). One part, three orders, three independent jobs.
+</Callout>
+
+### 2. Manually, when you need a job on its own
+
+Sometimes you want a job that *isn't* tied to a customer order — for example, building parts
+to stock, a rework batch, or a one-off prototype. In that case you create the job yourself.
+Acme's job `J000094` (10,000 Thermal Exhaust Nozzles, built to stock) is a manual job like
+this; it has no sales order behind it.
+
+<Steps>
+
+<Step>
+**Open the Jobs list and start a new job.** Go to the **Jobs** area under the production
+module. You'll see every job in the system — Acme has 89 of them, `J000001` through
+`J000099`. Click **New Job**.
+</Step>
+
+<Step>
+**Pick the part.** Choose the [item](/manual/items/defining-an-item) you want to make — for
+example `CWH-A36-15`, the Counterweight Hook. Carbon checks that the part is a *Make* item
+(its `replenishmentSystem` is **Make**, not **Buy**) and pulls in its description and unit of
+measure (EA).
+</Step>
+
+<Step>
+**Set the quantity, due date and priority.** Enter how many to make, when they're needed,
+and how urgent the job is relative to others. We'll look at each of these fields next.
+</Step>
+
+<Step>
+**Save.** Carbon assigns the next job number and snapshots the part's method onto the new
+job. The job opens in the **Planned** status, ready for you to review before you release it.
+</Step>
+
+</Steps>
+
+## The fields that drive a job
+
+When you open `J000097` you land on its **Details** tab. A handful of fields do most of the
+work; everything else on the shop floor flows from them.
+
+<AppShot title="Job · J000097 — Details" url="app.carbon.ms/x/job/job_8m3YTfc2oBy8xkdJX3wWD8/details" caption="The core settings on Acme's Counterweight Hook job.">
+  <RecordPanel
+    title="J000097 — Counterweight Hook"
+    subtitle="For SO000069 · Radiant Aerospace · Quote Q000061"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Method", "Operations", "Materials"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Part" value="CWH-A36-15" mono />
+      <Field label="Production quantity" value="500 EA" />
+      <Field label="Quantity complete" value="500 of 500" />
+      <Field label="Due date" value="2026-06-26" />
+      <Field label="Deadline type" value="Hard Deadline" />
+      <Field label="Priority" value="1 (highest)" />
+      <Field label="Location" value="Headquarters" />
+      <Field label="Sales order" value="SO000069" mono />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+**Production quantity** is how many good pieces you intend to finish — here, 500. If you
+expect to lose some to scrap, you can also set a separate scrap quantity so Carbon plans
+enough material; `J000097` ran with a scrap quantity of 0.
+
+**Due date** is when the parts must be done. The **deadline type** tells Carbon how to treat
+that date: a **Hard Deadline** (used here) is a firm commitment, versus a soft target. This
+feeds the scheduling and the at-a-glance "is this job late?" view in
+[managing production](/manual/manufacturing/managing-production).
+
+**Priority** ranks this job against every other open job competing for the same machines and
+people. `J000097` is priority **1** — the highest — so it jumps the queue at the burn table.
+Lower-priority jobs wait their turn.
+
+<Callout type="tip">
+  **Location matters.** A job is made at one [location](/manual/inventory/locations-and-stock).
+  `J000097` runs at **Headquarters**, so it can only use Headquarters work centers (like
+  Burn Table — PA2) and pulls material from Headquarters stock. Acme's other location, Texas,
+  has its own burn tables and laser tables.
+</Callout>
+
+## The method the job carries
+
+Click the **Method** tab and you'll see the recipe Carbon copied onto the job. For the
+Counterweight Hook it's short: one material, three operations. The root node is the part
+itself; everything indented under it is what goes into making it.
+
+<AppShot title="Job · J000097 — Method" url="app.carbon.ms/x/job/job_8m3YTfc2oBy8xkdJX3wWD8/method" caption="The job's own copy of the BOM + routing." flush>
+  <MethodTree
+    nodes={[
+      {
+        kind: "assembly",
+        label: "CWH-A36-15",
+        detail: "Counterweight Hook · Make to Order",
+        qty: "500 EA",
+        children: [
+          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ · pulled from inventory", qty: "40 LB/pc" },
+          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
+          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
+          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station", qty: "10 min/pc" },
+        ],
+      },
+    ]}
+  />
+</AppShot>
+
+Two things to notice. First, the BOM has a single material line: **40 LB** of A36 steel
+plate *per piece*. Multiply by 500 and the job needs **20,000 LB** of steel — Carbon does
+that math for you. Second, the material is set to **Pull from Inventory**, meaning the job
+expects to draw the steel from stock; the [purchase order to Ryerson](/manual/buying/purchasing-basics)
+exists to make sure that stock is there.
+
+<Callout type="info">
+  Because the job carries its *own* copy of this method, you can tweak it for this run only —
+  swap a material, add a deburring step, change a time — without touching the part's master
+  method or any other job. Edits here affect `J000097` and nothing else.
+</Callout>
+
+### Operations: the steps, in order
+
+The **Operations** tab lists the routing as a sequence. Each operation runs at one **work
+center** (a specific machine or station) and has a time per piece. Operations run in order —
+each one here is set to start **After Previous**, so Sandblasting can't begin until Flame Cut
+is done.
+
+<AppShot title="Job · J000097 — Operations" url="app.carbon.ms/x/job/job_8m3YTfc2oBy8xkdJX3wWD8/operations" caption="Three operations, run in sequence on the shop floor." flush>
+  <DataTable
+    columns={[
+      { key: "seq", label: "Seq", align: "right" },
+      { key: "op", label: "Operation" },
+      { key: "wc", label: "Work center" },
+      { key: "type", label: "Type" },
+      { key: "labor", label: "Labor time", align: "right" },
+      { key: "done", label: "Complete", align: "right" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { seq: "10", op: "Flame Cut", wc: "Burn Table — PA2", type: <Tag>Inside</Tag>, labor: "45 min/pc", done: "500 / 500", status: <StatusBadge tone="green">Done</StatusBadge> },
+      { seq: "20", op: "Sandblasting", wc: "Sand Blasting Room", type: <Tag>Inside</Tag>, labor: "2 min/pc", done: "500 / 500", status: <StatusBadge tone="green">Done</StatusBadge> },
+      { seq: "30", op: "Inspection", wc: "Inspection Station", type: <Tag>Inside</Tag>, labor: "10 min/pc", done: "500 / 500", status: <StatusBadge tone="green">Done</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+Every operation here is **Inside** (done in Acme's own shop) rather than outside
+(subcontracted). The labor time is *per piece*, so Carbon can estimate the total: 45 minutes
+of flame cutting × 500 pieces is the bulk of the work, with a quick sandblast and a final
+inspection gate at the end. As operators clock on and report finished pieces in the
+[shop-floor app](/manual/manufacturing/shop-floor), the **Complete** and **Status** columns
+fill in — that's how all three reached *Done* and the whole job rolled up its real recorded
+cost.
+
+<Callout type="tip">
+  The last operation, **Inspection**, is a quality step. Putting an inspection at the end of
+  the routing makes it a gate: the parts aren't considered finished until they pass. See
+  [Tracking quality](/manual/quality/tracking-quality).
+</Callout>
+
+### Materials: what the job will consume
+
+The **Materials** tab is the job's shopping list — every material it needs, with how much it
+expects to use. For `J000097` it's one line:
+
+<AppShot title="Job · J000097 — Materials" url="app.carbon.ms/x/job/job_8m3YTfc2oBy8xkdJX3wWD8/materials" caption="The job's material requirement, scaled to 500 pieces." flush>
+  <DataTable
+    columns={[
+      { key: "mat", label: "Material", mono: true },
+      { key: "desc", label: "Description" },
+      { key: "per", label: "Per piece", align: "right" },
+      { key: "est", label: "Est. total", align: "right" },
+      { key: "method", label: "Source" },
+      { key: "bin", label: "Bin", mono: true },
+    ]}
+    rows={[
+      { mat: "A36-STEEL-PLT-1\"", desc: "A36 Steel Plate 1″ (96×240 sheet)", per: "40 LB", est: "20,000 LB", method: <Tag>Pull from Inventory</Tag>, bin: "R02-B01-01" },
+    ]}
+  />
+</AppShot>
+
+The steel is **batch-tracked**, so when it's consumed Carbon records exactly which heat of
+material went into this batch of hooks — the foundation of Radiant's
+[traceability](/manual/quality/tracking-quality). The material is pulled from bin
+`R02-B01-01` at Headquarters.
+
+## Releasing a job to the floor
+
+A new job starts life as **Planned** — a draft you can still edit freely. Nothing reaches the
+shop floor until you **release** it. Releasing is the deliberate "go" that says *this job is
+real, schedule it and let operators start clocking on*.
+
+<Steps>
+
+<Step>
+**Review the job.** Confirm the quantity, due date and priority on **Details**, and skim the
+**Method**, **Operations** and **Materials** tabs to make sure the recipe is right for this
+run.
+</Step>
+
+<Step>
+**Check material availability.** Carbon flags any shortages. For `J000097`, the 20,000 LB of
+A36 steel wasn't all on hand, which is why Acme raised
+[purchase order PO000057](/manual/buying/purchasing-basics) to Ryerson. Buying and making can
+run in parallel — you don't have to wait for steel to release the job.
+</Step>
+
+<Step>
+**Release the job.** Click **Release**. Carbon stamps the released date — for `J000097` that
+was 2026-06-11 — moves the job into the active queue, and makes its operations available in
+the [shop-floor app](/manual/manufacturing/shop-floor).
+</Step>
+
+<Step>
+**The floor takes over.** Operators clock onto each operation in sequence and report finished
+pieces. When the last operation's good quantity reaches the production quantity, the job is
+**Completed** — `J000097` completed the same day, with all 500 pieces done and later shipped.
+</Step>
+
+</Steps>
+
+## Job statuses
+
+A job moves through a clear set of statuses as it goes from idea to finished parts. Acme's 89
+jobs are spread across all of them right now:
+
+<AppShot title="Jobs" url="app.carbon.ms/x/jobs" caption="A slice of Acme's job list, showing each status." flush>
+  <DataTable
+    columns={[
+      { key: "job", label: "Job", mono: true },
+      { key: "item", label: "Part", mono: true },
+      { key: "qty", label: "Qty", align: "right" },
+      { key: "due", label: "Due date" },
+      { key: "customer", label: "Customer" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { job: "J000096", item: "INV-MNT-BRKT.D", qty: "4,000 EA", due: "2026-07-01", customer: "—", status: <StatusBadge tone="neutral">Planned</StatusBadge> },
+      { job: "J000099", item: "CWH-A36-15", qty: "3,000 EA", due: "2026-07-21", customer: "Radiant Aerospace", status: <StatusBadge tone="blue">Ready</StatusBadge> },
+      { job: "J000098", item: "CWH-A36-15", qty: "1,500 EA", due: "2026-07-01", customer: "Radiant Aerospace", status: <StatusBadge tone="amber">In Progress</StatusBadge> },
+      { job: "J000095", item: "BBB-360-2-01", qty: "1,000 EA", due: "2026-04-23", customer: "Aurora Power", status: <StatusBadge tone="amber">In Progress</StatusBadge> },
+      { job: "J000097", item: "CWH-A36-15", qty: "500 EA", due: "2026-06-26", customer: "Radiant Aerospace", status: <StatusBadge tone="green">Completed</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+Here's what each status means and how a job moves between them:
+
+<DataTable
+  columns={[
+    { key: "status", label: "Status" },
+    { key: "meaning", label: "What it means" },
+  ]}
+  rows={[
+    { status: <StatusBadge tone="neutral">Planned</StatusBadge>, meaning: "Created but not yet released. A draft — edit quantity, dates and the method freely. Not visible to the shop floor." },
+    { status: <StatusBadge tone="blue">Ready</StatusBadge>, meaning: "Reviewed and queued to start — material and capacity are lined up, waiting for its turn (e.g. J000099)." },
+    { status: <StatusBadge tone="amber">In Progress</StatusBadge>, meaning: "Released and being worked. Operators are clocking time and reporting pieces (e.g. J000098, J000095)." },
+    { status: <StatusBadge tone="green">Completed</StatusBadge>, meaning: "All good pieces finished and received to inventory. The job's true cost is final (e.g. J000097)." },
+  ]}
+/>
+
+<Mermaid
+  chart={`flowchart LR
+  P[Planned] --> R[Ready]
+  R --> IP[In Progress]
+  IP --> C[Completed]`}
+/>
+
+<Callout type="warn">
+  **A Planned job does nothing on its own.** It won't appear on the shop floor and operators
+  can't book time to it until you **release** it. If a job seems "stuck" with no activity,
+  the first thing to check is whether it's still in *Planned*.
+</Callout>
+
+## Where the numbers go next
+
+Once `J000097` completed, its 500 finished hooks were received into inventory, shipped to
+Radiant Aerospace, and billed on [invoice AR000025](/manual/accounting/overview). The job's
+recorded labor and material rolled up into the cost of those parts — closing the loop between
+what you *planned* and what it *actually* took.
+
+<StatGrid cols={3}>
+  <Stat label="Produced" value="500" hint="all operations Done" />
+  <Stat label="Received to stock" value="500" hint="finished hooks" />
+  <Stat label="Shipped" value="500" hint="to Radiant Aerospace" />
+</StatGrid>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Methods: BOM & routing" href="/manual/items/methods" description="Author the master recipe a job copies — materials and operations." icon={<Workflow className="size-4" />} />
+  <IconCard title="Managing production" href="/manual/manufacturing/managing-production" description="Track, schedule and prioritize your open jobs day to day." icon={<ClipboardList className="size-4" />} />
+  <IconCard title="The shop floor (MES)" href="/manual/manufacturing/shop-floor" description="How operators clock onto operations and report finished pieces." icon={<Factory className="size-4" />} />
+</Cards>

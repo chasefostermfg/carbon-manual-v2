@@ -1,0 +1,400 @@
+---
+title: "Using the API"
+description: "Carbon is API-first — create a key and make your first call."
+---
+
+Everything you can do in the Carbon web app — create a quote, release a job, raise a
+purchase order, read a part's [method](/manual/overview/glossary) — you can also do over the
+**API** (Application Programming Interface): a way for your own code or another program to
+talk to Carbon directly. Carbon is **API-first**, which means the app you click through and the
+API speak to the *same* backend. There's no second-class "integration layer" bolted on later;
+the buttons in the UI call the exact same endpoints you're about to call yourself.
+
+This page gets you from zero to a working call: you'll create a key, pick an official client
+library, and run a few lines of code that read real data back out of Carbon. It's a friendly
+on-ramp — the full endpoint-by-endpoint reference lives in the separate **Developer Docs**,
+which we'll link as we go.
+
+<Callout type="info">
+  **Where this fits.** This is the first stop in the **Developing** track. Once you can make a
+  call, the next pages build on it: [AI & the MCP server](/manual/developing/mcp-and-ai) lets
+  AI assistants drive Carbon for you, [Integrating with other systems](/manual/developing/integrating)
+  connects Carbon to your other tools, and [Migrating data](/manual/getting-started/migrating-data)
+  uses the same API to bulk-load your existing records. If you've never touched an API before,
+  that's fine — every step below is spelled out.
+</Callout>
+
+## What "API-first" means for you
+
+A quick mental model before you write any code. When you confirm a sales order in the web app,
+your browser sends a request to a Carbon **endpoint** (a specific URL that performs one action),
+and Carbon sends back a response. The API just lets *your* program send that same kind of
+request. So anything you've read about in this manual — items, quotes, sales orders, jobs,
+purchase orders, receipts, shipments, invoices, quality records — is reachable as data you can
+read and (with the right key) write.
+
+<Callout type="tip">
+  **If it's in the app, it's in the API.** There is no feature that's "UI only." The product
+  team builds the UI *on top of* the public API, so the moment a capability ships in Carbon it's
+  callable from your code too. That's the single most useful thing to know on this page.
+</Callout>
+
+<Mermaid
+  chart={`flowchart LR
+  You[Your code or script] --> Key[API key in header]
+  Key --> API[Carbon API endpoint]
+  App[Carbon web app] --> API
+  API --> DB[(Same backend and data)]`}
+/>
+
+Notice that "Your code" and "Carbon web app" point at the **same** backend. That's the whole
+idea: the API isn't a copy of your data, it *is* your data.
+
+## Create an API key
+
+Before any program can talk to Carbon, it needs to prove who it is. The simplest way is an
+**API key** — a long secret string that stands in for your login. You create it once, store it
+safely, and send it with every request.
+
+<Steps>
+
+<Step>
+### Open API Keys in Settings
+
+In the Carbon web app, go to **Settings → API Keys**. This page lists every key that exists for
+your company, who created it, and when it was last used. New companies start with none.
+
+<AppShot title="Settings · API Keys" url="app.carbon.ms/x/settings/api-keys" caption="Acme's API keys. Each key acts on behalf of the user who created it." flush>
+  <DataTable
+    columns={[
+      { key: "name", label: "Name" },
+      { key: "prefix", label: "Key", mono: true },
+      { key: "created", label: "Created by" },
+      { key: "used", label: "Last used", align: "right" },
+    ]}
+    rows={[
+      { name: "Data migration", prefix: "carbon_sk_3f9a…", created: "Chase Foster", used: "2026-06-12" },
+      { name: "Shipping integration", prefix: "carbon_sk_b7c1…", created: "Chase Foster", used: "2026-06-14" },
+    ]}
+  />
+</AppShot>
+</Step>
+
+<Step>
+### Create a new key
+
+Click **New API Key**, give it a clear name that says what it's for (for example, `Shipping
+integration` or `Nightly export`), and create it. Naming keys by purpose makes it painless to
+revoke the right one later without breaking everything else.
+
+A key inherits the **permissions of the user who created it**. If your login can't approve
+purchase orders in the app, a key you create can't either. That's a feature — it means a key is
+never more powerful than the person behind it. See
+[Users & permissions](/manual/getting-started/users-permissions) for how those roles work.
+</Step>
+
+<Step>
+### Copy the secret immediately
+
+Carbon shows you the full key value **exactly once**, right after you create it. Copy it now and
+store it somewhere safe — a secrets manager, your CI provider's encrypted variables, or a
+password manager. If you lose it, you can't view it again; you simply delete the key and make a
+new one.
+
+<Callout type="warn">
+  **Treat a key like a password.** Anyone holding it can act as you in Carbon. Never paste a key
+  into client-side code, a public repository, a screenshot, or a support ticket. Keep it in an
+  environment variable (the examples below read `CARBON_API_KEY`), and **revoke** any key the
+  moment you suspect it leaked — deleting it on the API Keys page kills it instantly.
+</Callout>
+</Step>
+
+</Steps>
+
+## API key vs. OAuth — which auth do you need?
+
+"Auth" (authentication) is just how Carbon knows *who is calling*. Carbon supports two styles,
+and the right one depends on **whose** data you're acting on.
+
+<Tabs items={["API key", "OAuth"]}>
+
+<Tab value="API key">
+An **API key** authenticates *you* (or a single service account). You create it once, store the
+secret, and send it on every request. This is the right choice for the work most readers of this
+manual are doing:
+
+- A script that exports your own orders every night.
+- A backend integration that pushes shipments into Carbon.
+- One-off data migration or reporting jobs.
+
+Send it as a request header. Carbon also reads your company automatically from the key, so you
+don't pass a company ID by hand:
+
+```http
+Authorization: Bearer carbon_sk_your_key_here
+```
+</Tab>
+
+<Tab value="OAuth">
+**OAuth** is for apps that act *on behalf of other Carbon users* — for example, a third-party
+product you're building that lets *its* users connect *their* Carbon account. Instead of holding
+a static secret, your app sends the user through a consent screen and receives a short-lived
+**access token** scoped to that user's permissions.
+
+If you're automating your own company, you almost certainly want an API key and can skip OAuth
+for now. If you're building a public integration that other companies install, the OAuth flow
+(client registration, scopes, token refresh) is documented in full in the Developer Docs.
+</Tab>
+
+</Tabs>
+
+<Callout type="info">
+  **Rule of thumb:** automating *your* Carbon data → **API key**. Building an app *other* Carbon
+  customers log into → **OAuth**. Either way, the request examples below are identical once you
+  have a token; only how you obtain it differs.
+</Callout>
+
+## Use an official client library
+
+You *can* call Carbon with raw HTTP (any `fetch` or `curl` will do), but the team maintains
+**official client libraries** that wrap the endpoints in typed, autocompleting functions and
+handle auth headers, pagination, and errors for you. Reach for these first.
+
+<DataTable
+  columns={[
+    { key: "lang", label: "Language" },
+    { key: "install", label: "Install", mono: true },
+    { key: "best", label: "Good for" },
+  ]}
+  rows={[
+    { lang: "TypeScript / JavaScript", install: "npm i @carbon/api", best: "Web apps, Node services, edge functions" },
+    { lang: "Python", install: "pip install carbon-api", best: "Data work, scripts, notebooks, ETL" },
+    { lang: ".NET", install: "dotnet add package Carbon.Api", best: "C# services and desktop tools" },
+  ]}
+/>
+
+<Callout type="tip">
+  The exact package names and the always-current install commands are in the
+  [Clients](/clients) section of the Developer Docs — check there if an `npm`/`pip` name differs
+  from what you see above, since published names can change between versions.
+</Callout>
+
+## Make your first call
+
+Time to read real data. The goal of a first call is simply to prove that your key works and you
+can get a response — so we'll **read**, not write. The examples below list items and then fetch a
+single sales order. Carbon reads your company automatically from the key (the Acme demo's company
+ID is `SMBHQP55H46bdEGV7acnir`), so you don't pass it by hand — and the calls pull back records
+you've already met in this manual: the Counterweight Hook (`CWH-A36-15`) and its order,
+**SO000069**.
+
+<Steps>
+
+<Step>
+### Put your key in the environment
+
+Don't hard-code the secret. Set it as an environment variable so your code reads it at runtime:
+
+```bash
+export CARBON_API_KEY="carbon_sk_your_key_here"
+```
+</Step>
+
+<Step>
+### List your items
+
+This first call asks Carbon for a page of items and prints them. If you get rows back, your key
+and connection are working.
+
+<Tabs items={["TypeScript", "Python"]}>
+
+<Tab value="TypeScript">
+```ts
+import { CarbonClient } from "@carbon/api";
+
+const carbon = new CarbonClient({
+  apiKey: process.env.CARBON_API_KEY,
+});
+
+// Read the first 10 items in your company.
+const { data: items } = await carbon.items.list({ limit: 10 });
+
+for (const item of items) {
+  console.log(item.readableId, "—", item.name, `(${item.itemType})`);
+}
+// CWH-A36-15 — Counterweight Hook (Part)
+// A36-STEEL-PLT-1".96x240 — A36 Steel Plate 1" (Material)
+// ...
+```
+</Tab>
+
+<Tab value="Python">
+```python
+import os
+from carbon_api import CarbonClient
+
+carbon = CarbonClient(api_key=os.environ["CARBON_API_KEY"])
+
+# Read the first 10 items in your company.
+items = carbon.items.list(limit=10)
+
+for item in items.data:
+    print(item.readable_id, "—", item.name, f"({item.item_type})")
+# CWH-A36-15 — Counterweight Hook (Part)
+# A36-STEEL-PLT-1".96x240 — A36 Steel Plate 1" (Material)
+# ...
+```
+</Tab>
+
+</Tabs>
+
+Here's the kind of list you're reading back — the same items you'd see under **Items** in the web
+app:
+
+<AppShot title="Items returned by the API" url="app.carbon.ms/x/items" caption="The first call reads the same item records you browse in the app." flush>
+  <DataTable
+    columns={[
+      { key: "id", label: "Part", mono: true },
+      { key: "name", label: "Description" },
+      { key: "type", label: "Type" },
+      { key: "repl", label: "Replenishment" },
+    ]}
+    rows={[
+      { id: "CWH-A36-15", name: "Counterweight Hook", type: <Tag>Part</Tag>, repl: <StatusBadge tone="blue">Make</StatusBadge> },
+      { id: "A36-STEEL-PLT-1\".96x240", name: "A36 Steel Plate 1\"", type: <Tag>Material</Tag>, repl: <StatusBadge tone="neutral">Buy</StatusBadge> },
+      { id: "BRK-TI-005", name: "Engine Mounting Bracket", type: <Tag>Part</Tag>, repl: <StatusBadge tone="blue">Make</StatusBadge> },
+    ]}
+  />
+</AppShot>
+</Step>
+
+<Step>
+### Fetch one sales order by its ID
+
+Listing proves the connection; fetching a single record proves you can navigate Carbon's data.
+Here we pull the hero order, **SO000069** — Radiant Aerospace's order for 500 Counterweight
+Hooks — and read its total and line.
+
+<Tabs items={["TypeScript", "Python"]}>
+
+<Tab value="TypeScript">
+```ts
+// Look up one sales order by its human-readable number.
+const { data: order } = await carbon.salesOrders.get("SO000069");
+
+console.log(order.customerName); // Radiant Aerospace
+console.log(order.orderTotal);   // 36820
+console.log(order.status);       // Completed
+
+for (const line of order.lines) {
+  console.log(line.itemReadableId, line.saleQuantity, "@", line.unitPrice);
+  // CWH-A36-15 500 @ 73.14
+}
+```
+</Tab>
+
+<Tab value="Python">
+```python
+# Look up one sales order by its human-readable number.
+order = carbon.sales_orders.get("SO000069").data
+
+print(order.customer_name)  # Radiant Aerospace
+print(order.order_total)    # 36820
+print(order.status)         # Completed
+
+for line in order.lines:
+    print(line.item_readable_id, line.sale_quantity, "@", line.unit_price)
+    # CWH-A36-15 500 @ 73.14
+```
+</Tab>
+
+</Tabs>
+
+That response is exactly what the [Sales Order page](/manual/selling/sales-orders) shows in the
+UI — same record, same numbers, no copy:
+
+<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/so_Fx6FCeSpx9sxut9Qns6y91">
+  <RecordPanel
+    title="SO000069 — Radiant Aerospace"
+    subtitle="Returned by carbon.salesOrders.get('SO000069')"
+    status={<StatusBadge tone="green">Completed</StatusBadge>}
+    tabs={["Details", "Lines"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={3}>
+      <Field label="Customer" value="Radiant Aerospace" />
+      <Field label="Order total" value="$36,820.00" />
+      <Field label="Status" value="Completed" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+</Step>
+
+</Steps>
+
+<Callout type="tip">
+  **Read before you write.** Carbon's read endpoints can't change anything, so they're the safe
+  place to learn the data shapes. Once you're comfortable, the same client exposes
+  `create`/`update` methods (for example, creating a quote line or releasing a job) — guarded by
+  your key's permissions. When you're ready to write, do it against a **test or demo company**
+  first, never your live data.
+</Callout>
+
+## Common patterns you'll hit quickly
+
+A few things every Carbon caller runs into, so they don't surprise you:
+
+<Accordions type="single">
+
+<Accordion title="Pagination — getting more than one page">
+List endpoints return a page at a time. Pass `limit` (how many) and `offset` (how many to skip)
+to walk through results — `limit: 50, offset: 50` gets the second page of fifty. Carbon also
+returns a `count` so you know the total. Keep page sizes modest so responses stay fast.
+</Accordion>
+
+<Accordion title="Readable IDs vs. internal IDs">
+Most records have two identifiers: a friendly **readable ID** you see in the app
+(`SO000069`, `CWH-A36-15`, `PO000057`) and an internal **record ID** used in URLs and links
+(`so_Fx6FCeSpx9sxut9Qns6y91`). The client lets you fetch by either. Readable IDs are great for
+people; internal IDs are stable references you'll store when linking records together.
+</Accordion>
+
+<Accordion title="Errors and rate limits">
+Carbon responds with standard HTTP status codes — `401` means your key is missing or wrong,
+`403` means the key lacks permission for that action, `404` means the record doesn't exist, and
+`429` means you're sending requests too fast. The official clients surface these as typed errors
+you can catch. On a `429`, wait a moment and retry.
+</Accordion>
+
+<Accordion title="Dates and currency">
+Dates are ISO 8601 strings (`2026-06-11`). Money comes back as plain numbers in the company's
+base currency (USD for Acme) — for example, `36820` is **$36,820.00**. Format it for display on
+your side.
+</Accordion>
+
+</Accordions>
+
+## The deep reference lives in the Developer Docs
+
+This page is the on-ramp. For the full, always-current details — every endpoint, every field,
+authentication flows, webhooks, and copy-paste setup — head to Carbon's **Developer Docs**:
+
+<Cards>
+  <IconCard title="Quickstart" href="/quickstart" description="Get a key, install a client and run your first call, step by step." icon={<Rocket className="size-4" />} />
+  <IconCard title="Clients" href="/clients" description="The official TypeScript, Python and .NET libraries, with install commands and examples." icon={<Code className="size-4" />} />
+</Cards>
+
+<Callout type="info">
+  The Developer Docs are versioned alongside the product, so if an endpoint or client method
+  differs from an example here, trust the Developer Docs — they're generated from the live API.
+</Callout>
+
+## Next steps
+
+You can authenticate and read data. Here's where to go from here:
+
+<Cards>
+  <IconCard title="AI & the MCP server" href="/manual/developing/mcp-and-ai" description="Let AI assistants operate Carbon through the same API, no code required." icon={<Bot className="size-4" />} />
+  <IconCard title="Integrating with other systems" href="/manual/developing/integrating" description="Connect Carbon to your other tools with webhooks and integrations." icon={<Plug className="size-4" />} />
+  <IconCard title="Migrating your data" href="/manual/getting-started/migrating-data" description="Use the API to bulk-load your existing items, customers and orders." icon={<Database className="size-4" />} />
+</Cards>

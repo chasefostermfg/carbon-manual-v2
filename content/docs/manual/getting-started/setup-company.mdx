@@ -1,0 +1,303 @@
+---
+title: "Setting up your company"
+description: "Company profile, locations, units of measure and number sequences."
+---
+
+Before you can quote a job or buy a sheet of steel, Carbon needs to know a few things about
+*your* business: who you are, where you keep stock, the units you measure things in, how your
+documents should be numbered, and when you expect to get paid. This page walks an
+administrator through that one-time setup, using the real settings behind **Acme Inc.**, the
+example company you'll see throughout this manual. Do this once, up front, and every page
+after it will feel natural.
+
+<Callout type="info">
+  **Before you start.** This is the very first thing you do in a brand-new Carbon company —
+  before you [add users](/manual/getting-started/users-permissions) or
+  [import any data](/manual/getting-started/migrating-data). Everything you create later
+  (parts, customers, orders) attaches to the company, locations, units and terms you define
+  here, so it pays to get them right first. You'll need an
+  [**administrator**](/manual/overview/glossary) account to change these settings.
+</Callout>
+
+## Where these settings live
+
+All of the foundational settings on this page live in the **Settings** area of Carbon (the
+gear icon in the navigation rail). Settings is split into sections — *Company*, *Locations*,
+*Units of Measure*, *Sequences*, *Payment Terms*, and more. You don't have to fill in every
+section on day one, but the five below are the ones worth doing before anything else.
+
+<Callout type="tip">
+  You can come back and change most of these later. The big exception is your **base
+  currency** — pick it carefully, because it's the currency your books are kept in and it
+  isn't meant to be changed once you start transacting. Acme uses **USD**.
+</Callout>
+
+## 1. Company profile
+
+Your **company profile** is your business's identity card. It holds your legal name, address,
+logo and base currency. Carbon stamps these onto the documents you send out — quotes, order
+confirmations, purchase orders and invoices all carry your name, address and logo — so this is
+the first thing to fill in.
+
+<Steps>
+  <Step>
+    **Open Settings → Company.** You'll land on a single form with your company's core
+    details.
+  </Step>
+  <Step>
+    **Enter your name and address.** Acme is "Acme Inc." at 2400 Anvil Way, Springfield, OH.
+    This address is what prints in the header of every outbound document.
+  </Step>
+  <Step>
+    **Upload your logo.** Drop in a PNG or SVG. Carbon places it on PDF documents and in the
+    top-left of the app. A transparent-background logo looks best.
+  </Step>
+  <Step>
+    **Set your base currency.** Acme keeps its books in **USD**. Every record's amounts roll
+    up into this currency for reporting. If you sell or buy in other currencies later, Carbon
+    converts them back to base using an exchange rate — but the base currency itself stays
+    fixed.
+  </Step>
+  <Step>
+    **Save.** That's the whole profile. You can always return to swap the logo or fix an
+    address typo.
+  </Step>
+</Steps>
+
+Here's how Acme's finished company profile looks:
+
+<AppShot title="Settings · Company" url="app.carbon.ms/settings/company" caption="Acme's company profile — the identity stamped on every document.">
+  <RecordPanel
+    title="Acme Inc."
+    subtitle="Company profile · base currency USD"
+    status={<StatusBadge tone="green">Active</StatusBadge>}
+    tabs={["Details", "Branding", "Localization"]}
+    activeTab="Details"
+  >
+    <FieldGrid cols={2}>
+      <Field label="Company name" value="Acme Inc." />
+      <Field label="Base currency" value="USD ($)" />
+      <Field label="Address" value="2400 Anvil Way" />
+      <Field label="City / State" value="Springfield, OH" />
+      <Field label="Country" value="United States" />
+      <Field label="Logo" value="Uploaded" />
+    </FieldGrid>
+  </RecordPanel>
+</AppShot>
+
+<Callout type="warn">
+  Your **base currency** drives all of accounting. Confirm it before you create your first
+  customer, supplier or item. Changing it after you've posted transactions is not a supported
+  flow — if you picked wrong, start a fresh company rather than trying to convert in place.
+</Callout>
+
+## 2. Locations
+
+A **[location](/manual/overview/glossary)** is a physical site where you make things, hold
+stock, or ship from — typically a plant or a warehouse. Carbon tracks inventory, work centers,
+and documents *per location*, so most companies set up at least one. Acme runs two:
+
+<AppShot title="Settings · Locations" url="app.carbon.ms/settings/locations" caption="Acme's two operating locations." flush>
+  <DataTable
+    columns={[
+      { key: "name", label: "Location", mono: true },
+      { key: "role", label: "Role" },
+      { key: "country", label: "Country" },
+      { key: "status", label: "Status", align: "right" },
+    ]}
+    rows={[
+      { name: "Headquarters", role: "Main plant + warehouse (Springfield, OH)", country: "United States", status: <StatusBadge tone="green">Active</StatusBadge> },
+      { name: "Texas", role: "Satellite plant + warehouse", country: "United States", status: <StatusBadge tone="green">Active</StatusBadge> },
+    ]}
+  />
+</AppShot>
+
+**Headquarters** is Acme's home base — it's where the burn tables, the sandblasting room and
+the inspection station live, and it's the location stamped on the whole Counterweight Hook
+thread you'll follow in this manual ([SO000069](/manual/selling/sales-orders),
+[J000097](/manual/manufacturing/jobs) and [PO000057](/manual/buying/purchasing-basics) all run
+out of Headquarters). **Texas** is a second site with its own burn table, laser table and parts
+cleaner.
+
+### Shelves and bins live inside a location
+
+Within a location you can get as detailed as you like about *where* stock physically sits, using
+**storage units** (think racks, rows, levels and bins). Acme's are named with a
+Rack-Row-Level-Bin convention — for example the 1-inch A36 steel plate for the Counterweight
+Hook job lives in bin **R02-B01-01**. You don't have to set these up on day one; a single
+catch-all bin per location is enough to start, and you can add structure as your warehouse grows.
+
+<Callout type="tip">
+  Add a location for every site that holds inventory or ships product. If you only have one
+  building, one location is perfectly fine — but don't lump two physically separate warehouses
+  into one, or your on-hand quantities won't match reality. More on stock and bins in
+  [Locations & stock](/manual/inventory/locations-and-stock).
+</Callout>
+
+## 3. Units of measure
+
+A **unit of measure** (UoM) is *how you count a thing*: each, pounds, gallons, feet. Every
+[item](/manual/overview/glossary) in Carbon has one. The Counterweight Hook is counted in
+**EA** (Each); the A36 steel plate it's cut from is measured in **LB** (Pound). Carbon ships
+with a sensible starter list, and Acme runs 16 of them.
+
+<AppShot title="Settings · Units of Measure" url="app.carbon.ms/settings/uom" caption="A selection of Acme's 16 units of measure. EA and LB do most of the work." flush>
+  <DataTable
+    columns={[
+      { key: "code", label: "Code", mono: true },
+      { key: "name", label: "Name" },
+      { key: "use", label: "Typical use at Acme" },
+    ]}
+    rows={[
+      { code: "EA", name: "Each", use: "Discrete parts — e.g. Counterweight Hooks" },
+      { code: "LB", name: "Pound", use: "Raw metal by weight — e.g. A36 steel plate" },
+      { code: "IN", name: "Inches", use: "Bar and tube cut to length" },
+      { code: "GL", name: "Gallon", use: "Coolant, solvents" },
+      { code: "BX", name: "Box", use: "Fasteners, small consumables" },
+      { code: "RL", name: "Roll", use: "Tape, welding wire" },
+      { code: "PL", name: "Pallet", use: "Bulk inbound material" },
+      { code: "TN", name: "Ton", use: "Large steel purchases" },
+    ]}
+  />
+</AppShot>
+
+Acme's full set also includes BG (Bag), CS (Case), DR (Drum), LT (Liter), MT (Meter), OZ
+(Ounce), PK (Pack) and YD (Yard). To add your own, open **Settings → Units of Measure** and
+give it a short **code** (the abbreviation that shows on documents) and a **name**.
+
+<Callout type="warn">
+  Get the unit right on an item *before* you start transacting with it. An item's unit of
+  measure feeds into pricing, inventory counts and purchasing — switching it after you've
+  recorded stock or orders gets messy. When you buy in one unit and stock in another (say, buy
+  steel by the pound but receive it as plates), Carbon handles that with separate purchase and
+  inventory units rather than by changing the item's base unit.
+</Callout>
+
+## 4. Number sequences
+
+Every document in Carbon gets a short, human-readable ID — `Q000061`, `SO000069`, `J000097`,
+`PO000057`, `AR000025`. You don't type these in; Carbon generates them automatically from a
+**number sequence**: a prefix plus a running counter. This keeps IDs unique, ordered, and easy
+to say out loud on the phone.
+
+Each document type has its own sequence. Here's how Acme's are configured, with the next number
+each one will hand out:
+
+<AppShot title="Settings · Sequences" url="app.carbon.ms/settings/sequences" caption="Each document type has a prefix and an auto-incrementing counter." flush>
+  <DataTable
+    columns={[
+      { key: "doc", label: "Document" },
+      { key: "prefix", label: "Prefix", mono: true },
+      { key: "example", label: "Latest at Acme", mono: true },
+      { key: "next", label: "Next", mono: true },
+    ]}
+    rows={[
+      { doc: "Quote", prefix: "Q", example: "Q000063", next: "Q000064" },
+      { doc: "Sales Order", prefix: "SO", example: "SO000071", next: "SO000072" },
+      { doc: "Job", prefix: "J", example: "J000099", next: "J000100" },
+      { doc: "Purchase Order", prefix: "PO", example: "PO000057", next: "PO000058" },
+      { doc: "Sales Invoice", prefix: "AR", example: "AR000025", next: "AR000026" },
+      { doc: "Purchase Invoice", prefix: "AP", example: "AP000027", next: "AP000028" },
+    ]}
+  />
+</AppShot>
+
+A sequence has three parts you can tune:
+
+<Steps>
+  <Step>
+    **Prefix** — the letters in front. Acme uses `Q` for quotes, `SO` for sales orders, `J` for
+    jobs, `PO` for purchase orders, `AR` for customer (sales) invoices and `AP` for supplier
+    (purchase) invoices. These follow common accounting shorthand: **AR** is *accounts
+    receivable* (money owed to you), **AP** is *accounts payable* (money you owe).
+  </Step>
+  <Step>
+    **Padding** — how many digits, zero-filled. Acme pads to six, so the 69th sales order reads
+    `SO000069` rather than `SO69`. Consistent width keeps lists sorting cleanly.
+  </Step>
+  <Step>
+    **Next number** — the counter that increments by one each time a document is created. Acme's
+    most recent quote is `Q000063`, so its next one becomes `Q000064`, and the counter ticks up
+    on its own from there.
+  </Step>
+</Steps>
+
+So when you trace Acme's hero order — quote **Q000061** becomes sales order **SO000069**, which
+spawns job **J000097**, which triggers purchase order **PO000057** and finishes with invoice
+**AR000025** — every one of those IDs came from a sequence defined right here.
+
+<Callout type="tip">
+  Set your prefixes and padding **before** you create your first document. The next-number
+  counter only ever goes up, and you generally shouldn't reset it backwards — that risks
+  duplicate IDs. Changing a *prefix* mid-stream is fine, but it makes older and newer documents
+  look inconsistent, so decide on a scheme early and stick with it.
+</Callout>
+
+## 5. Payment terms
+
+**Payment terms** spell out *when* an invoice is due — and sometimes offer a discount for paying
+early. You attach a default term to each customer and supplier, and Carbon copies it onto their
+orders and invoices, then calculates the due date for you. Acme keeps seven on file:
+
+<AppShot title="Settings · Payment Terms" url="app.carbon.ms/settings/payment-terms" caption="Acme's seven payment terms. Net 30 is the house default." flush>
+  <DataTable
+    columns={[
+      { key: "name", label: "Term", mono: true },
+      { key: "meaning", label: "What it means" },
+      { key: "default", label: "Default", align: "right" },
+    ]}
+    rows={[
+      { name: "Net 30", meaning: "Pay the full amount within 30 days of the invoice date", default: <StatusBadge tone="green">Default</StatusBadge> },
+      { name: "Net 15", meaning: "Pay the full amount within 15 days", default: "—" },
+      { name: "Net 60", meaning: "Pay the full amount within 60 days", default: "—" },
+      { name: "Net EOM 10th", meaning: "Due on the 10th of the month following the invoice", default: "—" },
+      { name: "1% 10 Net 30", meaning: "1% discount if paid within 10 days, otherwise full amount in 30", default: "—" },
+      { name: "2% 10 Net 30", meaning: "2% discount if paid within 10 days, otherwise full amount in 30", default: "—" },
+      { name: "COD", meaning: "Cash on delivery — payment due when goods arrive", default: "—" },
+    ]}
+  />
+</AppShot>
+
+**Net 30** is Acme's default and the one on the hero thread: it's the term on Radiant
+Aerospace's sales order **SO000069**, on the Ryerson purchase order **PO000057**, and on the
+invoice **AR000025**. The "Net" terms are straightforward — pay the whole balance within *N*
+days. The discount terms like **2% 10 Net 30** are an incentive: a customer who pays within 10
+days knocks 2% off, otherwise the full amount is due at 30.
+
+<Callout type="info">
+  Payment terms don't have to be set per document by hand. Set one as the company default,
+  optionally override it on a specific customer or supplier, and Carbon fills it in
+  automatically on every new order and invoice for them. You can still change it on an
+  individual document when a deal calls for it.
+</Callout>
+
+## A quick mental model
+
+Here's the order these settings stack up in — each layer depends on the one before it:
+
+<Mermaid
+  chart={`flowchart LR
+  C[Company profile and currency] --> L[Locations and bins]
+  L --> U[Units of measure]
+  U --> N[Number sequences]
+  N --> P[Payment terms]
+  P --> R[Ready to add data]`}
+/>
+
+Get these five squared away and your company is ready for the next steps: inviting your
+team, and bringing in your existing parts, customers and suppliers.
+
+<Callout type="warn">
+  **Do this before you import.** [Migrating data](/manual/getting-started/migrating-data)
+  attaches everything to the company, locations and units you defined here. If you import parts
+  before your units of measure exist, or before your locations are set up, the import has
+  nowhere to put them. Foundation first, then data.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <IconCard title="Users & permissions" href="/manual/getting-started/users-permissions" description="Invite your team and decide who can see and do what." icon={<Users className="size-4" />} />
+  <IconCard title="Migrating your data" href="/manual/getting-started/migrating-data" description="Bring your existing parts, customers and suppliers into Carbon." icon={<Upload className="size-4" />} />
+  <IconCard title="Core concepts" href="/manual/overview/core-concepts" description="Items, methods, jobs and orders — the ideas the rest of the manual builds on." icon={<BookOpen className="size-4" />} />
+</Cards>
