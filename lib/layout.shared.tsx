@@ -17,14 +17,19 @@ export function baseOptions(): BaseLayoutProps {
     nav: {
       title: (
         <>
+          {/* current Carbon wordmark, theme-aware (dark ink on light, light ink on dark) */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={`${basePath}/logo.svg`}
-            width={25}
-            height={25}
-            alt="Carbon Logo"
+            src={`${basePath}/brand/carbon-word-light.svg`}
+            alt="Carbon"
+            className="block h-[18px] w-auto dark:hidden"
           />
-          Carbon
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`${basePath}/brand/carbon-word-dark.svg`}
+            alt="Carbon"
+            className="hidden h-[18px] w-auto dark:block"
+          />
         </>
       ),
     },

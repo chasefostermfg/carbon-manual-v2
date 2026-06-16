@@ -3,143 +3,64 @@ title: "Shipping & receiving"
 description: "Move goods in and out with shipments and receipts."
 ---
 
-This page is about the two moments when physical goods actually cross your dock: stuff
-coming **in** from a supplier (**receiving**), and finished goods going **out** to a
-customer (**shipping**). In Carbon these aren't loose warehouse chores — each one points
-back to a document you already created. A [receipt](/manual/overview/glossary) settles a
-**purchase order** line; a [shipment](/manual/overview/glossary) settles a **sales order**
-line and feeds the invoice. Do them right and your on-hand counts, your costs, and your
-customer's bill all stay in sync on their own.
+Goods cross your dock two ways:
 
-<Callout type="info">
-  **Where this fits.** Receiving is the back half of [purchasing](/manual/buying/purchasing-basics) —
-  you raised a PO, now the goods arrive. Shipping is the back half of
-  [selling](/manual/selling/sales-to-shipment) — you made the parts on a
-  [job](/manual/manufacturing/jobs), now they leave. Both flows read and write the
-  [stock](/manual/inventory/locations-and-stock) you keep in your locations and bins.
-</Callout>
+- **In** from a supplier — that's a **receipt**. It closes a **purchase order** line.
+- **Out** to a customer — that's a **shipment**. It closes a **sales order** line.
 
-## Two flows, one idea
+You never start from scratch. Each one points back to a document you already made.
 
-A **receipt** and a **shipment** are mirror images of each other. One adds to inventory,
-the other subtracts from it. Both work the same way: you start from a source document,
-confirm the real-world quantities, optionally record *which* physical material moved (its
-lot or batch), and then **post** — the moment Carbon commits the change to your books.
+## Where this lives in Carbon
 
-<Mermaid
-  chart={`flowchart LR
-  PO[Purchase Order PO000057] --> R[Receipt]
-  R --> INV[Inventory goes up]
-  INV --> JOB[Job consumes material]
-  JOB --> FG[Finished goods]
-  FG --> SH[Shipment]
-  SH --> SO[Sales Order SO000069 updated]
-  SH --> AR[Invoice AR000025]`}
+Both live in the **Inventory** module. Open it from the home screen, then use the sub-nav at the top to switch between **Quantities**, **Receipts**, and **Shipments**.
+
+<AppShot
+  src="/screenshots/manual/inventory.png"
+  alt="The Inventory module showing on-hand quantities and the Receipts / Shipments sub-nav"
+  caption="Inventory → Quantities. Use the sub-nav to jump to Receipts (goods in) or Shipments (goods out)."
 />
 
-We'll use Acme's hero order to walk both ends. The A36 steel for the Counterweight Hooks
-arrives on **PO000057** from Ryerson — that's receiving. The 500 finished hooks leave for
-Radiant Aerospace against **SO000069** — that's shipping.
-
 <Callout type="tip">
-  **"Post" is the verb that matters.** Up until you post, a receipt or shipment is a draft
-  you can still edit or delete — nothing has changed in inventory. Posting is the
-  irreversible commit: stock levels move, costs land, and downstream documents update. Get
-  the numbers right *before* you post.
+  **"Post" is the verb that matters.** Until you post, a receipt or shipment is a draft you can edit or delete — nothing has moved. Posting is the commit: stock levels change and the source document updates. Get the numbers right *before* you post.
 </Callout>
 
-## Flow 1 — Receiving against a purchase order
+## Receive against a purchase order
 
-When a truck backs up to the dock with material you ordered, you create a **receipt**
-against the matching purchase order. Carbon already knows what you expected — the part,
-the quantity, the price — so receiving is mostly confirming reality and noting any
-differences.
+When a truck arrives with material you ordered, you create a **receipt** against the matching PO. Carbon already knows the part, quantity, and price — you're mostly confirming reality.
 
-For the hero thread, Acme ordered **54,001 LB** of A36 Steel Plate from
-[Ryerson](/manual/buying/suppliers) on **PO000057**. Here's the open PO line waiting to be
-received.
-
-<AppShot title="Purchase Order · PO000057" url="app.carbon.ms/x/purchase-order/…" caption="The open Ryerson line — nothing received yet." flush>
-  <DataTable
-    columns={[
-      { key: "part", label: "Material", mono: true },
-      { key: "desc", label: "Description" },
-      { key: "ordered", label: "Ordered", align: "right" },
-      { key: "received", label: "Received", align: "right" },
-      { key: "price", label: "Unit price", align: "right" },
-    ]}
-    rows={[
-      { part: "A36-STEEL-PLT-1\"", desc: "A36 Steel Plate 1″", ordered: "54,001 LB", received: "0 LB", price: "$0.25" },
-    ]}
-  />
-</AppShot>
+For the hero thread, Acme ordered **54,001 LB** of A36 Steel Plate from Ryerson on **PO000057**.
 
 <Steps>
 
 <Step>
 
-### Open the PO and start a receipt
+### Start the receipt
 
-Go to **Purchasing → Purchase Orders**, open **PO000057**, and choose **Receive** (or start
-from **Inventory → Receipts → New** and pick the PO). Carbon copies the open lines onto a
-fresh receipt so you don't re-type anything. The receipt starts as a **Draft** — safe to
-edit.
+Go to **Inventory → Receipts → New** and pick **PO000057** (or open the PO and choose **Receive**). Carbon copies the open lines onto a fresh **Draft** receipt.
 
 <Callout type="warn">
-  A purchase order has to be **issued** to the supplier before you can receive against it.
-  PO000057 is currently *Needs Approval* — in a real flow it would be approved and sent
-  first. You can't receive goods against a PO that's still a draft.
+  The PO must be **issued** to the supplier first. You can't receive against a PO that's still a draft.
 </Callout>
 
 </Step>
 
 <Step>
 
-### Confirm the quantities that actually arrived
+### Confirm what actually arrived
 
-The receipt pre-fills each line with the quantity still outstanding. Edit the **received
-quantity** to match what the packing slip and your scale say. Three common cases:
+Each line pre-fills with the quantity still outstanding. Edit the **received quantity** to match the packing slip:
 
-- **Exact** — the truck brought all 54,001 LB. Leave the line as-is.
-- **Short** — only part of the order came. Receive what arrived; the PO line stays open for
-  the rest (a **partial receipt**), and you can receive the balance on a later delivery.
-- **Over** — more came than you ordered. Carbon flags the overage so you can accept it or
-  send it back, per your purchasing rules.
+- **Exact** — all 54,001 LB came. Leave it as-is.
+- **Short** — receive what arrived; the PO line stays open for the rest.
+- **Over** — Carbon flags the overage so you can accept it or send it back.
 
 </Step>
 
 <Step>
 
-### Record the lot or batch for tracked items
+### Record the batch (if asked)
 
-A36 Steel Plate is **batch-tracked** (`requiresBatchTracking: true`). That means Carbon
-won't just add "20,000 lb of steel" to a faceless pile — it wants to know *which heat* of
-steel this is, so that months later you can answer "exactly which material went into
-Radiant's hooks?" Type the supplier's heat/lot number into the **batch** field on the line.
-
-<AppShot title="Receipt · A36 Steel Plate" url="app.carbon.ms/x/receipt/…" caption="Confirming quantity and capturing the batch on receipt." flush>
-  <DataTable
-    columns={[
-      { key: "part", label: "Material", mono: true },
-      { key: "qty", label: "Received", align: "right" },
-      { key: "batch", label: "Batch / Heat", mono: true },
-      { key: "bin", label: "Put-away bin", mono: true },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { part: "A36-STEEL-PLT-1\"", qty: "54,001 LB", batch: <span className="text-muted-foreground italic">supplier heat no.</span>, bin: "R02-B01-01", status: <StatusBadge tone="blue">To post</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-<Callout type="tip">
-  **Serial vs batch.** Carbon's `itemTrackingType` decides how granular this gets.
-  *Inventory* items (like the finished hook) just track a count. *Batch* items track by
-  lot — one number for the whole delivery. *Serial* items track every single unit
-  individually. You only see a batch or serial field when the item asks for one, so for
-  most parts this step simply doesn't appear. More in
-  [Locations & stock](/manual/inventory/locations-and-stock).
-</Callout>
+A36 Steel Plate is **batch-tracked**, so Carbon asks *which heat* of steel this is. Type the supplier's heat/lot number into the **Batch** field. This is what later lets you trace the steel that went into Radiant's hooks. Plain items don't show this field.
 
 </Step>
 
@@ -147,9 +68,7 @@ Radiant's hooks?" Type the supplier's heat/lot number into the **batch** field o
 
 ### Tell Carbon where it goes
 
-Each received line needs a home: a **location** and a **shelf** (bin). Acme's steel lives
-at the **Headquarters** location in bin **R02-B01-01** — its default — so the receipt
-suggests that automatically. Change it if you're stocking it somewhere else.
+Each line needs a **location** and **shelf** (bin). Acme's steel lives at **Headquarters** in bin **R02-B01-01** — its default — so the receipt suggests it for you. Change it if you're stocking it elsewhere.
 
 </Step>
 
@@ -157,60 +76,28 @@ suggests that automatically. Change it if you're stocking it somewhere else.
 
 ### Post the receipt
 
-When the numbers and batch are right, choose **Post**. At that instant:
+Choose **Post**. At that instant:
 
-- On-hand stock of A36 Steel Plate **goes up** by the received quantity in bin R02-B01-01.
-- The PO line's `quantityReceived` updates, moving the PO toward *Received* / *To Invoice*.
-- Carbon posts the value to your **Inventory** account and to **GR/IR Clearing** (the
-  holding account between goods-received and invoice-received) — see
-  [Accounting overview](/manual/accounting/overview).
+- On-hand stock of A36 Steel Plate **goes up** in bin R02-B01-01.
+- The PO line moves toward *Received* / *To Invoice*.
 
-The material is now real stock the [job](/manual/manufacturing/jobs) can pull from. The
-Counterweight Hook job needs 40 LB per piece × 500 = **20,000 LB**, and it now has steel to
-consume.
+The material is now real stock the [job](/manual/manufacturing/jobs) can pull from.
 
 </Step>
 
 </Steps>
 
-<Callout type="info">
-  **The same dock handles services and outside work.** If a PO line is for an *Outside
-  Operation* (you sent parts out for, say, anodizing), receiving it back is the same motion —
-  it tells Carbon the subcontracted step is done and the parts are home.
-</Callout>
+## Ship against a sales order
 
-## Flow 2 — Shipping against a sales order
-
-Once the parts are made and inspected, you send them. A **shipment** records what physically
-left the building, against the sales order (and the job behind it). The hero job
-**J000097** finished all 500 Counterweight Hooks and received them into inventory
-(`quantityReceivedToInventory: 500`); now those 500 ship to Radiant Aerospace on
-**SO000069**.
-
-<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/…" caption="The line is made and ready to ship — nothing sent yet." flush>
-  <DataTable
-    columns={[
-      { key: "part", label: "Part", mono: true },
-      { key: "ordered", label: "Ordered", align: "right" },
-      { key: "made", label: "Made", align: "right" },
-      { key: "sent", label: "Sent", align: "right" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { part: "CWH-A36-15", ordered: "500 EA", made: "500 EA", sent: "0 EA", status: <StatusBadge tone="blue">Ready to ship</StatusBadge> },
-    ]}
-  />
-</AppShot>
+Once parts are made and inspected, you send them. A **shipment** records what left the building, against the sales order. Job **J000097** finished all 500 Counterweight Hooks; now they ship to Radiant Aerospace on **SO000069**.
 
 <Steps>
 
 <Step>
 
-### Start a shipment from the order
+### Start the shipment
 
-Open **SO000069** under **Sales → Sales Orders** and choose **Ship** (or go to **Inventory →
-Shipments → New** and select the order). Carbon creates a shipment and brings the order
-lines across. As with receipts, it begins as a **Draft** you can adjust before posting.
+Go to **Inventory → Shipments → New** and pick **SO000069** (or open the order and choose **Ship**). Carbon brings the order lines across as a **Draft**.
 
 </Step>
 
@@ -218,20 +105,10 @@ lines across. As with receipts, it begins as a **Draft** you can adjust before p
 
 ### Pick the finished goods
 
-**Picking** is choosing which stock fills the shipment. For the hooks, Carbon pulls from the
-job's finished-goods bin (the job stored its output in storage unit **8-1-H**). Confirm the
-quantity to ship on each line — here, all **500 EA**.
-
-If a part is batch- or serial-tracked, you pick the specific lots/serials here, and Carbon
-records them on the shipment. That closes the [traceability](/manual/quality/tracking-quality)
-loop: you'll be able to trace this shipment back to the exact heat of A36 steel you received
-in Flow 1.
+**Picking** is choosing which stock fills the shipment. Carbon pulls the hooks from the job's finished-goods bin (**8-1-H**). Confirm the quantity per line — here, all **500 EA**. For batch/serial items, you pick the exact lots here, which closes the [traceability](/manual/quality/tracking-quality) loop.
 
 <Callout type="warn">
-  **You can only ship what you have.** Carbon won't let you ship more than is on hand in the
-  picking location. If the job isn't finished or the finished goods haven't been received
-  into inventory yet, the quantity you can pick is capped. Short shipments are fine — the SO
-  line stays open for the balance.
+  **You can only ship what you have.** Carbon won't let you ship more than is on hand. Short shipments are fine — the SO line stays open for the balance.
 </Callout>
 
 </Step>
@@ -240,47 +117,19 @@ in Flow 1.
 
 ### Choose a shipping method
 
-A **shipping method** is the carrier and service the goods leave on — it prints on paperwork
-and tells everyone how the parts are travelling. Acme has **ten** methods configured, from
-carrier overnight to a customer picking up themselves. Pick the one that matches the order.
-
-<AppShot title="Shipment · SO000069" url="app.carbon.ms/x/shipment/…" caption="Choosing from Acme's ten shipping methods.">
-  <DataTable
-    columns={[
-      { key: "method", label: "Shipping method" },
-      { key: "kind", label: "Type" },
-    ]}
-    rows={[
-      { method: "Customer Pickup", kind: <Tag>Pickup</Tag> },
-      { method: "Local Delivery", kind: <Tag>Local</Tag> },
-      { method: "UPS Ground (3-5 Business Days)", kind: <Tag>Parcel</Tag> },
-      { method: "UPS Next Day Air (1 Business Day)", kind: <Tag>Parcel</Tag> },
-      { method: "FedEx Ground (3-5 Business Days)", kind: <Tag>Parcel</Tag> },
-      { method: "FedEx Priority Overnight (1 Business Day)", kind: <Tag>Parcel</Tag> },
-      { method: "DHL Express Worldwide (1-2 Business Days)", kind: <Tag>International</Tag> },
-      { method: "DHL Parcel International Standard", kind: <Tag>International</Tag> },
-      { method: "LTL (Less Than Truckload)", kind: <Tag>Freight</Tag> },
-      { method: "FTL (Full Truckload)", kind: <Tag>Freight</Tag> },
-    ]}
-  />
-</AppShot>
+The **shipping method** is the carrier the goods leave on. Acme has ten configured. A pallet of 500 steel hooks is freight, not a parcel — so pick **LTL (Less Than Truckload)** or **FTL (Full Truckload)**, not UPS Ground.
 
 <Callout type="tip">
-  A pallet of 500 steel hooks is heavy freight, not a parcel — so **LTL (Less Than
-  Truckload)** or **FTL (Full Truckload)** is the right call here, not UPS Ground. The
-  method you choose is also where a **shipping cost** rides along: SO000069 carries **$250**
-  of freight, which shows up on the invoice but not in the goods subtotal.
+  The method is where a **shipping cost** rides along. SO000069 carries **$250** of freight, which shows on the invoice but not in the goods subtotal.
 </Callout>
 
 </Step>
 
 <Step>
 
-### Add tracking details (optional)
+### Add tracking (optional)
 
-If the carrier gives you a tracking number, add it to the shipment along with package
-counts and weights. It's optional, but it travels with the record so anyone looking at the
-order later can answer "where is it?" without leaving Carbon.
+If the carrier gives you a tracking number, add it here with package counts and weights. It travels with the record so anyone can answer "where is it?" later.
 
 </Step>
 
@@ -288,14 +137,11 @@ order later can answer "where is it?" without leaving Carbon.
 
 ### Post the shipment
 
-Choose **Post** to commit. At that instant a cascade fires:
+Choose **Post**. A cascade fires:
 
 - The 500 hooks **leave inventory** from the picking bin.
-- The SO line's `quantitySent` updates to **500 of 500**, and because the whole line shipped
-  it's flagged `sentComplete` — the order moves toward *Completed*.
-- The job's `quantityShipped` updates to 500.
-- A **shipment record** is created (`sh_7injMjdu1xyZqTVFFrjauv`) — the link the
-  [invoice](/manual/accounting/overview) reads from next.
+- The SO line shows **500 of 500** sent and moves toward *Completed*.
+- A shipment record is created — the link the [invoice](/manual/accounting/overview) reads from next.
 
 <AppShot title="Shipment · SO000069 (posted)" url="app.carbon.ms/x/shipment/…">
   <RecordPanel
@@ -320,77 +166,30 @@ Choose **Post** to commit. At that instant a cascade fires:
 
 </Steps>
 
-## What posting the shipment sets in motion
+## One number, entered once
 
-The whole point of tying shipments to the sales order is what happens *after* you post. You
-recorded one fact — "500 hooks left the dock" — and Carbon updates everything that depends
-on it.
+You recorded one fact — "500 hooks left the dock" — and Carbon updated everything downstream. Acme can now raise sales invoice **AR000025**, built straight from what shipped (500 EA at $73.14, plus $250 freight), with no re-keying.
 
 <StatGrid cols={3}>
-  <Stat label="Shipped" value="500 / 500" hint="SO000069 line, sentComplete" />
+  <Stat label="Shipped" value="500 / 500" hint="SO000069 line complete" />
   <Stat label="On-hand" value="−500 EA" hint="left the finished-goods bin" />
   <Stat label="Invoice" value="AR000025" hint="pulls lines from this shipment" />
 </StatGrid>
-
-Because the shipment is posted, Acme can now raise the **sales invoice**. Carbon builds
-**AR000025** straight from what shipped — 500 EA at $73.14, plus the $250 freight — so the
-bill matches the truck, with no re-keying. The invoice references this exact shipment
-(`shipmentId: sh_7injMjdu1xyZqTVFFrjauv`), and once Radiant pays it lands as **Paid**. That
-is the receiving-to-shipping arc closing into cash.
-
-<DataTable
-  columns={[
-    { key: "doc", label: "Document", mono: true },
-    { key: "what", label: "What it records" },
-    { key: "moved", label: "Inventory effect" },
-    { key: "status", label: "Status", align: "right" },
-  ]}
-  rows={[
-    { doc: "PO000057", what: "Ordered A36 steel from Ryerson", moved: "—", status: <StatusBadge tone="amber">Needs Approval</StatusBadge> },
-    { doc: "Receipt", what: "Steel arrived, batch recorded", moved: "+ stock in R02-B01-01", status: <StatusBadge tone="green">Posted</StatusBadge> },
-    { doc: "J000097", what: "Job consumed 20,000 LB, made 500 hooks", moved: "− material, + finished goods", status: <StatusBadge tone="green">Completed</StatusBadge> },
-    { doc: "Shipment", what: "500 hooks picked and sent (LTL)", moved: "− finished goods", status: <StatusBadge tone="green">Posted</StatusBadge> },
-    { doc: "SO000069", what: "Line marked sent complete", moved: "—", status: <StatusBadge tone="green">Completed</StatusBadge> },
-    { doc: "AR000025", what: "Billed from the shipment, then paid", moved: "—", status: <StatusBadge tone="green">Paid</StatusBadge> },
-  ]}
-/>
-
-<Callout type="info">
-  **One number, entered once.** You never told Carbon "the order is complete" or "bill the
-  customer." You said "500 hooks shipped," and the sales order line, the job, the shipment
-  record, and the invoice all updated themselves. That's the system-of-record payoff.
-</Callout>
 
 ## Common questions
 
 <Accordions type="single">
 
 <Accordion title="Can I receive or ship part of an order?">
-  Yes. Receipts and shipments are per-line and per-quantity. Receive 30,000 of 54,001 LB
-  today and the PO line stays open for the rest; ship 200 of 500 hooks and the SO line keeps
-  the remaining 300 open until a later shipment. Carbon only marks a line "complete" once the
-  full quantity has moved.
+  Yes. Receipts and shipments are per-line and per-quantity. Receive 30,000 of 54,001 LB today and the PO line stays open for the rest; ship 200 of 500 hooks and the SO line keeps the other 300 open. A line only goes "complete" once the full quantity has moved.
 </Accordion>
 
-<Accordion title="What if I posted a receipt or shipment with the wrong quantity?">
-  Posting is a committed inventory transaction, so you don't simply edit it after the fact.
-  You reverse the effect with a correcting movement — for example a negative inventory
-  adjustment, a return, or a credit — which keeps a clean audit trail of what really
-  happened rather than silently overwriting history. Fix it before you post whenever you can.
+<Accordion title="What if I posted with the wrong quantity?">
+  Posting is a committed inventory transaction, so you don't just edit it after the fact. You reverse it with a correcting movement — a negative inventory adjustment, a return, or a credit — which keeps a clean audit trail. Fix it before you post whenever you can.
 </Accordion>
 
 <Accordion title="Do I have to record a batch or serial number?">
-  Only when the item asks for one. The field appears for items set to track by batch or
-  serial — A36 Steel Plate, for example, has `requiresBatchTracking: true`. For plain
-  *Inventory* items like the finished Counterweight Hook, Carbon just tracks a quantity and
-  the batch/serial step never shows up.
-</Accordion>
-
-<Accordion title="What's a 'drop shipment'?">
-  A drop shipment is when a supplier ships goods straight to your customer, so they never pass
-  through your dock. SO000069 has `dropShipment: false` — Acme made and shipped the hooks
-  itself. When a line *is* drop-shipped, Carbon links the supplier delivery to the customer
-  order directly, and you don't pick or post a shipment yourself.
+  Only when the item asks for one. The field shows up for batch- or serial-tracked items, like A36 Steel Plate. Plain *Inventory* items, like the finished Counterweight Hook, just track a quantity and skip the step.
 </Accordion>
 
 </Accordions>

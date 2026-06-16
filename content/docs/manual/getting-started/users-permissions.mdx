@@ -3,62 +3,20 @@ title: "Users & permissions"
 description: "Invite your team, assign employee types and control who can do what."
 ---
 
-A real shop has more than one person in it — a salesperson quoting work, a buyer raising
-purchase orders, operators on the floor, a bookkeeper closing the month. Carbon lets you
-invite all of them and then control, precisely, what each one can see and change. This page
-shows you how to invite people by email, choose the right **employee type** for each, and
-fine-tune **module-level permissions** so everyone has exactly the access they need — and
-nothing more.
+Most shops have more than one person: sales, buying, floor operators, a bookkeeper. This
+page shows you how to invite them and control what each one can do.
 
 <Callout type="info">
-  **Before you start.** This is a foundation step, best done right after you
-  [set up your company](/manual/getting-started/setup-company) and before you
-  [migrate your data](/manual/getting-started/migrating-data). You'll need to be an
-  **admin** to invite people. If you set up the company yourself, you already are one —
-  in Acme's account that's **Chase Foster** (`chase@carbon.ms`).
+  You need to be an **admin** to invite people. If you set up the company, you already are.
+  At Acme that's **Chase Foster** (`chase@carbon.ms`).
 </Callout>
 
-## The two ideas: who you are, and what you can touch
+## Where this lives in Carbon
 
-Access in Carbon comes from two layers that work together. Keep them separate in your head
-and the whole thing gets simple.
+People and access live in the **Users** module, inside **Settings**. Go to **Settings → Users**
+in the left navigation. You'll see everyone in your company and the type assigned to each.
 
-- A **user** is one login — one person, one email address. Inviting someone creates their
-  user account.
-- An **employee type** (Carbon's word for a [role](/manual/overview/glossary)) is a named
-  bundle of [permissions](/manual/overview/glossary) you attach to a user. Instead of
-  setting access person-by-person, you define a type once — say *Sales* — and assign it to
-  everyone who sells.
-- **Permissions** are the actual switches. They're granted **per module** (Sales,
-  Purchasing, Items, Production, and so on) and, within each module, **per action**:
-  **view**, **create**, **update**, and **delete**.
-
-<Mermaid
-  chart={`flowchart LR
-  U[User · one email] --> T[Employee type · a role]
-  T --> P[Module permissions]
-  P --> V[View]
-  P --> C[Create]
-  P --> Up[Update]
-  P --> D[Delete]`}
-/>
-
-So the flow is always the same: invite the **user**, give them an **employee type**, and let
-that type's **permissions** decide what they can do in each module. Let's walk through it.
-
-## Invite your team
-
-You add people by sending an email invitation. They click the link, set a password, and land
-in your company with whatever access their employee type grants.
-
-<Steps>
-
-<Step>
-**Open Settings → Users.** From the left navigation, go to **Settings**, then **Users**.
-This is the list of everyone in your company and the type assigned to each. Acme's looks like
-this.
-
-<AppShot title="Settings · Users" url="app.carbon.ms/x/users" caption="Acme's people, each with an employee type." flush>
+<AppShot title="Settings · Users" url="app.carbon.ms/x/users" caption="Acme's people. Click Invite (top-right) to add someone." flush>
   <DataTable
     columns={[
       { key: "name", label: "Name" },
@@ -72,14 +30,37 @@ this.
     ]}
   />
 </AppShot>
+
+## Two simple ideas
+
+Access comes from two things. Keep them separate and it stays easy.
+
+- A **user** is one login — one person, one email.
+- An **employee type** is a [role](/manual/overview/glossary): a bundle of
+  [permissions](/manual/overview/glossary) you attach to a user. Set it up once, hand it to
+  everyone who does that job.
+
+Permissions are granted **per module** (Sales, Purchasing, Items, and so on), with four
+actions each: **View**, **Create**, **Update**, **Delete**.
+
+The flow: invite the **user**, give them an **employee type**, and that type's
+**permissions** decide what they can touch.
+
+## Invite your team
+
+You add people by email. They click the link, set a password, and they're in.
+
+<Steps>
+
+<Step>
+**Click _Invite_.** Top-right of **Settings → Users**.
 </Step>
 
 <Step>
-**Click _Invite_ and enter their email.** Type one or more email addresses — you can invite
-several people at once by separating addresses with a comma. Pick the **employee type** they
-should get (you can change it later), then send.
+**Enter their email and pick a type.** Add one or more addresses (separate with commas to
+invite several at once). Choose the **employee type** they should get — you can change it later.
 
-<AppShot title="Invite a user" url="app.carbon.ms/x/users/new" caption="Inviting a new operator and assigning the Machine Operator type.">
+<AppShot title="Invite a user" url="app.carbon.ms/x/users/new" caption="Inviting a new operator with the Machine Operator type.">
   <FieldGrid cols={2}>
     <Field label="Email" value="newhire@acme.com" mono />
     <Field label="Employee type" value="Machine Operator" />
@@ -88,30 +69,24 @@ should get (you can change it later), then send.
 </Step>
 
 <Step>
-**They accept and set a password.** Carbon emails the invite. When the person clicks the
-link, they create a password and they're in — with exactly the access their type defines.
-Until they accept, their status shows as *Invited* rather than *Active*.
+**They accept.** Carbon emails the invite. When they click it and set a password, they're in.
+Until then their status shows **Invited** instead of **Active**.
 </Step>
 
 </Steps>
 
 <Callout type="tip">
-  You can **deactivate** a user instead of deleting them — handy when someone leaves but you
-  want to keep their name on the records they created (like the way **Chase Foster** stays
-  attached to purchase order [PO000057](/manual/buying/purchasing-basics) and sales order
-  [SO000069](/manual/selling/sales-orders) forever). Deactivating frees up the seat without
-  erasing history.
+  When someone leaves, **deactivate** them instead of deleting. That frees the seat but keeps
+  their name on records they created — like **Chase Foster** staying attached to
+  [SO000069](/manual/selling/sales-orders) forever.
 </Callout>
 
-## Choose an employee type (the role)
+## Choose an employee type
 
-An **employee type** is the role you hand someone. It carries a default set of module
-permissions so you don't configure each person from scratch. A new Carbon company starts
-with a few sensible types, and you can add your own to match how your shop is organized.
+An **employee type** is the role you hand someone. It carries a default set of permissions, so
+you don't set up each person from scratch. Here are types a shop like Acme would use.
 
-Here are the types you'd typically set up for a shop like Acme, and what each one is for.
-
-<AppShot title="Settings · Employee Types" url="app.carbon.ms/x/employee-types" caption="Roles mapped to the people who hold them." flush>
+<AppShot title="Settings · Employee Types" url="app.carbon.ms/x/employee-types" caption="Roles and who they're for." flush>
   <DataTable
     columns={[
       { key: "type", label: "Employee type" },
@@ -119,73 +94,36 @@ Here are the types you'd typically set up for a shop like Acme, and what each on
       { key: "example", label: "Example at Acme" },
     ]}
     rows={[
-      { type: <Tag>Administrator</Tag>, who: "Full access, including Settings and Users", example: "Chase Foster" },
-      { type: <Tag>Sales</Tag>, who: "Quotes, customers and sales orders", example: "Suzie Sells" },
+      { type: <Tag>Administrator</Tag>, who: "Everything, including Settings", example: "Chase Foster" },
+      { type: <Tag>Sales</Tag>, who: "Quotes, customers, sales orders", example: "Suzie Sells" },
       { type: <Tag>Buyer</Tag>, who: "Suppliers and purchase orders", example: "Purchasing team" },
-      { type: <Tag>Machine Operator</Tag>, who: "Runs jobs on the shop floor (MES)", example: "Floor operators" },
-      { type: <Tag>Accountant</Tag>, who: "Invoices, payments and the books", example: "Bookkeeper" },
+      { type: <Tag>Machine Operator</Tag>, who: "Runs jobs on the floor", example: "Floor operators" },
+      { type: <Tag>Accountant</Tag>, who: "Invoices, payments, the books", example: "Bookkeeper" },
     ]}
   />
 </AppShot>
 
 <Callout type="info">
-  The names above are examples to make the idea concrete — you create and name your own types
-  to fit your team. The one type that always exists and that you can't lock yourself out of is
-  **Administrator**: it can reach every module *and* the Settings area where users and types
-  are managed. Keep at least one.
+  These names are examples — you create and name your own. The one type that always exists is
+  **Administrator**: it reaches every module *and* Settings. Always keep at least one.
 </Callout>
 
-### Suzie's view, in practice
+## Set module permissions
 
-When you give **Suzie Sells** the *Sales* type, Carbon opens up the selling side of the app
-for her — customers, [quotes](/manual/selling/quoting) and
-[sales orders](/manual/selling/sales-orders) — and leaves the rest read-only or hidden. She
-can build a quote like [Q000061](/manual/walkthrough) and turn it into an order, but she
-can't change a supplier price or post to the ledger. That's the role doing its job.
-
-<RecordPanel
-  title="Suzie Sells"
-  subtitle="User · Sales"
-  status={<StatusBadge tone="green">Active</StatusBadge>}
-  tabs={["Details", "Permissions"]}
-  activeTab="Details"
->
-  <FieldGrid cols={2}>
-    <Field label="Email" value="ctfoster4@yahoo.com" mono />
-    <Field label="Employee type" value="Sales" />
-    <Field label="Department" value="Sales" />
-    <Field label="Status" value="Active" />
-  </FieldGrid>
-</RecordPanel>
-
-<Callout type="tip">
-  Employee types also pair naturally with **departments**. Acme groups people into
-  *Sales*, *Marketing*, and *Sales & Marketing* departments. Departments don't grant access
-  on their own — they're for organizing people and reporting — but they make a growing team
-  easier to navigate.
-</Callout>
-
-## Set module-level permissions
-
-This is the heart of access control. Within an employee type, you turn on four switches for
-each module: **View**, **Create**, **Update**, and **Delete**. They stack the way you'd
-expect — you can't create something you can't view, and *Delete* is the one you hand out most
-sparingly.
+Inside a type, you flip four switches per module: **View**, **Create**, **Update**, **Delete**.
 
 <Steps>
 
 <Step>
-**Open the type and find the module grid.** From **Settings → Employee Types**, click a type
-(say *Sales*) and open its **Permissions** tab. You'll see one row per module with four
-checkboxes each.
+**Open the type.** From **Settings → Employee Types**, click a type (say **Sales**) and open
+its **Permissions** tab. You'll see one row per module.
 </Step>
 
 <Step>
-**Tick the actions this role needs.** For a salesperson, you'd give full access to **Sales**,
-let them **view** Items so they can pick parts onto a quote, and leave Purchasing,
-Production and Accounting off entirely.
+**Tick what the role needs.** For a salesperson: full **Sales**, **View** on Items (to pick
+parts onto a quote), and nothing else.
 
-<AppShot title="Employee Type · Sales — Permissions" url="app.carbon.ms/x/employee-types/sales" caption="The permission grid for the Sales type: full Sales, read-only Items, nothing else." flush>
+<AppShot title="Employee Type · Sales — Permissions" url="app.carbon.ms/x/employee-types/sales" caption="Full Sales, read-only Items, nothing else." flush>
   <DataTable
     columns={[
       { key: "module", label: "Module" },
@@ -208,16 +146,14 @@ Production and Accounting off entirely.
 </Step>
 
 <Step>
-**Save.** The change applies to everyone with that type immediately — there's no need to
-re-edit each person. Next time Suzie loads the app, Purchasing simply isn't there.
+**Save.** The change applies to everyone with that type right away. No need to edit each person.
 </Step>
 
 </Steps>
 
 ### Roles side by side
 
-It's easiest to design permissions by comparing roles. Here's how Acme's common types map
-across the modules — full access (**all four** actions), read-only (**view** only), or none.
+Here's how Acme's common types map across the modules — full access, read-only (**View**), or none.
 
 <DataTable
   columns={[
@@ -239,35 +175,21 @@ across the modules — full access (**all four** actions), read-only (**view** o
   ]}
 />
 
-Read a column to understand one role; read a row to see who can touch one module. Notice the
-**Accountant** can *view* Sales and Purchasing (they need to see the orders behind an
-invoice) but only has **full** control over Accounting — and that only the **Administrator**
-reaches **Settings**, where users and types live.
-
 <Callout type="warn">
-  **Grant least privilege.** Give each person the *minimum* access their job needs, not the
-  most. It's tempting to make everyone an Administrator to avoid "access denied" friction —
-  don't. Over-broad permissions are how a salesperson accidentally edits a supplier price, or
-  an operator deletes a sales order. Start narrow, then add a permission when someone actually
-  hits a wall. **Delete** in particular should be rare: most roles never need it, because
-  Carbon prefers to *cancel* or *deactivate* records rather than erase the history other
-  records depend on.
+  **Give the least access that does the job.** Don't make everyone an Administrator. Start
+  narrow, add a permission when someone hits a wall. Hand out **Delete** rarely — Carbon
+  prefers to *cancel* or *deactivate* records, not erase the history other records depend on.
 </Callout>
 
-## A note on AI and API access
-
-Carbon is **API-first** and ships with a built-in [MCP server](/manual/overview/glossary), so
-an AI assistant can read and act in your company on your behalf. That access runs through the
-same permission system you just set up — an AI agent or an API key inherits the access of the
-user it acts as. The least-privilege rule matters even more here: scope a key to exactly the
-modules a script or assistant needs. There's a whole section on this in
-[Developing with Carbon](/manual/developing/using-the-api).
+<Callout type="tip">
+  AI and API access run through this same system. An AI agent or API key inherits the access of
+  the user it acts as, so scope it tight. More in
+  [Developing with Carbon](/manual/developing/using-the-api).
+</Callout>
 
 ## Next steps
 
-You've got your team in and scoped. Two natural directions from here:
-
 <Cards>
-  <IconCard title="Set up your company" href="/manual/getting-started/setup-company" description="Locations, units, payment terms and the foundation records your team will use." icon={<Settings className="size-4" />} />
+  <IconCard title="Set up your company" href="/manual/getting-started/setup-company" description="Locations, units, payment terms and the records your team will use." icon={<Settings className="size-4" />} />
   <IconCard title="Migrate your data" href="/manual/getting-started/migrating-data" description="Bring in your customers, suppliers, items and open orders." icon={<Database className="size-4" />} />
 </Cards>

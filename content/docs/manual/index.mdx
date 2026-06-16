@@ -1,117 +1,96 @@
 ---
 title: The Carbon Manual
-description: A written, self-serve guide to running your manufacturing business on Carbon — from your first quote to a shipped, invoiced order.
+description: The plain-English guide to running your manufacturing business on Carbon — with real screenshots showing exactly where to click.
 ---
 
-Welcome to the **written Carbon manual** — the read-at-your-own-pace companion to
-[Carbon Academy](https://learn.carbon.ms). Same curriculum, no video required. If you
-have ten minutes between jobs, you can learn a whole module right here.
+This is the written guide to **Carbon** — the read-it-yourself companion to
+[Carbon Academy](https://learn.carbon.ms). It's made for people who'd rather read than
+watch a video. Every page is short, uses real screenshots, and shows you **exactly where
+to click**.
 
-Carbon is an **open-source manufacturing system of record** — it combines an ERP
-(the business: sales, purchasing, inventory, costing), an MES (the shop floor:
-running jobs and recording work), and a QMS (quality: inspections, non-conformances
-and traceability) into one connected system.
+## Carbon is made of Modules
+
+The easiest way to picture Carbon: it's split into **Modules** — one for each part of your
+business. Selling lives in **Sales**. Buying lives in **Purchasing**. Making things lives in
+**Production**. And so on.
+
+When you log in, you land on the **home screen**. Every tile here is a Module — click one to
+start working in it.
+
+<AppShot
+  src="/screenshots/manual/home-modules.png"
+  alt="The Carbon home screen, showing one tile for each module"
+  caption="Carbon's home screen. Each tile is a Module — click one to open it."
+/>
+
+Here's what each Module is for:
+
+<DataTable
+  columns={[
+    { key: "m", label: "Module" },
+    { key: "use", label: "What you do here" },
+  ]}
+  rows={[
+    { m: <b>Sales</b>, use: "Quote customers and take orders" },
+    { m: <b>Purchasing</b>, use: "Buy materials and services from suppliers" },
+    { m: <b>Items</b>, use: "Set up the parts and materials you make and buy" },
+    { m: <b>Production</b>, use: "Turn orders into jobs and run them" },
+    { m: <b>Inventory</b>, use: "See what's in stock and where" },
+    { m: <b>Quality</b>, use: "Inspections, issues and traceability" },
+    { m: <b>Accounting</b>, use: "Invoices and payments" },
+    { m: <b>Shop Floor</b>, use: "The tablet app operators use at machines" },
+  ]}
+/>
+
+<Callout type="info">
+  **Don't memorize this.** You'll learn each Module as you need it. The rest of this manual
+  walks through them one at a time, in the order you'd actually use them.
+</Callout>
+
+## New to Carbon? Take the 15-minute tour first
 
 <Cards>
   <IconCard
-    title="New to Carbon? Start here"
+    title="Carbon in 15 minutes"
     href="/manual/walkthrough"
-    description="Follow one real order from quote to cash in about 15 minutes."
+    description="Follow one real order from quote to cash. See how the Modules connect."
     icon={<Rocket className="size-4" />}
   />
   <IconCard
     title="What is Carbon?"
     href="/manual/overview/what-is-carbon"
-    description="The big picture: ERP + MES + QMS, and who uses each part."
+    description="The big picture, in plain English."
     icon={<Factory className="size-4" />}
   />
 </Cards>
 
-## Who this manual is for
+## We learn with a real company
 
-This guide assumes **no prior ERP or manufacturing-software experience**. We define
-every term the first time it appears (and collect them in the
-[glossary](/manual/overview/glossary)), and every workflow is written as numbered
-steps you can follow click-by-click. Whether you're an owner setting Carbon up, an
-estimator building quotes, a buyer cutting purchase orders, or an operator on the
-floor — there's a path here for you.
-
-## Learn with a real company
-
-Every example in this manual uses **Acme Inc.**, a real demo company that makes
-precision parts and assemblies for aerospace, defense and energy customers. Instead
-of made-up screenshots, you'll see Acme's actual parts, customers, suppliers and jobs
-— so what you read here matches what you'll see in the app.
+Every screenshot in this manual comes from **Acme Inc.**, a real demo company that makes
+precision metal parts for aerospace and defense customers. So what you see here is exactly
+what you'll see in the app.
 
 <StatGrid cols={4}>
-  <Stat label="Customers" value="16" hint="Tesla, Radiant Aerospace, Apex Tactical…" />
-  <Stat label="Suppliers" value="16" hint="McMaster-Carr, Olympic Steel, Sendcutsend…" />
-  <Stat label="Quotes" value="60+" hint="Estimates sent to customers" />
-  <Stat label="Jobs" value="90+" hint="Production orders on the floor" />
+  <Stat label="Customers" value="16" hint="Tesla, Radiant Aerospace…" />
+  <Stat label="Suppliers" value="16" hint="Ryerson, McMaster-Carr…" />
+  <Stat label="Quotes" value="40+" hint="sent to customers" />
+  <Stat label="Jobs" value="90+" hint="on the shop floor" />
 </StatGrid>
 
-<Callout type="info">
-  **About the pictures.** Screens in this manual are rendered from Acme's real data in
-  Carbon's own styling, so they stay crisp and match light or dark mode. They show the
-  same fields and layout you'll see in the live app at [app.carbon.ms](https://app.carbon.ms).
-</Callout>
-
-## The shape of Carbon
-
-Most work in Carbon follows one thread. A customer asks for a price (a **quote**); you
-win the work (a **sales order**); you make it (a **job** on the shop floor) and buy the
-materials you need (a **purchase order**); you check it (**quality**); then you **ship**
-it and **invoice** it. Everything else hangs off that spine.
-
-<Mermaid
-  chart={`flowchart LR
-  Q[Quote] --> SO[Sales Order]
-  SO --> J[Job / Production]
-  J --> PO[Purchase Order for materials]
-  PO --> J
-  J --> QC[Quality check]
-  QC --> SH[Shipment]
-  SH --> INV[Sales Invoice]`}
-/>
-
-The [15-minute walkthrough](/manual/walkthrough) follows exactly this thread using one
-real Acme part. After that, each section below goes deep on one stop along the way.
-
-## Browse by topic
+## Find your topic
 
 <Cards>
-  <IconCard title="Carbon Overview" href="/manual/overview/what-is-carbon" description="What Carbon is, the core concepts, and how to get around." icon={<BookOpen className="size-4" />} />
-  <IconCard title="Getting Started" href="/manual/getting-started/setup-company" description="Set up your company, invite your team, and import data." icon={<Settings className="size-4" />} />
-  <IconCard title="Parts & Materials" href="/manual/items/defining-an-item" description="Define the items you make and buy, and how they're made." icon={<Package className="size-4" />} />
-  <IconCard title="Selling" href="/manual/selling/customers" description="Customers, quotes, sales orders and shipment." icon={<ShoppingCart className="size-4" />} />
-  <IconCard title="Manufacturing" href="/manual/manufacturing/jobs" description="Jobs, scheduling and the shop-floor app." icon={<Factory className="size-4" />} />
-  <IconCard title="Buying" href="/manual/buying/suppliers" description="Suppliers, purchase orders and receiving." icon={<Truck className="size-4" />} />
-  <IconCard title="Inventory" href="/manual/inventory/locations-and-stock" description="Locations, stock levels and the item ledger." icon={<Warehouse className="size-4" />} />
-  <IconCard title="Quality" href="/manual/quality/tracking-quality" description="Inspections, non-conformances and traceability." icon={<ShieldCheck className="size-4" />} />
-  <IconCard title="Accounting" href="/manual/accounting/overview" description="Invoices, payments and finance integrations." icon={<Calculator className="size-4" />} />
-  <IconCard title="Developing" href="/manual/developing/using-the-api" description="The API, AI agents and integrations." icon={<Cpu className="size-4" />} />
+  <IconCard title="Getting Started" href="/manual/getting-started/setup-company" description="Set up your company and invite your team." icon={<Settings className="size-4" />} />
+  <IconCard title="Parts & Materials" href="/manual/items/defining-an-item" description="Set up the things you make and buy." icon={<Package className="size-4" />} />
+  <IconCard title="Selling" href="/manual/selling/customers" description="Customers, quotes and orders." icon={<ShoppingCart className="size-4" />} />
+  <IconCard title="Manufacturing" href="/manual/manufacturing/jobs" description="Jobs and the shop floor." icon={<Factory className="size-4" />} />
+  <IconCard title="Buying" href="/manual/buying/suppliers" description="Suppliers and purchase orders." icon={<Truck className="size-4" />} />
+  <IconCard title="Inventory" href="/manual/inventory/locations-and-stock" description="Stock levels and locations." icon={<Warehouse className="size-4" />} />
+  <IconCard title="Quality" href="/manual/quality/tracking-quality" description="Inspections and traceability." icon={<ShieldCheck className="size-4" />} />
+  <IconCard title="Accounting" href="/manual/accounting/overview" description="Invoices and payments." icon={<Calculator className="size-4" />} />
 </Cards>
 
-## How to read this manual
-
-<Steps>
-<Step>
-**Start with the [walkthrough](/manual/walkthrough).** It gives you the whole map before
-you zoom in, so individual features make sense in context.
-</Step>
-<Step>
-**Then read the section you need.** Each one opens with *“Where this fits”* and ends with
-*“Next steps”*, so you always know where you are in the bigger flow.
-</Step>
-<Step>
-**Try it in your own Carbon.** Sign in at [app.carbon.ms](https://app.carbon.ms) and follow
-along. Don't have an account yet? Carbon is open source — see
-[Getting Started](/manual/getting-started/setup-company).
-</Step>
-</Steps>
-
 <Callout type="info">
-  Looking for the **developer** documentation — the API, self-hosting and core concepts?
-  Switch to **Developer Docs** using the toggle at the top of the sidebar, or visit
-  [the framework docs](/).
+  Looking for **developer** docs (the API, self-hosting)? Use the **Developer Docs** toggle at
+  the top of the sidebar.
 </Callout>

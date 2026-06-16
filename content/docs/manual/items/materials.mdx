@@ -4,27 +4,25 @@ description: "Raw materials, forms, grades and dimensions for cut-to-size stock.
 ---
 
 A **material** is the raw stock you buy and then cut, machine or form into parts — a steel
-plate, an aluminum billet, a length of brass bar. In Carbon a material is a special kind of
-[**item**](/manual/overview/glossary), built to describe physical stock the way a metals
-distributor sells it: a *substance* (what alloy), a *form* (plate, bar, tube…), a *grade*,
-and *dimensions*. This page explains what makes a material different from a part, how Carbon
-names and organizes them, and how to create one — using Acme's real steel, stainless,
-aluminum and Inconel stock as the example throughout.
+plate, an aluminum billet, a length of brass bar. In Carbon, a material is a kind of
+[**item**](/manual/overview/glossary), described the way a metals distributor sells it:
+a **substance**, a **form**, a **grade**, and **dimensions**.
 
-<Callout type="info">
-  **Where this fits.** Materials are the raw stock that feeds your
-  [methods](/manual/items/methods) and [jobs](/manual/manufacturing/jobs). On the hero
-  thread, the Counterweight Hook (`CWH-A36-15`) is a *Part* made from one material —
-  **A36 Steel Plate 1″** — which Acme buys from [Ryerson](/manual/buying/suppliers) on
-  purchase order [PO000057](/manual/buying/purchasing-basics). Define the material here,
-  and it's ready to drop into a bill of materials.
-</Callout>
+## Where this lives in Carbon
 
-## Material vs. Part: what's the difference?
+Materials live in the **Items** module, on the **Materials** tab next to Parts. Open **Items**
+from the home screen, then switch to **Materials** to see your raw stock.
 
-Both a **part** and a **material** are *items*, so they share the same plumbing — a unique
-ID, a unit of measure, costs, inventory tracking, suppliers. The difference is what they
-*describe* and how you usually replenish them.
+<AppShot
+  src="/screenshots/manual/items-parts.png"
+  alt="The Items module showing the Parts and Materials tabs"
+  caption="Items module. Switch to the Materials tab to list raw stock, or use the green Add button (top-right) to create one."
+/>
+
+## Material vs. part
+
+Both are **items**, so they share the same fields — ID, unit of measure, costs, inventory,
+suppliers. They differ in what they describe and how you get them.
 
 <DataTable
   columns={[
@@ -33,192 +31,90 @@ ID, a unit of measure, costs, inventory tracking, suppliers. The difference is w
     { key: "mat", label: "Material" },
   ]}
   rows={[
-    { dim: "What it is", part: "Something you make or sell as a finished thing", mat: "Raw stock you consume to make parts" },
-    { dim: "Identified by", part: "A part number you assign", mat: "Substance + form + grade + size" },
+    { dim: "What it is", part: "Something you make or sell", mat: "Raw stock you consume" },
+    { dim: "Named by", part: "A part number you assign", mat: "Substance + form + grade + size" },
     { dim: "Usual source", part: <Tag>Make</Tag>, mat: <Tag>Buy</Tag> },
     { dim: "Typical unit", part: "EA (each)", mat: "LB, IN, FT, sheet" },
-    { dim: "Lives in a method as", part: "The thing being built (or a sub-assembly)", mat: "A consumed input on the bill of materials" },
   ]}
 />
 
-The line gets blurry on purpose — a material *can* be made (some shops melt and pour their
-own), and a part *can* be bought. What you pick mostly drives the defaults Carbon shows you.
-The practical reason to model raw stock as a **material** rather than a generic part is that
-Carbon then understands its anatomy: it knows "A36 plate, 1 inch thick, 96×240 sheet" is a
-single substance in three descriptive pieces, so it can group, search and reorder stock the
-way your buyers actually think.
-
 <Callout type="tip">
-  If you're unsure whether something is a part, a material, a tool, a consumable or a
-  service, see the [item type overview](/manual/items/defining-an-item). Materials are the
-  right choice for **anything you cut, machine, weld or form from raw stock**.
+  Use a **material** for anything you cut, machine, weld or form from raw stock. Not sure which
+  item type to pick? See [defining an item](/manual/items/defining-an-item).
 </Callout>
 
-## The anatomy of a material
+## The four parts of a material
 
-Every Carbon material is described by four attributes. Acme's catalog uses a tidy naming
-convention that packs all four into the material's readable ID.
+Every material is described by four attributes. Acme packs all four into a readable ID so the
+catalog reads at a glance.
 
 <StatGrid cols={4}>
-  <Stat label="Substance" value="A36" hint="the alloy / material" />
-  <Stat label="Form" value="Plate" hint="the shape it comes in" />
-  <Stat label="Grade" value="—" hint="temper / spec, e.g. T6" />
-  <Stat label="Dimensions" value="1″ · 96×240" hint="thickness and sheet size" />
+  <Stat label="Substance" value="A36" hint="the alloy" />
+  <Stat label="Form" value="Plate" hint="the shape" />
+  <Stat label="Grade" value="A36" hint="temper / spec" />
+  <Stat label="Dimensions" value="1″ · 96×240" hint="thickness · sheet" />
 </StatGrid>
 
-### Substances
-
-A **substance** is the underlying material — the alloy or compound. Carbon ships with 17
-system-defined substances, and you can add your own. Acme's catalog draws on **six** of
-them — steel, stainless steel, aluminum, brass, Inconel and titanium. A few from Acme's
-shelves:
-
-<DataTable
-  columns={[
-    { key: "code", label: "Code", mono: true },
-    { key: "name", label: "Substance" },
-    { key: "example", label: "Example in Acme's stock" },
-  ]}
-  rows={[
-    { code: "STEEL", name: "Steel", example: "A36 Steel Plate" },
-    { code: "SS", name: "Stainless Steel", example: "304 & 316 stainless plate, bar, hex" },
-    { code: "AL", name: "Aluminum", example: "6061 & 7075 aluminum billet, flat, plate" },
-    { code: "BR", name: "Brass", example: "360 Brass Square Bar" },
-    { code: "INC", name: "Inconel", example: "722 Inconel Billet" },
-    { code: "TI", name: "Titanium", example: "Titanium Plate 6″" },
-  ]}
-/>
-
-<Callout type="info">
-  Carbon's 17 built-in substances are Aluminum, Brass, Bronze, Copper, Inconel, Magnesium,
-  Monel, Nylon, Plastic, PVC, Rubber, Stainless Steel, Steel, Titanium, Tungsten, Zinc and
-  Zirconium. Need something exotic? You can define a company-specific substance — Acme added
-  *Foam* for its packaging stock.
-</Callout>
-
-### Forms
-
-A **form** is the shape the stock arrives in. Carbon has **21 forms** built in. Acme buys
-across most of them:
-
-<DataTable
-  columns={[
-    { key: "code", label: "Code", mono: true },
-    { key: "form", label: "Form" },
-    { key: "code2", label: "Code", mono: true },
-    { key: "form2", label: "Form" },
-  ]}
-  rows={[
-    { code: "PLT", form: "Plate", code2: "ROUNDBAR", form2: "Round Bar" },
-    { code: "BIL", form: "Billet", code2: "HEX", form2: "Hex Bar" },
-    { code: "FLAT", form: "Flat Bar", code2: "SQBAR", form2: "Square Bar" },
-    { code: "SHEET", form: "Sheet", code2: "ROUNDTUBE", form2: "Round Tube" },
-    { code: "ANGLE", form: "Angle", code2: "CHAN", form2: "Channel" },
-    { code: "RECTBAR", form: "Rectangular Bar", code2: "TREADPLATE", form2: "Tread Plate" },
-  ]}
-/>
-
-The full set also includes Filament, Ingot, Pellet, Rectangular Tube, S-Beam, Square Tube,
-T-Bar, W-Beam and Wide Bar — enough to describe almost anything a metals service center
-stocks. The form matters because it shapes how you measure and cut the material: plate is
-sold by area or weight, bar by length, tube by length and wall thickness.
-
-### Grades and dimensions
-
-**Grade** captures the temper or spec — `T6` on aluminum, the alloy designation baked into
-the name (304 vs 316 stainless, A36 vs 4140 steel). **Dimensions** capture the physical size:
-plate thickness and sheet size (96×240 inches), bar diameter, tube wall. In Acme's catalog,
-grade and dimension live inside the readable ID rather than as separate lookup fields, which
-keeps the part list scannable.
+- **Substance** — the alloy. Carbon ships 17 built-in (Steel, Stainless Steel, Aluminum,
+  Brass, Inconel, Titanium and more). Acme uses six, plus a custom one (*Foam*) for packaging.
+- **Form** — the shape it arrives in. Carbon has 21 built-in: Plate, Billet, Flat Bar, Round
+  Bar, Hex Bar, Sheet, Tube, Angle, Channel and more.
+- **Grade** — the temper or spec, like `T6` on aluminum or `304` vs `316` on stainless.
+- **Dimensions** — the physical size: plate thickness, sheet size, bar diameter.
 
 <Callout type="tip">
-  **Reading an Acme material ID.** `A36-STEEL-PLT-1".96x240` decodes as: **A36** (grade) ·
-  **STEEL** (substance) · **PLT** (form = plate) · **1″** (thickness) · **96×240** (sheet
-  size in inches). Once you can read the pattern, the whole catalog becomes self-describing.
+  **Reading an Acme ID.** `A36-STEEL-PLT-1".96x240` = **A36** (grade) · **STEEL** (substance) ·
+  **PLT** (form) · **1″** (thickness) · **96×240** (sheet, inches).
 </Callout>
 
 ## Acme's material catalog
 
-Here's a real slice of Acme's 19-material catalog, straight from the system. Notice how the
-naming convention lets the same substance appear in several thicknesses and sheet sizes —
-each one is its own item because it's physically a different piece of stock to buy, store
-and cut.
+Here's a slice of Acme's 19-material catalog. The same substance shows up in several sizes —
+each is its own item, because each is a different piece of stock to buy, store and cut.
 
-<AppShot title="Items · Materials" url="app.carbon.ms/x/items?type=Material" caption="A slice of Acme's raw-material catalog." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "Material", mono: true },
-      { key: "desc", label: "Description" },
-      { key: "sub", label: "Substance" },
-      { key: "form", label: "Form" },
-      { key: "uom", label: "UoM", align: "right" },
-      { key: "repl", label: "Source", align: "right" },
-    ]}
-    rows={[
-      { id: "A36-STEEL-PLT-1\".96x240", desc: "A36 Steel Plate 1″", sub: "Steel", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "A36-STEEL-PLT-2\".240x96", desc: "A36 Steel Plate 2″", sub: "Steel", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "A36-STEEL-PLT-4\".96x240", desc: "A36 Steel Plate 4″", sub: "Steel", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "304-SS-PLT-1\".96x240", desc: "304 Stainless Plate 1″", sub: "Stainless Steel", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "304-SS-ROUNDBAR-2\"", desc: "304 Stainless Round Bar 2″", sub: "Stainless Steel", form: "Round Bar", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "316-SS-HEX-1\"", desc: "316 Stainless Hex Bar 1″", sub: "Stainless Steel", form: "Hex Bar", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "6061-AL-BIL-6\" x 6\"-T6", desc: "6061 Aluminum Billet 6×6 T6", sub: "Aluminum", form: "Billet", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "6061-AL-FLAT-3\" x 1.25\"-T6", desc: "6061 Aluminum Flat Bar T6", sub: "Aluminum", form: "Flat Bar", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "7075-AL-PLT-12\"-T6", desc: "7075 Aluminum Plate 12″ T6", sub: "Aluminum", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "360-BR-SQBAR-2\"", desc: "360 Brass Square Bar 2″", sub: "Brass", form: "Square Bar", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "722-INC-BIL-4\" x 4\"", desc: "722 Inconel Billet 4×4", sub: "Inconel", form: "Billet", uom: "LB", repl: <Tag>Buy</Tag> },
-      { id: "TI-PLT-6\"", desc: "Titanium Plate 6″", sub: "Titanium", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
-    ]}
-  />
-</AppShot>
+<DataTable
+  columns={[
+    { key: "id", label: "Material", mono: true },
+    { key: "desc", label: "Description" },
+    { key: "form", label: "Form" },
+    { key: "uom", label: "UoM", align: "right" },
+    { key: "repl", label: "Source", align: "right" },
+  ]}
+  rows={[
+    { id: "A36-STEEL-PLT-1\".96x240", desc: "A36 Steel Plate 1″", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "A36-STEEL-PLT-4\".96x240", desc: "A36 Steel Plate 4″", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "304-SS-PLT-1\".96x240", desc: "304 Stainless Plate 1″", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "316-SS-HEX-1\"", desc: "316 Stainless Hex Bar 1″", form: "Hex Bar", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "6061-AL-BIL-6\" x 6\"-T6", desc: "6061 Aluminum Billet 6×6 T6", form: "Billet", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "7075-AL-PLT-12\"-T6", desc: "7075 Aluminum Plate 12″ T6", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "360-BR-SQBAR-2\"", desc: "360 Brass Square Bar 2″", form: "Square Bar", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "722-INC-BIL-4\" x 4\"", desc: "722 Inconel Billet 4×4", form: "Billet", uom: "LB", repl: <Tag>Buy</Tag> },
+    { id: "TI-PLT-6\"", desc: "Titanium Plate 6″", form: "Plate", uom: "LB", repl: <Tag>Buy</Tag> },
+  ]}
+/>
 
 <Callout type="info">
-  Almost every material is bought in **LB (pounds)** — the natural unit for metal stock — even
-  when the part it feeds is counted in **EA (each)**. Carbon happily mixes units: the
-  Counterweight Hook's method consumes **40 LB** of plate per **1 EA** hook. More on units in
-  the [glossary](/manual/overview/glossary).
+  Most metal is bought in **LB (pounds)** — even when the part it feeds is counted in **EA**.
+  Carbon mixes units happily: the Counterweight Hook consumes **40 LB** of plate per **1 EA** hook.
 </Callout>
 
-## A material up close
+## Cut-to-size stock and stock on hand
 
-Open any material to see its record. This is the one on the hero thread — the 1-inch A36 plate
-that becomes the Counterweight Hook. The **Details** tab shows the four anatomy fields; other
-tabs cover where it's stored, who supplies it, and how it's replenished.
+You rarely use a whole sheet. Each job pulls only the **quantity it needs**, in the material's
+unit:
 
-<AppShot title={"Material · A36-STEEL-PLT-1\".96x240"} url="app.carbon.ms/x/items/material/…">
-  <RecordPanel
-    title="A36 Steel Plate 1″"
-    subtitle={"Material · A36-STEEL-PLT-1\".96x240"}
-    status={<StatusBadge tone="green">Active</StatusBadge>}
-    tabs={["Details", "Inventory", "Suppliers", "Planning"]}
-    activeTab="Details"
-  >
-    <FieldGrid cols={3}>
-      <Field label="Substance" value="Steel" />
-      <Field label="Form" value="Plate (PLT)" />
-      <Field label="Grade" value="A36" />
-      <Field label="Thickness" value={"1\""} />
-      <Field label="Dimensions" value={"96\" × 240\" sheet"} />
-      <Field label="Unit of measure" value="LB (Pound)" />
-      <Field label="Replenishment" value="Buy" />
-      <Field label="Default supplier" value="Ryerson" />
-      <Field label="Batch tracked" value="Yes" />
-    </FieldGrid>
-  </RecordPanel>
-</AppShot>
+- The Counterweight Hook (`CWH-A36-15`) pulls **40 LB** of A36 plate per hook.
+- A batch of 500 hooks needs **20,000 LB** — not 500 whole sheets.
+- Carbon tracks the running pounds on hand and counts them down as you consume.
 
-Notice **Batch tracked: Yes** — that's not cosmetic. We'll come back to it below, because it
-changes what happens every time this material moves.
+To see live stock, open the **Inventory** module. It lists on-hand quantity, reorder policy
+and replenishment for every item — including Acme's steel and aluminum.
 
-## Cut-to-size stock
-
-Most raw stock isn't consumed whole — you cut a piece off a larger plate or bar. Carbon models
-this naturally: the material is the *full* stock item (a 96×240 sheet of 1-inch A36), and each
-job consumes only the **quantity it needs**, expressed in the material's unit of measure.
-
-On the hero thread, the Counterweight Hook's [method](/manual/items/methods) pulls **40 LB** of
-A36 plate per hook. A batch of 500 hooks therefore needs **20,000 LB** — not 500 whole sheets.
-Carbon tracks the running pounds on hand and consumes against it, so a single sheet feeds many
-parts and you always know how much usable plate is left.
+<AppShot
+  src="/screenshots/manual/inventory.png"
+  alt="The Inventory module showing on-hand quantities of steel and aluminum"
+  caption="Inventory → Quantities. Real on-hand pounds of steel and aluminum, with reorder policy and replenishment per item."
+/>
 
 <MethodTree nodes={[
   { kind: "assembly", label: "CWH-A36-15", detail: "Counterweight Hook", qty: "1 EA", children: [
@@ -227,137 +123,72 @@ parts and you always know how much usable plate is left.
   ]},
 ]} />
 
-<Callout type="tip">
-  Buying stock in one unit and consuming it in another is common — you might purchase plate by
-  the *sheet* but consume it by the *pound*. Carbon supports a purchase unit and an inventory
-  unit with a conversion between them. Acme keeps it simple and uses **LB** for both on its
-  steel. See [purchasing basics](/manual/buying/purchasing-basics) for the buy side.
-</Callout>
+## Batch tracking and traceability
 
-## Batch and lot tracking
-
-For materials, **where the metal came from** often matters as much as how much you have. A
-**batch** (or *lot*, or *heat* for steel) is a group of stock that arrived together from one
-supplier shipment. Turning on batch tracking tells Carbon to record a batch number every time
-the material is received, and to carry that number forward into every part made from it.
-
-Acme's A36 plate has `requiresBatchTracking` switched on. That single flag means:
+For materials, **where the metal came from** can matter as much as how much you have. A
+**batch** (also *lot*, or *heat* for steel) is stock that arrived together in one shipment.
+Acme's A36 plate has batch tracking on, so:
 
 <Steps>
   <Step>
-    **At receipt**, Carbon asks for (or generates) a batch number when the steel arrives from
-    Ryerson on [PO000057](/manual/buying/purchasing-basics). The pounds are added to inventory
-    *tagged* with that batch.
+    **At receipt**, Carbon records a batch number when steel arrives from
+    [Ryerson](/manual/buying/suppliers) on [PO000057](/manual/buying/purchasing-basics). The
+    pounds are tagged with that batch.
   </Step>
   <Step>
-    **During the job**, when 20,000 LB of plate is issued to job J000097, Carbon records which
-    batch (or batches) was consumed.
+    **During the job**, when plate is issued to job J000097, Carbon records which batch was used.
   </Step>
   <Step>
-    **Forever after**, the finished Counterweight Hooks carry a link back to that exact heat of
-    steel. If Ryerson later reports a problem with that heat, Acme can answer "which orders did
-    that steel ship in?" in seconds.
+    **Forever after**, each finished hook links back to that exact heat of steel — so if Ryerson
+    reports a problem, Acme can answer "which orders shipped that steel?" in seconds.
   </Step>
 </Steps>
 
-This chain — supplier shipment → material batch → job → finished part → customer — is what
-manufacturers call **traceability** (or *genealogy*). It's a requirement in aerospace, defense
-and medical work, and it's exactly why Radiant Aerospace cares that Acme runs batch-tracked
-steel. Read more in [Tracking quality](/manual/quality/tracking-quality).
+This chain — shipment → batch → job → part → customer — is **traceability**. It's why Radiant
+Aerospace cares that Acme runs batch-tracked steel. More in
+[tracking quality](/manual/quality/tracking-quality).
 
 <Callout type="warn">
-  Decide on batch (or [serial](/manual/overview/glossary)) tracking **before** you start
-  receiving a material. Switching it on after stock already exists in inventory is messy,
-  because the existing quantity has no batch number attached. For regulated work, turn it on
-  when you first create the material.
-</Callout>
-
-<Callout type="info">
-  **Batch vs. serial.** *Batch* tracking groups many units under one number — right for bulk
-  stock like plate and bar where individual pounds are interchangeable. *Serial* tracking gives
-  every single unit its own number — right for high-value finished parts you must track
-  one-by-one. Materials almost always use batch tracking.
+  Turn on batch tracking **before** you receive any stock. Switching it on later leaves existing
+  quantity with no batch number. For regulated work, enable it when you first create the material.
 </Callout>
 
 ## Create a material
 
-Here's how Acme added the 1-inch A36 plate. You'll create materials the same way for steel,
-stainless, aluminum, brass — anything you cut from raw stock.
+Here's how Acme added the 1-inch A36 plate. Same steps for steel, stainless, aluminum or brass.
 
 <Steps>
   <Step>
-    **Open Items and start a new material.** In the **Items** module, choose **New → Material**.
-    Picking *Material* (rather than Part) gives you the substance/form/grade/dimension fields
-    instead of a blank part record.
+    **Start a new material.** In the **Items** module, on the **Materials** tab, click the green
+    **Add** button (top-right). Picking *Material* gives you the substance/form/grade fields.
   </Step>
   <Step>
-    **Pick the substance, form and grade.** Choose **Steel** as the substance and **Plate (PLT)**
-    as the form from Carbon's built-in lists. Enter the grade — **A36** — and the dimensions:
-    **1″** thickness, **96 × 240** inch sheet. Carbon assembles these into a suggested readable
-    ID following your naming pattern (here, `A36-STEEL-PLT-1".96x240`).
-
-    <AppShot title="New Material" url="app.carbon.ms/x/items/material/new" caption="Substance, form, grade and dimensions build the material.">
-      <FieldGrid cols={2}>
-        <Field label="Substance" value="Steel" />
-        <Field label="Form" value="Plate (PLT)" />
-        <Field label="Grade" value="A36" />
-        <Field label="Thickness" value={"1\""} />
-        <Field label="Dimensions" value={"96\" × 240\""} />
-        <Field label="Readable ID" value={"A36-STEEL-PLT-1\".96x240"} mono />
-      </FieldGrid>
-    </AppShot>
+    **Pick substance, form and grade.** Choose **Steel** and **Plate (PLT)**, enter grade **A36**,
+    and dimensions **1″** thick, **96 × 240** sheet. Carbon builds a readable ID like
+    `A36-STEEL-PLT-1".96x240`.
   </Step>
   <Step>
-    **Set the unit of measure.** Choose **LB (Pound)** — the unit you'll buy and consume the
-    plate in. This is the unit every quantity for this material is expressed in, from purchase
-    orders to bills of materials to on-hand stock.
+    **Set the unit of measure.** Choose **LB (Pound)** — the unit you buy and consume the plate in.
   </Step>
   <Step>
-    **Set replenishment to Buy.** Because Acme buys plate rather than making it, set the
-    [replenishment system](/manual/items/replenishment) to **Buy**. This unlocks the supplier
-    and reorder settings and tells Carbon to suggest a purchase order when stock runs low.
+    **Set replenishment to Buy.** Acme buys plate, so set
+    [replenishment](/manual/items/replenishment) to **Buy**. This unlocks supplier and reorder settings.
   </Step>
   <Step>
-    **Turn on batch tracking (if needed).** For traceable stock like aerospace steel, switch on
-    **Requires batch tracking** now — before any inventory exists. Acme leaves this on for all
-    its structural metals.
+    **Turn on batch tracking (if needed).** For traceable stock, switch on **Requires batch
+    tracking** now — before any inventory exists.
   </Step>
   <Step>
-    **Add the default supplier.** On the **Suppliers** tab, add **Ryerson** as the source, with
-    the supplier's price (Acme pays **$0.25/LB**). Now the material is ready to be reordered and
-    to appear on a [purchase order](/manual/buying/purchasing-basics) like PO000057.
-  </Step>
-  <Step>
-    **Save.** The material is now a first-class item: it can be dropped onto any
-    [method](/manual/items/methods), stocked in any [location](/manual/inventory/locations-and-stock),
-    and bought from any supplier. The hero thread's hook is now buildable.
+    **Add the supplier and save.** On the **Suppliers** tab, add **Ryerson** at **$0.25/LB**, then
+    **Save**. The material can now drop onto any [method](/manual/items/methods) and onto a
+    [purchase order](/manual/buying/purchasing-basics) like PO000057.
   </Step>
 </Steps>
 
 <Callout type="tip">
-  **Reuse, don't duplicate.** Before creating a material, search the catalog — Acme already has
-  A36 plate in 1″, 2″, 3″ and 4″ thicknesses. If the exact substance + form + size already
-  exists, use it. Only create a new material when the physical stock is genuinely different.
+  **Reuse, don't duplicate.** Search first — Acme already stocks A36 plate in 1″, 2″, 3″ and 4″.
+  Only create a new material when the physical stock is genuinely different.
 </Callout>
-
-## Where materials show up next
-
-Once a material exists, it threads through the rest of Carbon:
-
-<DataTable
-  columns={[
-    { key: "where", label: "Appears in" },
-    { key: "as", label: "As" },
-    { key: "link", label: "Read more" },
-  ]}
-  rows={[
-    { where: "Methods & BOMs", as: "A consumed input with a per-part quantity (40 LB)", link: <a href="/manual/items/methods">Methods</a> },
-    { where: "Jobs", as: "Material demand Carbon plans and issues to the shop", link: <a href="/manual/manufacturing/jobs">Jobs</a> },
-    { where: "Purchase orders", as: "A line you buy from a supplier (PO000057, Ryerson)", link: <a href="/manual/buying/purchasing-basics">Purchasing</a> },
-    { where: "Inventory", as: "On-hand pounds in a bin, tagged with a batch number", link: <a href="/manual/inventory/locations-and-stock">Inventory</a> },
-    { where: "Quality records", as: "The traceable link from heat of steel to finished part", link: <a href="/manual/quality/tracking-quality">Quality</a> },
-  ]}
-/>
 
 ## Next steps
 

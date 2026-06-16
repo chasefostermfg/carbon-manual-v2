@@ -3,89 +3,43 @@ title: "Integrating with Carbon"
 description: "Webhooks, integrations and extending the platform."
 ---
 
-Most ERP systems are a closed box: you get the screens the vendor built, and that's the end
-of it. Carbon is the opposite — it's a **platform you extend**. Everything you see in the app
-is built on the same public [API](/manual/overview/glossary) you can call yourself, so the
-features you wish existed are ones you (or a developer) can add. This page is the map of the
-seams: the **webhooks** that tell other systems when something happens, the **API** you build
-apps on, the **open-source example integrations** Carbon ships, and the **QuickBooks sync**
-that keeps your books in step. You don't have to write code to read this — but by the end
-you'll know exactly where the plugs are.
+Most ERP systems are a closed box. Carbon is the opposite: everything in the app runs on the
+same public [API](/manual/overview/glossary) you can use too. So you can connect Carbon to your
+other tools, or build the feature you wish existed.
 
-<Callout type="info">
-  **Where this fits.** This is the last stop in the *Developing* chapter. Read
-  [Using the API](/manual/developing/using-the-api) first to create a key and make your first
-  call, then [AI & the MCP server](/manual/developing/mcp-and-ai) to let AI assistants operate
-  Carbon. This page assembles those pieces into real connections to the outside world.
-</Callout>
+## Where this lives in Carbon
 
-## The philosophy: Carbon is a platform, not a box
+This is part of the **Developer** module. You set up keys and connections in
+**Settings → Integrations** and **Settings → API**.
 
-Before the how-to, it helps to understand *why* extending Carbon feels different from bolting
-onto a traditional ERP. Three design choices make it work.
-
-<StatGrid cols={3}>
-  <Stat label="One API" value="Single surface" hint="the app uses the same endpoints you do" />
-  <Stat label="Type-safe" value="End to end" hint="from database to UI to your client" />
-  <Stat label="Open source" value="Read the code" hint="nothing is hidden behind a vendor wall" />
-</StatGrid>
-
-- **A single API.** There is no "internal" API the app gets and a weaker "public" one you're
-  handed. The Counterweight Hook order you followed in the
-  [walkthrough](/manual/walkthrough) — quote `Q000061`, sales order `SO000069`, job `J000097` —
-  was created through the same endpoints your own code can call. If the app can do it, so can you.
-- **Full-stack type safety.** Carbon is written in TypeScript from the database schema up
-  through the UI. The shape of a sales order is defined once and flows everywhere, so an
-  `itemId` or a `unitPrice` means the same thing in the database, in the app, and in your
-  integration. Fewer surprises, fewer "what does this field actually contain?" guessing games.
-- **Open source.** The whole system lives on GitHub. When you're unsure how a feature behaves,
-  you can read the actual code instead of filing a support ticket — and the example integrations
-  below are real, runnable repositories you can clone, study, and adapt.
-
-<Callout type="tip">
-  The mental model: **Carbon is the system of record, and integrations are conversations with
-  it.** Your code asks questions ("what shipped today?") and makes changes ("create this quote"),
-  and webhooks let Carbon start the conversation too ("hey, a sales order was just confirmed").
-</Callout>
-
-## The two directions data flows
-
-Every integration is some mix of two directions. Knowing which one you need tells you which
-tool to reach for.
-
-<Mermaid
-  chart={`flowchart LR
-  EXT[Your system or app] -->|API calls| CARBON[Carbon]
-  CARBON -->|Webhooks / events| EXT
-  CARBON -->|MCP| AI[AI assistant]`}
-/>
+There are three ways to connect:
 
 <DataTable
   columns={[
-    { key: "dir", label: "Direction" },
     { key: "tool", label: "Tool" },
+    { key: "dir", label: "Direction" },
     { key: "when", label: "Use it when" },
   ]}
   rows={[
-    { dir: "You → Carbon", tool: <Tag>API</Tag>, when: "You want to read or change data on demand — pull today's orders, create a quote, post an invoice." },
-    { dir: "Carbon → You", tool: <Tag>Webhooks</Tag>, when: "You want to react the moment something happens — a job completes, a shipment ships." },
-    { dir: "Carbon ↔ AI", tool: <Tag>MCP</Tag>, when: "You want an AI assistant to operate Carbon in plain language. See the MCP page." },
+    { tool: <Tag>API</Tag>, dir: "You → Carbon", when: "You want to read or change data: pull today's orders, create a quote, post an invoice." },
+    { tool: <Tag>Webhooks</Tag>, dir: "Carbon → You", when: "You want to react the moment something happens: a job completes, a shipment ships." },
+    { tool: <Tag>MCP</Tag>, dir: "Carbon ↔ AI", when: "You want an AI assistant to run Carbon in plain language. See the MCP page." },
   ]}
 />
 
-Most real integrations use both of the first two: a webhook tells you *something happened*, and
-an API call then asks *for the details*. The QuickBooks sync later in this page is exactly that
-pattern.
+Most integrations use the first two together: a **webhook** tells you something happened, then an
+**API** call gets the details.
 
-## Webhooks: let Carbon tell you when things happen
+<Callout type="tip">
+  New here? Read [Using the API](/manual/developing/using-the-api) first to make a key and your
+  first call. Then come back to wire things together.
+</Callout>
 
-A **webhook** is a way for Carbon to call *you*. Instead of your code constantly asking "anything
-new yet?", you register a URL once, and Carbon sends an HTTP request to that URL whenever an
-**event** you care about occurs. Think of it as Carbon tapping you on the shoulder.
+## Webhooks: Carbon tells you when things happen
 
-Here's the chain for our hero order. When Acme marks sales order `SO000069` confirmed, Carbon can
-fire an event; your endpoint receives it and does whatever you need — notify a Slack channel,
-update a customer portal, kick off a shipping label.
+A **webhook** lets Carbon call *you*. Instead of asking "anything new yet?" over and over, you
+give Carbon a URL once. Carbon sends an HTTP request to that URL whenever an **event** you care
+about happens. Think of it as Carbon tapping you on the shoulder.
 
 <Mermaid
   chart={`flowchart LR
@@ -97,85 +51,69 @@ update a customer portal, kick off a shipping label.
 
 <Steps>
 <Step>
-**Decide what you want to hear about.** Webhooks are organized around events — a record being
-created, updated, or reaching a certain status. Common ones for a shop like Acme: a quote sent, a
-sales order confirmed, a job completed, a shipment shipped, an invoice paid. You only subscribe to
-the events you'll act on.
+**Pick the events you care about.** For a shop like Acme: a quote sent, a sales order confirmed,
+a job completed, a shipment shipped, an invoice paid. Subscribe only to what you'll act on.
 </Step>
 <Step>
-**Stand up a URL to receive them.** Your endpoint is just a small web service that accepts an
-HTTP `POST`. Carbon sends a JSON body describing what happened. The body identifies the record so
-your code knows what to look up.
+**Give Carbon a URL.** Your endpoint is a small web service that accepts an HTTP `POST`. Carbon
+sends a short JSON body saying what happened and which record it was.
 
 ```json
 {
   "event": "salesOrder.confirmed",
-  "companyId": "SMBHQP55H46bdEGV7acnir",
   "recordId": "so_Fx6FCeSpx9sxut9Qns6y91",
   "readableId": "SO000069",
   "occurredAt": "2026-06-11T20:27:06.171Z"
 }
 ```
 
-<Callout type="warn">
-  Webhook payloads are deliberately lean — they tell you *what* and *which record*, not every
-  field. That's by design: it keeps payloads small and avoids stale data. When you receive one,
-  call the API with the `recordId` to fetch the current, authoritative details (see the next
-  section). Never treat the payload itself as the full picture.
-</Callout>
+The payload is small on purpose: it tells you *what* and *which record*, not every field. Use the
+`recordId` to fetch the full, current details with an API call.
 </Step>
 <Step>
-**Verify it really came from Carbon.** Because your URL is public, anyone could `POST` to it.
-Carbon signs each request so you can confirm it's genuine. Always verify the signature before you
-act, and respond quickly with a `2xx` status — do the slow work (looking things up, calling other
-systems) after you've acknowledged receipt, so Carbon doesn't think delivery failed and retry.
+**Check it's really from Carbon.** Carbon signs each request. Verify the signature before you act.
+Then reply fast with a `2xx` status and do the slow work after, so Carbon doesn't think delivery
+failed and retry.
 </Step>
 <Step>
-**Act on it.** Now your handler does the useful part: enrich the event with an API call, then
-push the result wherever it needs to go. For `SO000069`, that might mean fetching the line for
-500 Counterweight Hooks at `$73.14` and dropping a "New order: $36,820 from Radiant Aerospace"
-message into Slack.
+**Act on it.** Fetch the details, then push them where they need to go. For `SO000069`, that could
+mean grabbing the line for 500 Counterweight Hooks at `$73.14` and posting "New order: $36,820 from
+Radiant Aerospace" to Slack.
 </Step>
 </Steps>
 
 <Callout type="tip">
-  Events vs. polling: if you find yourself running a script every five minutes that asks Carbon
-  "anything new?", that's a job for a webhook. Polling wastes calls and adds delay; webhooks fire
-  the instant the thing happens.
+  If you're running a script every five minutes to ask "anything new?", use a webhook instead.
+  Polling wastes calls and adds delay; webhooks fire the instant the thing happens.
 </Callout>
 
-## Building your own apps on the API
+## Build apps on the API
 
-When you need to *do* something to Carbon — read data, create records, change a status — you use
-the API. The same API powers the entire app, so anything you've done by clicking, you can do with
-code. The [Using the API](/manual/developing/using-the-api) page covers keys and your first call
-in detail; here's the shape of what's possible.
+When you need to *do* something to Carbon, you use the API. The same API powers the whole app, so
+anything you can do by clicking, you can do with code.
 
 <DataTable
   columns={[
-    { key: "want", label: "What you want to build" },
+    { key: "want", label: "Build this" },
     { key: "reads", label: "Reads" },
     { key: "writes", label: "Writes" },
   ]}
   rows={[
-    { want: "Customer order portal", reads: "Sales orders, shipments, invoices for one customer", writes: "New quotes from the customer's cart" },
-    { want: "Shop-floor dashboard on a TV", reads: "Open jobs, operation status, work-center load", writes: "—" },
-    { want: "Nightly cost report to a data warehouse", reads: "Jobs, completed quantities, labor seconds", writes: "—" },
+    { want: "Customer order portal", reads: "Orders, shipments, invoices for one customer", writes: "New quotes from their cart" },
+    { want: "Shop-floor TV dashboard", reads: "Open jobs, operation status, work-center load", writes: "—" },
+    { want: "Nightly cost report", reads: "Jobs, completed quantities, labor seconds", writes: "—" },
     { want: "Sync orders from your webstore", reads: "Item catalog, customer list", writes: "Customers, sales orders" },
   ]}
 />
 
-A read against our hero data is as direct as it sounds — ask for sales order `SO000069`, get its
-lines back. This is the same official client you set up in
-[Using the API](/manual/developing/using-the-api), so a webhook handler can fetch by the
-`recordId` it received:
+A read is as direct as it sounds. Ask for sales order `SO000069`, get its lines back. A webhook
+handler can use the `recordId` it received:
 
 ```ts
 import { CarbonClient } from "@carbon/api";
 
 const carbon = new CarbonClient({ apiKey: process.env.CARBON_API_KEY });
 
-// Fetch the full record using the recordId from the webhook payload.
 const { data: order } = await carbon.salesOrders.get("SO000069");
 ```
 
@@ -184,7 +122,6 @@ const { data: order } = await carbon.salesOrders.get("SO000069");
   "data": {
     "salesOrderId": "SO000069",
     "status": "Completed",
-    "customerId": "cust_LxoH7AbowNVjTwGSoqkW1Q",
     "orderTotal": 36820,
     "lines": [
       { "itemReadableId": "CWH-A36-15", "saleQuantity": 500, "unitPrice": 73.14 }
@@ -194,144 +131,111 @@ const { data: order } = await carbon.salesOrders.get("SO000069");
 ```
 
 <Callout type="info">
-  Because Carbon is type-safe end to end, the fields you see here — `salesOrderId`, `customerId`,
-  `unitPrice` — are the exact same names used inside the app and in the example repos below. There's
-  no separate "integration data model" to learn. Field names from this manual carry straight over
-  to your code.
+  The field names you see here (`salesOrderId`, `unitPrice`) are the same ones used inside the app.
+  There's no separate "integration data model" to learn.
 </Callout>
 
-## Example integrations: clone, read, adapt
+## Example integrations: clone and adapt
 
-Carbon publishes real, open-source integrations you can run yourself. They're the fastest way to
-go from "I think this is possible" to a working pattern, because they show the whole loop — API
-calls, webhooks, and a real UI — in code you can read.
+Carbon ships real, open-source examples. They're the fastest way to go from "I think this is
+possible" to a working pattern.
 
 <Cards>
   <IconCard
     title="quote-configurator"
     href="https://github.com/crbnos/carbon/tree/main/www/quote-configurator"
-    description="A guided product configurator that turns a customer's choices into a priced Carbon quote — the made-to-order flow, built on the API."
+    description="Turns a customer's choices into a priced Carbon quote — the made-to-order flow, built on the API."
     icon={<Settings className="size-4" />}
   />
   <IconCard
     title="upload-3d-model"
     href="https://github.com/crbnos/carbon/tree/main/www/upload-3d-model"
-    description="Drop in a 3D model (like the counterweight hook 3d.stl on CWH-A36-15) and attach it to an item via the API."
+    description="Drop in a 3D model and attach it to an item via the API."
     icon={<Upload className="size-4" />}
   />
   <IconCard
     title="Carbon on GitHub"
     href="https://github.com/crbnos/carbon"
-    description="The whole platform is open source. Read how any feature actually works, or open an issue."
+    description="The whole platform is open source. Read how any feature works, or open an issue."
     icon={<GitMerge className="size-4" />}
   />
 </Cards>
 
-### quote-configurator
+**quote-configurator** asks the customer a few questions (size, material, finish) and turns the
+answers into a priced quote automatically. Acme already has one in its item list: the **Flame Cut
+Part Configurator** (`FLAME CONFIG`). The app computes a price and creates a quote through the API,
+just like the `Q000061` quote you'd build by hand in [Quoting](/manual/selling/quoting).
 
-A **configurator** asks the customer a few questions — size, material, finish — and turns the
-answers into a priced quote automatically. It's how a shop sells made-to-order parts without a
-salesperson re-pricing every variation by hand. Acme already has one in its item list: the
-**Flame Cut Part Configurator** (`FLAME CONFIG`).
-
-This example is a small web app: the customer makes choices in the browser, the app computes a
-price, and it creates a quote in Carbon through the API — the same `Q000061`-style quote you'd
-build by hand in [Quoting](/manual/selling/quoting), just driven by configuration instead of
-typing.
-
-<Mermaid
-  chart={`flowchart LR
-  C[Customer picks options] --> APP[Configurator app]
-  APP --> PRICE[Compute price]
-  PRICE --> API[Carbon API]
-  API --> Q[New quote in Carbon]`}
-/>
-
-### upload-3d-model
-
-Parts aren't just numbers — they have geometry. This example lets you attach a **3D model** to an
-[item](/manual/overview/glossary) so anyone looking at the part can see it. The Counterweight Hook
-already carries one: its `modelName` is `counterweight hook 3d.stl`. The repo shows how to take a
-model file, upload it, and link it to the right item through the API — handy if your CAD system or
-a customer portal needs to push models into Carbon automatically.
+**upload-3d-model** attaches a **3D model** to an [item](/manual/overview/glossary) so anyone can
+see the part. The Counterweight Hook already carries one: `counterweight hook 3d.stl`. The repo
+shows how to upload a model file and link it to the right item.
 
 <Callout type="tip">
-  Treat these repos as templates, not products. Clone one, point it at your own Carbon company
-  with your API key, and reshape it. Because they're open source and use the same field names as
-  the app, the gap between "example" and "the thing I actually need" is usually small.
+  Treat these as templates, not products. Clone one, point it at your own company with your API key,
+  and reshape it. Same field names as the app, so the gap is usually small.
 </Callout>
 
-## The QuickBooks sync: a real integration, end to end
+## The QuickBooks sync, end to end
 
-The most common real-world integration is keeping your **accounting** system in step. Acme runs
-its books in [QuickBooks](/manual/accounting/overview), and the Carbon → QuickBooks sync is a
-textbook example of the webhook-plus-API pattern: Carbon owns the operational truth (what was made,
-shipped, and billed), and QuickBooks owns the financial truth (the general ledger). The sync keeps
-them agreeing without double data entry.
-
-Follow invoice `AR000025` — the `$36,820` bill for Radiant Aerospace's 500 hooks — from Carbon
-into QuickBooks:
+The most common integration is keeping your **accounting** system in step. Acme runs its books in
+[QuickBooks](/manual/accounting/overview). Carbon owns what was made, shipped and billed;
+QuickBooks owns the general ledger. The sync keeps them agreeing without double data entry, and
+it's a textbook example of the webhook-plus-API pattern.
 
 <Mermaid
   chart={`flowchart LR
-  INV[Invoice AR000025 posted] --> HOOK[Carbon webhook fires]
-  HOOK --> SYNC[Sync service]
-  SYNC --> FETCH[Fetch invoice via API]
+  INV[Invoice AR000025 posted] --> HOOK[Webhook fires]
+  HOOK --> FETCH[Fetch invoice via API]
   FETCH --> MAP[Map customer and amounts]
   MAP --> QB[Create invoice in QuickBooks]`}
 />
 
 <Steps>
 <Step>
-**Connect the two systems once.** You authorize Carbon to talk to your QuickBooks company. After
-that, the link persists — you don't log in every time.
+**Connect once.** In **Settings → Integrations**, authorize Carbon to talk to your QuickBooks
+company. The link persists; you don't log in every time.
 </Step>
 <Step>
-**Match the records that already exist.** Both systems have customers and items, so the sync maps
-them to each other: Carbon's `Radiant Aerospace` (`cust_LxoH7AbowNVjTwGSoqkW1Q`) links to the
-matching QuickBooks customer, so amounts land on the right account. This mapping is the part worth
-getting right — it's what stops the same customer appearing twice.
+**Match existing records.** Both systems have customers and items, so the sync maps them: Carbon's
+`Radiant Aerospace` links to the matching QuickBooks customer. Getting this right stops the same
+customer appearing twice.
 </Step>
 <Step>
-**Carbon posts an invoice.** When Acme issues `AR000025`, that's the trigger. A webhook fires and
-the sync service wakes up.
+**Carbon posts an invoice.** When Acme issues `AR000025`, a webhook fires and the sync wakes up.
 </Step>
 <Step>
-**The sync fetches the details and writes them across.** Using the `recordId` from the webhook, it
-pulls the full invoice — `subtotal` `$36,570`, `$250` shipping, `invoiceTotal` `$36,820` — and
-creates the matching invoice in QuickBooks. When Radiant pays and Carbon marks it `Paid`, that
-status can flow over too.
+**The sync writes it across.** It pulls the full invoice (`$36,570` subtotal, `$250` shipping,
+`$36,820` total) and creates the matching invoice in QuickBooks. When Radiant pays, that status can
+flow over too.
 </Step>
 </Steps>
 
-<AppShot title="Accounting integrations" url="app.carbon.ms/x/settings/integrations" caption="Acme's connected systems, including the QuickBooks accounting sync.">
-  <DataTable
-    columns={[
-      { key: "name", label: "Integration" },
-      { key: "type", label: "Type" },
-      { key: "syncs", label: "Keeps in sync" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { name: "QuickBooks Online", type: <Tag>Accounting</Tag>, syncs: "Customers, invoices, payments", status: <StatusBadge tone="green">Connected</StatusBadge> },
-      { name: "Quote configurator", type: <Tag>Custom app</Tag>, syncs: "Inbound quotes via API", status: <StatusBadge tone="green">Active</StatusBadge> },
-      { name: "Slack notifications", type: <Tag>Webhook</Tag>, syncs: "Order and job events", status: <StatusBadge tone="blue">Listening</StatusBadge> },
-    ]}
-  />
-</AppShot>
+See your connected systems in **Settings → Integrations**. Here's Acme's:
+
+<DataTable
+  columns={[
+    { key: "name", label: "Integration" },
+    { key: "type", label: "Type" },
+    { key: "syncs", label: "Keeps in sync" },
+    { key: "status", label: "Status", align: "right" },
+  ]}
+  rows={[
+    { name: "QuickBooks Online", type: <Tag>Accounting</Tag>, syncs: "Customers, invoices, payments", status: <StatusBadge tone="green">Connected</StatusBadge> },
+    { name: "Quote configurator", type: <Tag>Custom app</Tag>, syncs: "Inbound quotes via API", status: <StatusBadge tone="green">Active</StatusBadge> },
+    { name: "Slack notifications", type: <Tag>Webhook</Tag>, syncs: "Order and job events", status: <StatusBadge tone="blue">Listening</StatusBadge> },
+  ]}
+/>
 
 <Callout type="warn">
-  Decide who owns each piece of data before you connect anything. In Acme's setup Carbon is the
-  source of truth for invoices and QuickBooks just receives them — so nobody hand-keys an invoice
-  in QuickBooks that Carbon doesn't know about. Two systems both editing the same field is the
-  fastest way to create a reconciliation headache. Pick one owner per field and let the sync flow
-  one way.
+  Decide who owns each piece of data before you connect anything. At Acme, Carbon is the source of
+  truth for invoices and QuickBooks just receives them. Two systems editing the same field is the
+  fastest way to a reconciliation headache. Pick one owner per field and let the sync flow one way.
 </Callout>
 
-## Putting it together
+## How the pieces fit
 
-A complete integration usually wires all of these together. Here's the anatomy of Acme's setup,
-using only records you've already met:
+Every real integration is the same four pieces, and each one is just a normal API call or HTTP
+request — nothing magic:
 
 <DataTable
   columns={[
@@ -347,26 +251,19 @@ using only records you've already met:
   ]}
 />
 
-<Callout type="info">
-  Notice there's nothing magic here — every step is a normal API call or a normal HTTP request.
-  That's the whole point of an open platform: the same building blocks the QuickBooks sync uses are
-  the ones available to you for the integration you have in mind, whether that's a customer portal,
-  a webstore connector, or a TV dashboard on the shop floor.
-</Callout>
-
 ## Next steps
 
 <Cards>
   <IconCard
     title="Using the API"
     href="/manual/developing/using-the-api"
-    description="Create an API key and make your first read and write — the foundation under every integration on this page."
+    description="Create an API key and make your first read and write — the foundation under every integration here."
     icon={<KeyRound className="size-4" />}
   />
   <IconCard
     title="AI & the MCP server"
     href="/manual/developing/mcp-and-ai"
-    description="Let AI assistants operate Carbon in plain language through the built-in Model Context Protocol server."
+    description="Let AI assistants run Carbon in plain language through the built-in MCP server."
     icon={<Bot className="size-4" />}
   />
   <IconCard

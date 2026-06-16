@@ -1,18 +1,25 @@
 import { cn } from "@/lib/cn";
 import type { ReactNode } from "react";
 
+// Real screenshots live under /screenshots/... ; prefix with the base path so they
+// resolve on a sub-path static deploy (e.g. GitHub Pages).
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+
 /**
- * AppShot wraps illustrative UI in a browser-style window chrome so it reads as a
- * screenshot of the Carbon app. Content is rendered with real demo data, so it
- * stays crisp, theme-aware (light/dark) and never goes stale.
+ * AppShot wraps a real Carbon screenshot (or an illustrative mock) in a
+ * browser-style window chrome.
  *
- * Usage in MDX:
- *   <AppShot title="Sales Orders" url="app.carbon.ms/x/sales-order">
- *     <DataTable .../>
- *   </AppShot>
+ * Real screenshot (preferred):
+ *   <AppShot src="/screenshots/manual/home-modules.png" alt="The Carbon home screen"
+ *            caption="Carbon's home screen — every module is a card." />
+ *
+ * Illustrative mock (when no screenshot exists):
+ *   <AppShot title="Sales Orders"><DataTable .../></AppShot>
  */
 export function AppShot({
   children,
+  src,
+  alt,
   title,
   url,
   caption,
@@ -20,15 +27,30 @@ export function AppShot({
   bodyClassName,
   flush = false,
 }: {
-  children: ReactNode;
+  children?: ReactNode;
+  /** Path to a real screenshot, e.g. "/screenshots/manual/home-modules.png". */
+  src?: string;
+  alt?: string;
   title?: string;
   url?: string;
   caption?: ReactNode;
   className?: string;
   bodyClassName?: string;
-  /** Remove body padding (for full-bleed tables). */
+  /** Remove body padding (for full-bleed tables/images). */
   flush?: boolean;
 }) {
+  const isImage = Boolean(src);
+  const body = isImage ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`${basePath}${src}`}
+      alt={alt || title || "Carbon screenshot"}
+      loading="lazy"
+      className="block h-auto w-full"
+    />
+  ) : (
+    children
+  );
   return (
     <figure className={cn("my-6 not-prose", className)}>
       <div className="overflow-hidden rounded-xl border border-fd-border bg-fd-card shadow-sm">
@@ -51,8 +73,8 @@ export function AppShot({
           )}
           <div className="w-12" />
         </div>
-        {/* optional app title bar */}
-        {title ? (
+        {/* optional app title bar (mocks only — real screenshots carry their own UI) */}
+        {title && !isImage ? (
           <div className="flex items-center justify-between border-b border-fd-border px-4 py-2.5">
             <span className="text-sm font-semibold text-fd-foreground">
               {title}
@@ -64,7 +86,9 @@ export function AppShot({
             </span>
           </div>
         ) : null}
-        <div className={cn(flush ? "" : "p-4", bodyClassName)}>{children}</div>
+        <div className={cn(flush || isImage ? "" : "p-4", bodyClassName)}>
+          {body}
+        </div>
       </div>
       {caption ? (
         <figcaption className="mt-2 text-center text-sm text-fd-muted-foreground">

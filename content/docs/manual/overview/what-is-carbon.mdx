@@ -3,109 +3,99 @@ title: "What is Carbon?"
 description: "ERP, MES and QMS in one system of record — and who uses each part."
 ---
 
-Carbon is software for running a manufacturing business. If you've never used a tool
-like this before, here's the short version: Carbon keeps track of everything your shop
-does — the orders you take, the parts you make, the materials you buy, and the money that
-moves — all in one place. When you write something down once, Carbon carries it everywhere
-it's needed, so nobody has to re-type it.
+Carbon is software for running a manufacturing business. It tracks your orders, parts,
+materials, and money in one place. Write something down once, and Carbon carries it
+everywhere. Nobody re-types anything.
 
-Most shops cobble this together from spreadsheets, a separate accounting program, paper
-travelers on the shop floor, and a folder of inspection forms. Each one holds part of the
-truth, and none of them talk to each other. Carbon replaces that pile with a single
-**system of record** — one trusted place where the real, current state of the business
-lives.
+Most shops glue this together from spreadsheets, an accounting program, paper travelers,
+and inspection forms. None of them talk to each other. Carbon replaces that pile with one
+**system of record** — one trusted place where the real state of the business lives.
 
-<Callout type="info">
-  **Where this fits.** This is the first concept page. It explains what Carbon *is* at a
-  high level. Next, [Core concepts](/manual/overview/core-concepts) defines the building
-  blocks (items, methods, jobs, orders), and [Navigating Carbon](/manual/overview/navigating)
-  shows you how to move around the app. If you'd rather see it all in action first, the
-  [15-minute walkthrough](/manual/walkthrough) follows one real order end to end.
-</Callout>
+## Where this lives in Carbon
 
-## Meet Acme — our running example
+Carbon is organized into **Modules** — Sales, Purchasing, Items, Production, Inventory,
+Quality, Accounting, and more. Each Module is one job. You open a Module from the **home
+screen**, where every Module shows up as a tile.
 
-Every page in this manual uses one real demo company so the examples stay concrete.
-**Acme Inc.** is a metal-fabrication shop in Springfield, OH. It cuts, machines, and
-finishes steel and aluminum parts for customers in aerospace, defense, energy, mining,
-and construction.
+<AppShot
+  src="/screenshots/manual/home-modules.png"
+  alt="The Carbon home screen with all Module tiles"
+  caption="The Carbon home screen. Click any tile to open that Module."
+/>
 
-<StatGrid cols={4}>
-  <Stat label="Customers" value="16" hint="incl. Tesla & Radiant Aerospace" />
-  <Stat label="Suppliers" value="16" hint="steel, hardware, services" />
-  <Stat label="Jobs run" value="89" hint="J000001 → J000099" />
-  <Stat label="Locations" value="2" hint="Headquarters + Texas" />
-</StatGrid>
+You don't have to learn all of Carbon. Most people live in one or two Modules. Pick the
+tile for the work you do.
 
-Throughout the manual we follow one part Acme makes — a **Counterweight Hook**
-(part number `CWH-A36-15`) that it produces for the customer **Radiant Aerospace**. You'll
-see that hook turn up again and again, because a single order for it touches every corner
-of Carbon. Keep it in mind; it's the thread that ties the whole manual together.
+## ERP, MES and QMS — three jobs, one system
 
-## Three jobs, one system
-
-People often describe business software with three acronyms — ERP, MES, and QMS. Plenty of
-companies buy three separate programs to cover them. Carbon does all three, and the magic
-is that they're not three programs bolted together: they're three views of the **same
-data**. Here's what each one means in plain language.
+People describe business software with three acronyms — ERP, MES, and QMS. Many shops buy
+three separate programs. Carbon does all three — not bolted together, but as three views of
+the **same data**.
 
 <Cards>
-  <IconCard title="ERP — run the business" icon={<BrainCog className="size-4" />} description="Sales, purchasing, inventory and costing. The office side: who ordered what, what you need to buy, what's in stock, and what it all costs." />
-  <IconCard title="MES — run the shop floor" icon={<CirclePlay className="size-4" />} description="Releasing jobs, clocking onto operations, and recording finished pieces. The plant side: turning orders into real, made parts." />
-  <IconCard title="QMS — keep it good" icon={<ShieldCheck className="size-4" />} description="Inspections, non-conformances (NCRs) and full traceability. The quality side: proving each part is right and tracing where it came from." />
+  <IconCard title="ERP — run the business" icon={<BrainCog className="size-4" />} description="The office side. Sales, purchasing, inventory and costing: who ordered what, what to buy, what's in stock, and what it all costs." />
+  <IconCard title="MES — run the shop floor" icon={<CirclePlay className="size-4" />} description="The plant side. Release jobs, clock onto operations, and record finished pieces — turning orders into real, made parts." />
+  <IconCard title="QMS — keep it good" icon={<ShieldCheck className="size-4" />} description="The quality side. Inspections, non-conformances (NCRs) and full traceability — proving each part is right and tracing where it came from." />
 </Cards>
 
-### ERP — the business
+### ERP — the office
 
-**ERP** stands for *Enterprise Resource Planning*. Ignore the jargon — it just means the
-office side of the business. In Carbon, that's where you:
+**ERP** means *Enterprise Resource Planning*. In plain words, it's the office side. The
+Modules here let you:
 
-- Quote a customer and turn the quote into a **sales order** when they say yes.
-- Raise **purchase orders** to suppliers for the materials and services you need.
+- **Quote** a customer, then turn the quote into a **sales order** when they say yes.
+- Raise **purchase orders** to suppliers for the materials you need.
 - Track **inventory** — what's on the shelf, where, and how much.
-- Roll up **cost** automatically, so you know what a part really costs to make and whether
-  the price you quoted leaves a profit.
+- Roll up **cost** automatically, so you know if a price leaves a profit.
 
-For Acme, this is the layer that took Radiant Aerospace's order for 500 Counterweight Hooks
-(sales order `SO000069`, $36,820) and the layer that bought the steel to make them from
-Ryerson (purchase order `PO000057`).
+For Acme, ERP took Radiant Aerospace's order for 500 Counterweight Hooks (sales order
+`SO000069`, $36,820) and bought the steel from Ryerson (purchase order `PO000057`).
 
 ### MES — the shop floor
 
-**MES** stands for *Manufacturing Execution System*. It's the part operators actually use,
-out on the floor, to do the work. When the office releases a **job** (a production order to
-make a specific quantity of a part), the job appears in the MES app. An operator opens it,
-**clocks on** to an operation, and records how many good pieces they finished. That's what
-turns a planned order into real parts — and it's what feeds true labor time back into the
-cost.
+**MES** means *Manufacturing Execution System*. It's what operators use on the floor. When
+the office releases a **job** (an order to make a quantity of a part), it shows up for an
+operator. They open it, **clock on** to an operation, and record finished pieces.
 
-For Acme's hook, the MES side ran three operations in order: **Flame Cut**, then
-**Sandblasting**, then **Inspection**. Each was clocked and completed on job `J000097`.
+For Acme's hook, the floor ran three steps in order — **Flame Cut**, **Sandblasting**, then
+**Inspection** — all on job `J000097`.
 
 ### QMS — quality
 
-**QMS** stands for *Quality Management System*. This is how you make sure each part is right
-and can prove it later. In Carbon that means:
+**QMS** means *Quality Management System*. It's how you make sure each part is right and
+can prove it later:
 
-- **Inspections** — a quality check, often built right into a job as an operation (notice
-  "Inspection" was the last step on the hook).
-- **Non-conformances (NCRs)** — a record you raise when something is wrong, so it gets
-  reviewed and fixed instead of slipping through.
-- **Traceability** (also called *genealogy*) — the linked chain from finished part back to
-  the exact batch of raw material it came from. Because Acme's A36 steel is batch-tracked,
-  Carbon can answer "which heat of steel went into Radiant's hooks?" in seconds.
+- **Inspections** — a quality check, often built into a job as a step.
+- **Non-conformances (NCRs)** — a record you raise when something is wrong, so it gets fixed.
+- **Traceability** — the linked chain from finished part back to the exact batch of raw
+  material. Carbon can answer "which heat of steel went into Radiant's hooks?" in seconds.
 
-<Callout type="tip">
-  New to any of these words? Every bolded term — **item**, **method**, **job**,
-  **sales order**, **non-conformance** and more — is defined in the
-  [glossary](/manual/overview/glossary). You never have to guess what something means.
-</Callout>
+## Who uses which Module
+
+<DataTable
+  columns={[
+    { key: "role", label: "Role" },
+    { key: "part", label: "Side" },
+    { key: "does", label: "Day to day" },
+  ]}
+  rows={[
+    { role: "Estimators & sales", part: <Tag>ERP</Tag>, does: "Build quotes, price work, turn won quotes into sales orders." },
+    { role: "Buyers & purchasing", part: <Tag>ERP</Tag>, does: "Raise purchase orders, chase deliveries, receive material into stock." },
+    { role: "Owners & managers", part: <Tag>ERP</Tag>, does: "Watch orders, costs, margins and cash across the business." },
+    { role: "Machine operators", part: <Tag>MES</Tag>, does: "Open jobs on the floor, clock onto operations, record finished pieces." },
+    { role: "Quality inspectors", part: <Tag>QMS</Tag>, does: "Run inspections, raise non-conformances, keep traceability intact." },
+  ]}
+/>
+
+Because it's one system, hand-offs are automatic. The estimator doesn't email the order to
+the floor — the order *becomes* a job. The inspector doesn't keep a separate binder — the
+inspection is a step on that same job.
 
 ## One database underneath
 
-The reason the three sides feel like one tool is simple: they sit on **one database**. A
-sales order, the job that fulfills it, the purchase order for its material, the inspection
-that passed it, and the invoice that bills it are all linked records pointing at each other.
+The three sides feel like one tool because they sit on **one database**. A sales order, the
+job that fulfills it, the purchase order for its material, the inspection that passed it,
+and the invoice that bills it are all linked records.
 
 <Mermaid
   chart={`flowchart TB
@@ -118,104 +108,88 @@ that passed it, and the invoice that bills it are all linked records pointing at
   QMS --> DB`}
 />
 
-This is what "system of record" really buys you: **enter information once, and it follows
-the work everywhere.** When Acme shipped the 500 hooks, the sales invoice `AR000025` pulled
-its lines straight from what shipped — nobody re-typed quantities or prices. Here's the same
-single order seen through all three lenses at once.
-
-<AppShot title="One order, three views" url="app.carbon.ms/x/sales-order/SO000069" caption="The Counterweight Hook order as the office, the floor and quality each see it — all the same underlying records.">
-  <DataTable
-    columns={[
-      { key: "view", label: "Lens" },
-      { key: "record", label: "Record", mono: true },
-      { key: "what", label: "What it shows" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { view: "ERP (business)", record: "SO000069", what: "Radiant ordered 500 hooks — $36,820", status: <StatusBadge tone="green">Completed</StatusBadge> },
-      { view: "ERP (business)", record: "PO000057", what: "Bought A36 steel from Ryerson", status: <StatusBadge tone="amber">Needs Approval</StatusBadge> },
-      { view: "MES (floor)", record: "J000097", what: "Made & finished all 500 pieces", status: <StatusBadge tone="green">Completed</StatusBadge> },
-      { view: "QMS (quality)", record: "Inspection op", what: "Final inspection step on the job", status: <StatusBadge tone="green">Done</StatusBadge> },
-      { view: "ERP (business)", record: "AR000025", what: "Billed the order — marked paid", status: <StatusBadge tone="green">Paid</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-<Callout type="warn">
-  This is the single biggest difference from running on spreadsheets. In a spreadsheet world
-  each of those rows lives in a different file, gets copied by hand, and quietly drifts out
-  of sync. In Carbon they are the *same* data — change one, and everyone sees it.
-</Callout>
-
-## Who uses each part
-
-You don't have to learn all of Carbon to be useful in it. Most people live in one or two
-areas. Here's roughly who touches what at a shop like Acme.
+That's what "system of record" buys you: **enter it once, and it follows the work
+everywhere.** Here is Acme's single hook order seen through all three sides at once.
 
 <DataTable
   columns={[
-    { key: "role", label: "Role" },
-    { key: "part", label: "Mostly uses" },
-    { key: "does", label: "Day to day" },
+    { key: "view", label: "Side" },
+    { key: "record", label: "Record", mono: true },
+    { key: "what", label: "What it shows" },
+    { key: "status", label: "Status", align: "right" },
   ]}
   rows={[
-    { role: "Estimators & sales", part: <Tag>ERP</Tag>, does: "Build quotes, price work, convert won quotes into sales orders." },
-    { role: "Buyers & purchasing", part: <Tag>ERP</Tag>, does: "Raise purchase orders, chase deliveries, receive material into stock." },
-    { role: "Owners & managers", part: <Tag>ERP</Tag>, does: "Watch orders, costs, margins and cash across the whole business." },
-    { role: "Machine operators", part: <Tag>MES</Tag>, does: "Open jobs on the floor, clock onto operations, record finished pieces." },
-    { role: "Quality inspectors", part: <Tag>QMS</Tag>, does: "Run inspections, raise non-conformances, keep traceability intact." },
+    { view: "ERP (office)", record: "SO000069", what: "Radiant ordered 500 hooks — $36,820", status: <StatusBadge tone="green">Completed</StatusBadge> },
+    { view: "ERP (office)", record: "PO000057", what: "Bought A36 steel from Ryerson", status: <StatusBadge tone="amber">Needs Approval</StatusBadge> },
+    { view: "MES (floor)", record: "J000097", what: "Made & finished all 500 pieces", status: <StatusBadge tone="green">Completed</StatusBadge> },
+    { view: "QMS (quality)", record: "Inspection op", what: "Final inspection step on the job", status: <StatusBadge tone="green">Done</StatusBadge> },
+    { view: "ERP (office)", record: "AR000025", what: "Billed the order — marked paid", status: <StatusBadge tone="green">Paid</StatusBadge> },
   ]}
 />
 
-Because it's all one system, the hand-offs between these roles are automatic. The estimator
-doesn't email the order to the floor; the order *becomes* a job the operator can open. The
-inspector doesn't keep a separate quality binder; the inspection is a step on that same job.
+<Callout type="warn">
+  This is the biggest difference from spreadsheets. There, each row lives in a different
+  file, gets copied by hand, and drifts out of sync. In Carbon they are the *same* data —
+  change one, and everyone sees it.
+</Callout>
 
-## Why Carbon is different
+## Meet Acme — our running example
 
-Plenty of software does ERP, MES, or QMS. A few things make Carbon stand apart.
+Every page in this manual uses one real demo company so the examples stay concrete.
+**Acme Inc.** is a metal-fabrication shop in Springfield, OH. It cuts, machines, and
+finishes steel and aluminum parts for aerospace, defense, energy, mining, and construction.
 
-<Tabs items={["One connected system", "API-first", "AI-native", "Open source"]}>
-  <Tab value="One connected system">
+<StatGrid cols={4}>
+  <Stat label="Customers" value="16" hint="incl. Tesla & Radiant Aerospace" />
+  <Stat label="Suppliers" value="16" hint="steel, hardware, services" />
+  <Stat label="Jobs run" value="89" hint="J000001 → J000099" />
+  <Stat label="Locations" value="2" hint="Headquarters + Texas" />
+</StatGrid>
+
+Throughout the manual we follow one part Acme makes — a **Counterweight Hook**
+(part number `CWH-A36-15`) for the customer **Radiant Aerospace**. One order for it touches
+every Module, so it's the thread that ties the whole manual together.
+
+## What makes Carbon different
+
+<Tabs items={["One system", "API-first", "AI-native", "Open source"]}>
+  <Tab value="One system">
     Everything lives together, so there's **no re-keying** and nothing drifts out of sync.
     A quote becomes a sales order becomes a job becomes a shipment becomes an invoice — each
-    one inheriting from the last. The [walkthrough](/manual/walkthrough) follows exactly that
-    chain for Acme's hook, from price request to paid invoice, without anyone copying a
-    number by hand.
+    inheriting from the last. The [walkthrough](/manual/walkthrough) follows that chain for
+    Acme's hook, from price request to paid invoice.
   </Tab>
   <Tab value="API-first">
-    An **API** (Application Programming Interface) is a way for other software to read and
-    write your data. Carbon is *API-first*: every screen you click is doing the same thing a
-    program could do through the API. That means you can connect Carbon to your other tools,
-    build custom reports, or automate the boring parts. More in
+    An **API** lets other software read and write your data. Carbon is *API-first*: every
+    screen you click does the same thing a program could do through the API. So you can
+    connect Carbon to your other tools and automate the boring parts. More in
     [Using the API](/manual/developing/using-the-api).
   </Tab>
   <Tab value="AI-native">
-    Carbon ships with a built-in **MCP server** — a standard doorway that lets an AI
-    assistant safely operate Carbon for you (look things up, draft a quote, check a job's
-    status) in plain language. The same demo data in this manual was pulled through it. See
+    Carbon ships with a built-in **MCP server** — a safe doorway that lets an AI assistant
+    operate Carbon for you (look things up, draft a quote, check a job) in plain language.
+    The demo data in this manual was pulled through it. See
     [MCP & AI](/manual/developing/mcp-and-ai).
   </Tab>
   <Tab value="Open source">
-    Carbon's code is **open source** — anyone can read it, run it, and extend it. You're not
-    locked into a black box: you can self-host, audit how it works, and shape it to your
-    shop. The integration story continues in
+    Carbon's code is **open source** — anyone can read it, run it, and extend it. You can
+    self-host, audit how it works, and shape it to your shop. More in
     [Integrating with Carbon](/manual/developing/integrating).
   </Tab>
 </Tabs>
 
 <Callout type="tip">
-  You don't need to understand the API or AI features to get full value from Carbon. They're
-  there when you're ready. Day one, you can quote, order, make, buy, inspect and invoice
-  entirely by clicking — exactly as the rest of this manual shows.
+  You don't need the API or AI features to get full value from Carbon. Day one, you can
+  quote, order, make, buy, inspect and invoice entirely by clicking. New to a bolded term?
+  Every one is defined in the [glossary](/manual/overview/glossary).
 </Callout>
 
 ## The one idea to remember
 
-If you take away a single thing: **Carbon is one connected system of record for the whole
-business.** ERP runs the office, MES runs the floor, QMS keeps it good — but they're three
-windows into the same data, not three programs. Information goes in once and follows the
-work from the first quote to the final payment.
+**Carbon is one connected system of record for the whole business.** ERP runs the office,
+MES runs the floor, QMS keeps it good — three views into the same data, organized as
+Modules. Information goes in once and follows the work from the first quote to the final
+payment.
 
 ## Next steps
 

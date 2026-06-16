@@ -3,305 +3,138 @@ title: "Replenishment: make vs. buy"
 description: "Reorder policies, lead times and planning parameters that keep stock flowing."
 ---
 
-Every [item](/manual/overview/glossary) in Carbon has to come from somewhere. A finished
-part might roll off your shop floor; a sheet of steel arrives on a truck from a supplier.
-**Replenishment** is the word Carbon uses for *how an item gets here* — and getting it
-right is what stops your shop from running out of steel mid-job or from making 500 of
-something nobody ordered. This page explains the two settings that drive all of it
-(**make vs. buy**, and the **fulfillment method** on a line), then the planning numbers —
-lead time, safety stock, reorder point — that let Carbon top up your stock for you.
+Every [item](/manual/overview/glossary) has to come from somewhere. You either **make** it
+or **buy** it. **Replenishment** is how you tell Carbon which one — and the few numbers that
+let Carbon top up your stock before you run out.
 
-<Callout type="info">
-  **Where this fits.** You've already learned to [define an item](/manual/items/defining-an-item),
-  give it a [method](/manual/items/methods), and decide what counts as
-  [material](/manual/items/materials). Replenishment is the last decision on an item:
-  *how do we obtain it?* That answer flows straight into
-  [Jobs](/manual/manufacturing/jobs) (for the things you make) and
-  [Purchasing](/manual/buying/purchasing-basics) (for the things you buy).
-</Callout>
+## Where this lives in Carbon
 
-## The two questions Carbon asks
+Replenishment lives in two **Modules**:
 
-Replenishment comes down to two questions, asked at two different moments.
+- **Items** — set **Make** or **Buy** on the item, in the **Replenishment** area.
+- **Inventory** — see the reorder policy and stock levels Carbon uses to plan.
 
-1. **On the item:** in general, do we *make* this or *buy* this? Carbon stores the answer in
-   a field called the **replenishment system**.
-2. **On each line** (a sales order line, a job material, a quote line): for *this specific
-   demand*, how do we satisfy it — make a fresh batch, pull from the shelf, or order it in?
-   Carbon stores that answer in a field called the **method type**.
+Open an item from the **Items** module and look at its **Manufacturing** view. The
+**Replenishment** field is the make-or-buy switch.
 
-The item-level answer is the default. The line-level answer is the decision Carbon actually
-acts on, and it can differ line by line. Hold onto that distinction — it's the single thing
-people trip over.
-
-<Mermaid
-  chart={`flowchart LR
-  Item[Item: replenishment system] --> Make[Make]
-  Item --> Buy[Buy]
-  Item --> Both[Make and Buy]
-  Make --> MTO[Line: Make to Order]
-  Make --> MTS[Line: Make to Stock]
-  Buy --> PULL[Line: Pull from Inventory]
-  Both --> Choice[You choose per line]`}
+<AppShot
+  src="/screenshots/manual/item-method.png"
+  alt="A part's Manufacturing view showing the Replenishment field set to Make"
+  caption="Items module. The Counterweight Hook (CWH-A36-15) is set to Replenishment = MAKE, Make to Order."
 />
 
-## Step 1 — The replenishment system (make or buy)
+## Make or buy
 
-The **replenishment system** lives on the item itself, on the *Replenishment* area of the
-item record. It has three values:
+Pick one of these on every item:
 
-- **Make** — Carbon expects to *produce* this item with a [job](/manual/overview/glossary).
-  It must have a [method](/manual/items/methods) (a BOM + routing). Our hero part, the
-  Counterweight Hook, is **Make**.
-- **Buy** — Carbon expects to *purchase* this item from a supplier on a
-  [purchase order](/manual/overview/glossary). It needs a supplier and a purchase price.
-  The A36 steel plate the hook is cut from is **Buy**.
-- **Make & Buy** — both are allowed. Use this for an item you usually make but sometimes
-  buy in (or vice versa). You then pick make-or-buy per line.
-
-Here are the two hero items side by side. Same company, opposite answers.
-
-<AppShot title="Item · Replenishment" url="app.carbon.ms/x/items/…/replenishment" caption="The replenishment system is the make-or-buy switch on every item.">
-  <DataTable
-    columns={[
-      { key: "id", label: "Item", mono: true },
-      { key: "desc", label: "Description" },
-      { key: "type", label: "Type" },
-      { key: "sys", label: "Replenishment", align: "center" },
-      { key: "src", label: "Comes from" },
-    ]}
-    rows={[
-      { id: "CWH-A36-15", desc: "Counterweight Hook", type: <Tag>Part</Tag>, sys: <StatusBadge tone="blue">Make</StatusBadge>, src: "A job on the shop floor" },
-      { id: "A36-STEEL-PLT-1\".96x240", desc: "A36 Steel Plate 1\"", type: <Tag>Material</Tag>, sys: <StatusBadge tone="amber">Buy</StatusBadge>, src: "A PO to Ryerson" },
-    ]}
-  />
-</AppShot>
+- **Make** — Carbon builds it on a [job](/manual/overview/glossary). It needs a
+  [method](/manual/items/methods) (a BOM + routing). The Counterweight Hook **CWH-A36-15**
+  is **Make**.
+- **Buy** — Carbon orders it from a supplier on a [purchase order](/manual/overview/glossary).
+  It needs a supplier and a price. The A36 steel plate it's cut from is **Buy**.
+- **Make & Buy** — both are allowed. You pick make-or-buy on each order line.
 
 <Callout type="tip">
-  A quick rule of thumb: if an item has a **method**, it's almost always **Make**. If it has
-  a **preferred supplier** and a purchase price, it's **Buy**. Carbon won't let a *Buy* item
-  go onto a job as something-to-produce, and it won't let a *Make* item with no supplier go
-  onto a purchase order — the replenishment system is what gates those choices.
+  Rule of thumb: if an item has a **method**, it's **Make**. If it has a **supplier** and a
+  purchase price, it's **Buy**.
 </Callout>
 
-## Step 2 — The method type on a line
+## How a line gets filled
 
-When an item shows up as *demand* — a customer orders it, or a parent job needs it as a
-component — Carbon has to decide how to satisfy that one line. That choice is the
-**method type**, and there are three:
+When an item is ordered (a sales order, or a part needed by a job), Carbon picks how to fill
+that one line:
 
-- **Make to Order (MTO)** — create a brand-new job tied to *this* demand. The job exists to
-  fill this order and nothing else. Best for custom or low-volume parts you don't stock.
-- **Make to Stock (MTS)** — make a batch into inventory ahead of demand, then ship from the
-  shelf. Best for parts you sell repeatedly and want ready to go.
-- **Pull from Inventory** — don't make or buy anything new for this line; consume what's
-  already on the shelf. This is how components get drawn into a parent job, and how stocked
-  finished goods get shipped.
+- **Make to Order** — start a fresh job just for this order. Best for custom parts you don't stock.
+- **Make to Stock** — build a batch into inventory ahead of demand, then ship from the shelf.
+- **Pull from Inventory** — take what's already on the shelf. No new job or PO.
 
-On the Counterweight Hook's sales order, the line is **Make to Order** — so Carbon spun up
-job `J000097` the moment the order was confirmed. Inside that job's
-[method](/manual/items/methods), the A36 steel appears as a material line set to
-**Pull from Inventory** — Carbon expects to draw the 40 lb per piece from the shelf rather
-than buy fresh steel for the job itself.
-
-<AppShot title="Method · CWH-A36-15" url="app.carbon.ms/x/job/J000097/method" caption="One method, two method types: make the hook, pull the steel." flush>
-  <MethodTree
-    nodes={[
-      {
-        kind: "assembly",
-        label: "CWH-A36-15",
-        detail: "Counterweight Hook — Make to Order",
-        qty: "1 EA",
-        children: [
-          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ — Pull from Inventory", qty: "40 LB" },
-          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
-          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
-          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station", qty: "10 min/pc" },
-        ],
-      },
-    ]}
-  />
-</AppShot>
+On Acme's hook order, the line is **Make to Order**, so Carbon created job **J000097**. Inside
+that job, the A36 steel is set to **Pull from Inventory** — Carbon draws it from the shelf
+instead of buying fresh for the job.
 
 <Callout type="info">
-  **"Pull from Inventory" assumes the inventory is there.** Carbon will happily plan to pull
-  20,000 lb of steel for this job — but if the shelf is short, that shortage becomes new
-  *demand* for the steel, which (because steel is a **Buy** item) turns into a suggested
-  purchase order. That's exactly how `PO000057` to Ryerson came to exist. Make and buy aren't
-  separate worlds; one feeds the other.
+  If the shelf is short when Carbon goes to pull, that shortage becomes new demand. Because
+  steel is a **Buy** item, that turns into a suggested purchase order — exactly how
+  **PO000057** to **Ryerson** came to exist.
 </Callout>
 
-## How demand and supply drive planning
+## Plan when to reorder
 
-Here's the mental model that makes everything else click. Carbon is constantly comparing two
-columns for every item, at every location:
+For pure make-to-order parts, planning is simple: an order arrives, a job runs. The numbers
+below matter most for items you **stock** — bulk raw materials and make-to-stock parts.
 
-<StatGrid cols={2}>
-  <Stat label="Demand" value="What's needed" hint="sales orders, job materials, forecasts, safety stock" />
-  <Stat label="Supply" value="What's coming" hint="on-hand stock, open jobs, open purchase orders" />
-</StatGrid>
+Open the **Inventory** module to see the reorder policy and stock levels Carbon plans against,
+item by item.
 
-When demand outruns supply, Carbon flags a **shortage** and proposes the fix that matches the
-item's replenishment system:
+<AppShot
+  src="/screenshots/manual/inventory.png"
+  alt="The Inventory module showing on-hand quantities, reorder policy and replenishment by item"
+  caption="Inventory module. Each item shows its reorder policy and replenishment columns Carbon uses to suggest top-ups."
+/>
 
-- A shortage on a **Make** item becomes a suggested **job**.
-- A shortage on a **Buy** item becomes a suggested **purchase order**.
-
-You review those suggestions in Carbon's planning views and turn the good ones into real jobs
-and POs. Nothing happens behind your back — Carbon does the arithmetic, you make the call.
-
-<AppShot title="Planning · Counterweight Hook at Headquarters" url="app.carbon.ms/x/items/CWH-A36-15/planning" caption="Demand minus supply, the way Carbon sees it." flush>
-  <DataTable
-    columns={[
-      { key: "src", label: "Source", mono: true },
-      { key: "kind", label: "Kind" },
-      { key: "qty", label: "Qty", align: "right" },
-      { key: "date", label: "Date" },
-    ]}
-    rows={[
-      { src: "SO000069", kind: <StatusBadge tone="red">Demand</StatusBadge>, qty: "−500 EA", date: "2026-06-26" },
-      { src: "SO000070", kind: <StatusBadge tone="red">Demand</StatusBadge>, qty: "−1,500 EA", date: "2026-07-01" },
-      { src: "J000097", kind: <StatusBadge tone="green">Supply</StatusBadge>, qty: "+500 EA", date: "2026-06-26" },
-      { src: "J000098", kind: <StatusBadge tone="green">Supply</StatusBadge>, qty: "+1,500 EA", date: "2026-07-01" },
-    ]}
-  />
-</AppShot>
-
-Notice every line of demand here is matched by a job that fills it — because the hook is
-*Make to Order*, supply is created to order. For a *Buy* item like the A36 steel, the supply
-column fills with purchase orders instead.
-
-## Step 3 — Set the planning parameters
-
-For a pure Make-to-Order part, planning is simple: an order arrives, a job is made, done.
-The numbers below matter most for items you **stock** — raw materials you buy in bulk, and
-finished goods you make to stock — because Carbon uses them to decide *when* and *how much*
-to replenish before you run dry.
-
-You'll find these on the item's *Planning* tab, set **per location** (Headquarters and Texas
-can have different numbers for the same item).
+Set these on the item's **Planning** tab, **per location** (Headquarters and Texas can differ):
 
 <Steps>
 
 <Step>
-**Pick a reordering policy.** This tells Carbon *when* to suggest a top-up. The common
-choices are:
-- **Manual Reorder** — Carbon never auto-suggests; you create jobs and POs yourself.
-- **Demand-Based Reorder** — Carbon looks ahead over a window of time (a **demand window**,
-  set to **4 weeks** for both hero items), totals up the demand in that window, and suggests
-  enough supply to cover it. This is what both hero items use.
-- **Maximum Quantity** — keep the shelf topped up toward a target level (a classic min/max).
-
+**Pick a reordering policy** — when Carbon suggests a top-up:
+- **Manual Reorder** — no auto-suggestions; you create jobs and POs yourself.
+- **Demand-Based Reorder** — Carbon adds up demand over a window (Acme uses **4 weeks**) and
+  suggests enough to cover it.
+- **Maximum Quantity** — keep the shelf topped up toward a target level.
 </Step>
 
 <Step>
-**Set the reorder point and quantities.** Depending on the policy, you'll fill in some of:
-- **Reorder point** — the on-hand level that triggers a refill. Drop below it and Carbon
-  raises a suggestion.
-- **Reorder quantity** — how much to order each time you do.
-- **Minimum / maximum order quantity** — floor and ceiling on a single order (a supplier
-  might require a 1,000-lb minimum, for example).
-- **Maximum inventory quantity** — the ceiling you top up toward under a *Maximum Quantity*
-  policy.
-- **Order multiple** — round orders up to a sensible pack size (order in multiples of, say,
-  one full sheet rather than odd pounds).
-
+**Set the reorder point and quantity.** Drop below the **reorder point** and Carbon raises a
+suggestion. The **reorder quantity** is how much to order each time.
 </Step>
 
 <Step>
-**Set safety stock.** This is the buffer you want sitting on the shelf *beyond* known demand,
-to absorb surprises. Acme keeps **3,000 LB** of A36 steel as safety stock at Headquarters, so
-Carbon always plans to keep that cushion on hand on top of whatever the jobs need. The hook
-itself carries **no** safety stock — it's made to order, so there's nothing to buffer.
-
+**Set safety stock.** A buffer kept on the shelf beyond known demand. Acme keeps **3,000 LB**
+of A36 steel at Headquarters. The hook keeps **none** — it's made to order.
 </Step>
 
 <Step>
-**Set the lead time.** Lead time is how long replenishment *takes* — days to receive a PO, or
-days to run a job. Both hero items use a **7-day** lead time. Carbon works backwards from your
-due date by the lead time to tell you the *latest* day you can place the order or release the
-job and still be on time.
-
-</Step>
-
-<Step>
-**Set lot sizing and scrap.** **Lot size** controls batching — make/buy in fixed lots
-(`0` means "exactly what's needed", no rounding). **Scrap percentage** pads quantities for
-expected loss, so a job that needs 500 good pieces might be sized a little larger. Both hero
-items use lot size `0` and `0%` scrap.
-
+**Set the lead time.** How long replenishment takes. Both hero items use **7 days**. Carbon
+works back from the due date to tell you the latest day to order or release.
 </Step>
 
 </Steps>
 
-<AppShot title="Planning · A36 Steel Plate at Headquarters" url="app.carbon.ms/x/items/A36-STEEL-PLT/planning" caption="The real planning record for Acme's A36 steel.">
-  <RecordPanel
-    title="A36 Steel Plate 1″ — Planning"
-    subtitle="Location: Headquarters · Buy"
-    status={<StatusBadge tone="amber">Buy</StatusBadge>}
-    tabs={["Replenishment", "Planning", "Suppliers"]}
-    activeTab="Planning"
-  >
-    <FieldGrid cols={3}>
-      <Field label="Reordering policy" value="Demand-Based Reorder" />
-      <Field label="Safety stock" value="3,000 LB" />
-      <Field label="Lead time" value="7 days" />
-      <Field label="Demand window" value="4 weeks" />
-      <Field label="Order multiple" value="1" />
-      <Field label="Preferred supplier" value="Ryerson" />
-    </FieldGrid>
-  </RecordPanel>
-</AppShot>
-
 <Callout type="warn">
-  **A reorder point is per location, not per company.** Setting a reorder point at
-  Headquarters does nothing for Texas. If you stock the same material in two places, give each
-  location its own planning numbers — otherwise one site will quietly run dry while the other
-  is overstocked.
+  Reorder points are **per location**, not per company. If you stock the same material in two
+  places, give each location its own numbers — or one site runs dry while the other overflows.
 </Callout>
 
-## Putting it together: a policy at a glance
+## A few real items, side by side
 
-Different items, different jobs to do — so different replenishment settings. Here's how a few
-real Acme items compare, and *why* each is set the way it is.
+Same shop, four different strategies — all driven by make-or-buy plus a couple of numbers.
 
-<AppShot title="Items · Replenishment policies" url="app.carbon.ms/x/items" caption="One company, several replenishment strategies." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "Item", mono: true },
-      { key: "type", label: "Type" },
-      { key: "sys", label: "System", align: "center" },
-      { key: "method", label: "Typical method" },
-      { key: "buffer", label: "Safety stock", align: "right" },
-      { key: "why", label: "Why" },
-    ]}
-    rows={[
-      { id: "CWH-A36-15", type: <Tag>Part</Tag>, sys: <StatusBadge tone="blue">Make</StatusBadge>, method: <Tag>Make to Order</Tag>, buffer: "0", why: "Custom hook — made only when ordered" },
-      { id: "A36-STEEL-PLT-1\".96x240", type: <Tag>Material</Tag>, sys: <StatusBadge tone="amber">Buy</StatusBadge>, method: <Tag>Pull from Inventory</Tag>, buffer: "3,000 LB", why: "Bulk steel — kept on the shelf, bought ahead" },
-      { id: "TEN-722INC-005", type: <Tag>Part</Tag>, sys: <StatusBadge tone="blue">Make</StatusBadge>, method: <Tag>Make to Stock</Tag>, buffer: "—", why: "Runs in big batches (10,000) into stock" },
-      { id: "GLV-NIT", type: <Tag>Consumable</Tag>, sys: <StatusBadge tone="amber">Buy</StatusBadge>, method: <Tag>Pull from Inventory</Tag>, buffer: "—", why: "Shop supply — reorder when low" },
-    ]}
-  />
-</AppShot>
-
-Read it as a story: the **hook** is made fresh for each order; the **steel** it's cut from is
-bought in bulk and pulled off the shelf, with a 3,000-lb cushion so a job never stalls waiting
-for material; the **Thermal Exhaust Nozzle** is made in large batches into stock because it
-sells steadily; and **nitrile gloves** are just bought and consumed. Same machinery, four
-different replenishment strategies — all driven by those two fields and a handful of planning
-numbers.
+<DataTable
+  columns={[
+    { key: "id", label: "Item", mono: true },
+    { key: "type", label: "Type" },
+    { key: "sys", label: "Make/Buy", align: "center" },
+    { key: "method", label: "Typical line" },
+    { key: "why", label: "Why" },
+  ]}
+  rows={[
+    { id: "CWH-A36-15", type: <Tag>Part</Tag>, sys: <StatusBadge tone="blue">Make</StatusBadge>, method: <Tag>Make to Order</Tag>, why: "Custom hook — made only when ordered" },
+    { id: 'A36-STEEL-PLT-1".96x240', type: <Tag>Material</Tag>, sys: <StatusBadge tone="amber">Buy</StatusBadge>, method: <Tag>Pull from Inventory</Tag>, why: "Bulk steel — bought ahead, 3,000 LB cushion" },
+    { id: "TEN-722INC-005", type: <Tag>Part</Tag>, sys: <StatusBadge tone="blue">Make</StatusBadge>, method: <Tag>Make to Stock</Tag>, why: "Sells steadily — runs in big batches into stock" },
+    { id: "GLV-NIT", type: <Tag>Consumable</Tag>, sys: <StatusBadge tone="amber">Buy</StatusBadge>, method: <Tag>Pull from Inventory</Tag>, why: "Shop supply — reorder when low" },
+  ]}
+/>
 
 <Callout type="tip">
-  **Start simple.** You don't need every parameter on day one. Set the **replenishment
-  system** (make or buy) on every item, set a **lead time** so dates are realistic, and add
-  **safety stock** and **reorder points** only to the items where running out actually hurts.
-  You can always tighten the numbers once you see how stock really moves.
+  **Start simple.** Set **Make** or **Buy** on every item, add a **lead time** so dates are
+  realistic, and add **safety stock** only where running out actually hurts. Tighten the rest later.
 </Callout>
 
 ## Next steps
 
 <Cards>
-  <IconCard title="Defining an item" href="/manual/items/defining-an-item" description="Where the replenishment system is set — start here if an item doesn't exist yet." icon={<Package className="size-4" />} />
-  <IconCard title="Managing production" href="/manual/manufacturing/managing-production" description="How Make-to-Order and Make-to-Stock demand turns into scheduled, released jobs." icon={<Factory className="size-4" />} />
-  <IconCard title="Purchasing basics" href="/manual/buying/purchasing-basics" description="Turn a Buy-item shortage into a purchase order, like PO000057 to Ryerson." icon={<Truck className="size-4" />} />
+  <IconCard title="Defining an item" href="/manual/items/defining-an-item" description="Where make-or-buy is set — start here if the item doesn't exist yet." icon={<Package className="size-4" />} />
+  <IconCard title="Managing production" href="/manual/manufacturing/managing-production" description="How make-to-order and make-to-stock demand turns into scheduled jobs." icon={<Factory className="size-4" />} />
+  <IconCard title="Purchasing basics" href="/manual/buying/purchasing-basics" description="Turn a Buy-item shortage into a PO, like PO000057 to Ryerson." icon={<Truck className="size-4" />} />
 </Cards>

@@ -3,226 +3,130 @@ title: "Accounting & invoicing"
 description: "Sales and purchase invoices, payments and finance integrations."
 ---
 
-Manufacturing is where the money is *earned*; accounting is where it's *counted*. This page
-covers the finance side of Carbon — the **invoices** that bill customers and record what you
-owe suppliers, the **payments** that settle them, and the **chart of accounts** that quietly
-keeps score in the background. You don't need to be an accountant to follow along. The core
-idea is simple: when work happens in the shop, Carbon writes the matching numbers to the
-books for you, so the financials always match reality.
+The shop earns the money; the **Accounting** module counts it. This page covers the two kinds
+of invoice and how they get paid — no accounting background needed.
 
-<Callout type="info">
-  **Where this fits.** Accounting is the *last* stop in the order-to-cash chain you've been
-  following: a [shipment](/manual/selling/sales-to-shipment) goes out, then a **sales
-  invoice** bills for it. On the buying side, a [receipt](/manual/buying/purchasing-basics)
-  comes in, then a **purchase invoice** records what you owe. This page picks up right where
-  those two leave off.
-</Callout>
+## Where this lives in Carbon
+
+Invoices live in the **Accounting** module. Carbon builds them from what already happened —
+what shipped, what you received — so the numbers always match the work.
+
+You can also see an invoice's status right on the document it came from. Sales order
+**SO000069** below is **Invoiced** and **Paid** — the same money that became sales invoice
+**AR000025**.
+
+<AppShot
+  src="/screenshots/manual/sales-order-detail.png"
+  alt="Sales Order SO000069 detail showing the invoiced and paid totals"
+  caption="A sales order's totals show Invoiced and Paid status — here, 500 CWH-A36-15 at $73.14 came to $36,820 and is fully Paid."
+/>
 
 ## The two kinds of invoice
 
-There are only two flavors of invoice in Carbon, and they mirror each other:
+There are only two, and they mirror each other:
 
-- A **sales invoice** (the "AR" in `AR000025` stands for *Accounts Receivable* — money owed
-  **to** you) bills a customer for what you shipped them.
-- A **purchase invoice** (the "AP" stands for *Accounts Payable* — money **you** owe) records
-  the bill a supplier sends you for what they delivered.
+- **Sales invoice (AR)** — bills a **customer** for what you shipped. `AR` means *Accounts
+  Receivable*: money owed **to** you.
+- **Purchase invoice (AP)** — records a bill a **supplier** sent **you**. `AP` means *Accounts
+  Payable*: money **you** owe.
 
-[Accounts Receivable](/manual/overview/glossary) and [Accounts
-Payable](/manual/overview/glossary) are just the bookkeeping names for "money coming in" and
-"money going out." Acme has 25 sales invoices (`AR000001` through `AR000025`) and 27 purchase
-invoices (`AP000001` through `AP000027`) on file.
+That's it. Acme has 25 sales invoices (`AR000001`–`AR000025`) and 27 purchase invoices
+(`AP000001`–`AP000027`).
 
 <Mermaid
   chart={`flowchart LR
   SH[Shipment to customer] --> AR[Sales Invoice AR]
   AR --> PAYIN[Customer pays]
   RCV[Receipt from supplier] --> AP[Purchase Invoice AP]
-  AP --> PAYOUT[You pay supplier]
-  AR --> GL[Chart of Accounts]
-  AP --> GL`}
+  AP --> PAYOUT[You pay supplier]`}
 />
-
-The thing that makes Carbon different from a standalone accounting app: the invoice doesn't
-start from a blank page. It's built from what already happened in the system — what shipped,
-what was received — so the numbers can't drift apart from the work.
 
 ## Sales invoices — billing the customer
 
-A **sales invoice** is how you get paid. In Carbon you rarely type one from scratch; you
-**create it from a shipment**. The invoice copies the customer, the parts, the quantities and
-the prices straight off what went out the door, so the bill always matches the delivery.
+A sales invoice is how you get paid. You rarely type one from scratch — you **create it from a
+shipment**, and Carbon copies the customer, parts, quantities and prices off what shipped.
 
-Follow the hero thread to see it: when Acme shipped 500 Counterweight Hooks to **Radiant
-Aerospace**, that shipment became sales invoice **AR000025**.
-
-<AppShot title="Sales Invoice · AR000025" url="app.carbon.ms/x/sales-invoice/si_EBoH…" caption="Acme's invoice to Radiant Aerospace, built from the shipment for SO000069.">
-  <RecordPanel
-    title="AR000025 — Radiant Aerospace"
-    subtitle="Issued 2026-06-11 · PO reference 55557777 · Net 30"
-    status={<StatusBadge tone="green">Paid</StatusBadge>}
-    tabs={["Details", "Lines", "Payments"]}
-    activeTab="Lines"
-  >
-    <FieldGrid cols={3}>
-      <Field label="Customer" value="Radiant Aerospace" />
-      <Field label="Posting date" value="2026-06-11" />
-      <Field label="From shipment" value="SO000069" mono />
-    </FieldGrid>
-    <div className="mt-4">
-      <DataTable
-        columns={[
-          { key: "part", label: "Part", mono: true },
-          { key: "desc", label: "Description" },
-          { key: "qty", label: "Qty", align: "right" },
-          { key: "price", label: "Unit price", align: "right" },
-          { key: "ext", label: "Extended", align: "right" },
-        ]}
-        rows={[
-          { part: "CWH-A36-15", desc: "Counterweight Hook", qty: "500 EA", price: "$73.14", ext: "$36,570.00" },
-        ]}
-      />
-    </div>
-    <div className="mt-4">
-      <FieldGrid cols={3}>
-        <Field label="Subtotal" value="$36,570.00" />
-        <Field label="Shipping" value="$250.00" />
-        <Field label="Invoice total" value="$36,820.00" />
-      </FieldGrid>
-    </div>
-  </RecordPanel>
-</AppShot>
-
-<Callout type="tip">
-  **Why two totals?** The **subtotal** ($36,570.00) is the parts alone — 500 × $73.14. The
-  **invoice total** ($36,820.00) adds the $250.00 shipping charge. Carbon keeps the two
-  separate so the parts revenue and the freight land in different accounts. There's no tax on
-  this one (`totalTax` is $0), since aerospace defense parts are often tax-exempt.
-</Callout>
-
-### Creating and sending a sales invoice
+When Acme shipped 500 Counterweight Hooks to **Radiant Aerospace**, that became sales invoice
+**AR000025** for **$36,820.00**.
 
 <Steps>
 
 <Step>
-**Open the source.** Go to **Sales** → **Sales Invoices**, click **New**, and pick the
-shipment (or sales order) to bill. For the hero thread that's the shipment behind
-**SO000069**. Carbon pulls in the customer, the line for 500 `CWH-A36-15`, the $73.14 price
-and the $250 shipping automatically — nothing is re-keyed.
+**Open the source.** Go to **Sales Invoices** and click **New**, then pick the shipment (or
+sales order) to bill — here, the shipment behind **SO000069**. Carbon pulls in the lines
+automatically.
 </Step>
 
 <Step>
-**Review the lines.** Check the quantities and prices match what actually shipped. This is
-your last chance to catch a wrong price or a partial shipment before the customer sees it.
-You can add a one-off charge (like a rush fee) as an extra line if needed.
+**Review the lines.** Check the quantities and prices match what shipped. Last chance to catch
+a wrong price before the customer sees it.
 </Step>
 
 <Step>
-**Post it.** Posting changes the invoice from **Draft** to a live receivable and writes the
-accounting entries (more on that below). The invoice number — `AR000025` — is assigned, and
-the amount now counts as money the customer owes you.
+**Post it.** Posting assigns the number (`AR000025`) and turns it into a live receivable — money
+the customer now owes.
 </Step>
 
 <Step>
-**Send it.** Email the PDF to the customer or download it to send yourself. Carbon stamps the
-**date issued** and starts the payment-terms clock — here, **Net 30**, meaning payment is due
-30 days out.
+**Send it.** Email or download the PDF. Carbon stamps the date and starts the payment-terms
+clock — here, **Net 30**.
 </Step>
 
 </Steps>
 
-### Reading the invoice statuses
-
-Every sales invoice carries a status so you can see at a glance what's outstanding. Acme's
-invoices use three:
+Sales invoices use three statuses:
 
 <DataTable
   columns={[
     { key: "status", label: "Status" },
     { key: "means", label: "What it means" },
-    { key: "do", label: "What you do next" },
   ]}
   rows={[
-    { status: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Being prepared. Not yet on the books, not yet sent.", do: "Review the lines, then post." },
-    { status: <StatusBadge tone="blue">Submitted</StatusBadge>, means: "Posted and sent to the customer. Waiting on payment.", do: "Watch the due date; chase if it ages." },
-    { status: <StatusBadge tone="green">Paid</StatusBadge>, means: "Payment received and applied in full.", do: "Nothing — it's closed." },
+    { status: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Being prepared. Not on the books, not sent." },
+    { status: <StatusBadge tone="blue">Submitted</StatusBadge>, means: "Posted and sent. Waiting on payment." },
+    { status: <StatusBadge tone="green">Paid</StatusBadge>, means: "Paid in full. Closed." },
   ]}
 />
 
-Here's a slice of Acme's real receivables ledger. Notice it's healthy — every posted invoice
-here has been collected:
-
-<AppShot title="Sales Invoices" url="app.carbon.ms/x/sales-invoices" caption="Acme's most recent sales invoices (Accounts Receivable)." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "Invoice", mono: true },
-      { key: "customer", label: "Customer" },
-      { key: "issued", label: "Issued" },
-      { key: "total", label: "Total", align: "right" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { id: "AR000025", customer: "Radiant Aerospace", issued: "2026-06-11", total: "$36,820.00", status: <StatusBadge tone="green">Paid</StatusBadge> },
-      { id: "AR000024", customer: "Apex Tactical", issued: "2026-05-26", total: "$204.70", status: <StatusBadge tone="neutral">Draft</StatusBadge> },
-      { id: "AR000023", customer: "Acme South America", issued: "2026-05-14", total: "$30.00", status: <StatusBadge tone="blue">Submitted</StatusBadge> },
-      { id: "AR000022", customer: "Everbolt Defense", issued: "2026-04-21", total: "$4,762.50", status: <StatusBadge tone="blue">Submitted</StatusBadge> },
-      { id: "AR000020", customer: "Vector Tactical", issued: "2026-04-21", total: "$51,000.00", status: <StatusBadge tone="green">Paid</StatusBadge> },
-      { id: "AR000017", customer: "Radiant Aerospace", issued: "2026-04-09", total: "$20,000.00", status: <StatusBadge tone="green">Paid</StatusBadge> },
-      { id: "AR000012", customer: "Apex Tactical", issued: "2026-02-28", total: "$53,230.00", status: <StatusBadge tone="green">Paid</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
 ## Purchase invoices — recording what you owe
 
-A **purchase invoice** is the mirror image: it's the bill a *supplier* sends *you*. When the
-steel arrives from Ryerson, Ryerson emails Acme a bill, and Acme enters it as a purchase
-invoice so the books know money is owed and when it's due.
+A purchase invoice is the mirror image: the bill a *supplier* sends *you*. When steel arrives
+from Ryerson, you enter their bill so the books know what's owed.
 
-The key idea here is **matching**. A purchase invoice is checked against two things that
-already exist in Carbon:
+The key idea is **matching**. Carbon checks the supplier's bill against two things that already
+exist:
 
-1. The **purchase order** — the price and quantity you agreed to.
-2. The **receipt** — what actually showed up on the dock.
+- The **purchase order** — the price and quantity you agreed to.
+- The **receipt** — what actually showed up on the dock.
 
-If the supplier's bill agrees with both, you approve it with confidence. If it doesn't —
-they billed for 100 but you only received 90, or the price crept up — Carbon shows the
-mismatch so you can query it *before* you pay. This is the classic **three-way match** that
-stops a shop from overpaying.
+If they agree, approve with confidence. If not — they billed for 100 but you got 90 — Carbon
+shows the gap *before* you pay.
 
-<Callout type="info">
-  **Tying back to the PO.** Acme's purchase order **PO000057** to Ryerson was for A36 steel
-  plate at $0.25/LB. When that steel is received and Ryerson's bill comes in, the matching
-  purchase invoice records the payable against that same PO — keeping buying and accounting
-  in lockstep. See [Purchasing basics](/manual/buying/purchasing-basics) for the receiving
-  side.
-</Callout>
+<Steps>
 
-Unlike Acme's tidy receivables, the **payables** ledger is a realistic mix — some bills are
-still drafts, some are open and waiting, and plenty are already paid:
+<Step>
+**Start from the PO.** Go to **Purchase Invoices** → **New** and select the purchase order —
+for example, Ryerson's A36 steel from **PO000057**. Carbon pre-fills supplier, lines and prices.
+</Step>
 
-<AppShot title="Purchase Invoices" url="app.carbon.ms/x/purchase-invoices" caption="Acme's purchase invoices (Accounts Payable) — a mix of Draft, Open and Paid." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "Invoice", mono: true },
-      { key: "supplier", label: "Supplier" },
-      { key: "issued", label: "Issued" },
-      { key: "total", label: "Total", align: "right" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { id: "AP000027", supplier: "Costco", issued: "2026-06-09", total: "$200.00", status: <StatusBadge tone="neutral">Draft</StatusBadge> },
-      { id: "AP000026", supplier: "Ryerson", issued: "2026-06-08", total: "$79,750.00", status: <StatusBadge tone="neutral">Draft</StatusBadge> },
-      { id: "AP000024", supplier: "Reliance Steel", issued: "2026-06-03", total: "$312,000.00", status: <StatusBadge tone="green">Paid</StatusBadge> },
-      { id: "AP000023", supplier: "Ryerson", issued: "2026-06-02", total: "$5,808.65", status: <StatusBadge tone="green">Paid</StatusBadge> },
-      { id: "AP000022", supplier: "Grainger", issued: "2026-05-28", total: "$0.00", status: <StatusBadge tone="red">Overdue</StatusBadge> },
-      { id: "AP000016", supplier: "Ryerson", issued: "2026-05-21", total: "$154,092.90", status: <StatusBadge tone="green">Paid</StatusBadge> },
-      { id: "AP000001", supplier: "Olympic Steel", issued: "2026-01-25", total: "$2,350.50", status: <StatusBadge tone="blue">Open</StatusBadge> },
-    ]}
-  />
-</AppShot>
+<Step>
+**Match against the receipt.** Confirm the billed quantities match what you received. Carbon
+flags any mismatch.
+</Step>
 
-Purchase invoices add a couple of statuses the sales side doesn't have. Here's the full set
-Acme uses:
+<Step>
+**Enter the supplier's bill number.** Type their invoice reference and date — what you'll quote
+if you call them about it.
+</Step>
+
+<Step>
+**Post it.** The invoice moves to **Open**, records the payable, and sets the due date from the
+supplier's terms.
+</Step>
+
+</Steps>
+
+Purchase invoices add a couple of statuses the sales side doesn't have:
 
 <DataTable
   columns={[
@@ -230,47 +134,18 @@ Acme uses:
     { key: "means", label: "What it means" },
   ]}
   rows={[
-    { status: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Entered but not yet posted. No payable recorded yet." },
-    { status: <StatusBadge tone="blue">Open</StatusBadge>, means: "Posted and approved. You owe it; it's within terms." },
-    { status: <StatusBadge tone="purple">Partially Paid</StatusBadge>, means: "Some of the balance has been paid; a remainder is outstanding." },
-    { status: <StatusBadge tone="red">Overdue</StatusBadge>, means: "Past its due date and still unpaid — needs attention." },
+    { status: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Entered, not posted. No payable yet." },
+    { status: <StatusBadge tone="blue">Open</StatusBadge>, means: "Posted and approved. You owe it; within terms." },
+    { status: <StatusBadge tone="purple">Partially Paid</StatusBadge>, means: "Part paid, a balance remains." },
+    { status: <StatusBadge tone="red">Overdue</StatusBadge>, means: "Past due and unpaid — needs attention." },
     { status: <StatusBadge tone="green">Paid</StatusBadge>, means: "Settled in full. Closed." },
   ]}
 />
 
-### Entering a purchase invoice
-
-<Steps>
-
-<Step>
-**Start from the PO or receipt.** Go to **Purchasing** → **Purchase Invoices** → **New** and
-select the purchase order the bill relates to. Carbon pre-fills the supplier, lines and
-agreed prices — for example, Ryerson's A36 steel from **PO000057**.
-</Step>
-
-<Step>
-**Match against the receipt.** Confirm the billed quantities match what you actually
-received. Carbon highlights any gap between *ordered*, *received* and *billed* so a mismatch
-can't slip through unnoticed.
-</Step>
-
-<Step>
-**Enter the supplier's bill number.** Type the supplier's own invoice reference and the date
-they issued it. This is what you'll quote if you ever need to call them about the bill.
-</Step>
-
-<Step>
-**Post it.** Posting moves the invoice to **Open**, records the payable, and sets the due
-date from the supplier's payment terms. It's now a live bill waiting to be paid.
-</Step>
-
-</Steps>
-
 ## Recording payments
 
-An invoice tells you money *should* move; a **payment** records that it *did*. Posting an
-invoice and paying it are two separate steps on purpose — that gap is exactly the period an
-invoice is "outstanding."
+An invoice says money *should* move; a **payment** records that it *did*. They're separate
+steps on purpose — the gap between them is the time an invoice is "outstanding."
 
 <Steps>
 
@@ -279,116 +154,59 @@ invoice is "outstanding."
 </Step>
 
 <Step>
-**Record the payment.** Enter the amount received (or paid), the date, and the method —
-check, ACH, wire, card. For AR000025, Radiant paid the full $36,820.00 on **2026-06-11**, the
-same day it was issued.
+**Record the payment.** Enter the amount, the date, and the method — check, ACH, wire, card.
+Radiant paid the full **$36,820.00** on **2026-06-11**.
 </Step>
 
 <Step>
-**Carbon applies it and updates the status.** A full payment flips the invoice to **Paid**
-and clears its balance to zero. A partial payment leaves a remaining balance and (on the
-payables side) shows as **Partially Paid**. The matching cash entry posts to the books
-automatically.
+**Carbon updates the status.** A full payment flips it to **Paid**; a partial payment leaves a
+balance. The cash entry posts to the books automatically.
 </Step>
 
 </Steps>
 
 <Callout type="tip">
-  **Payment terms drive the due date.** Each invoice carries a [payment
-  term](/manual/overview/glossary) that Carbon uses to calculate when payment is due. Acme has
-  seven configured — **Net 30** is the default — plus early-payment discounts like **2% 10 Net
-  30** (take 2% off if you pay within 10 days) and **COD**. Terms flow down from the customer
-  or supplier record onto every order and invoice, so you set them once.
+  **Payment terms drive the due date.** Each invoice carries a payment term that Carbon uses to
+  set when payment is due. **Net 30** is Acme's default. Terms flow down from the customer or
+  supplier record onto every order and invoice, so you set them once.
 </Callout>
 
-## How posting flows to the chart of accounts
+## It all posts to the books for you
 
-Here's the part that makes a non-accountant nervous — and it shouldn't. The **chart of
-accounts** is just a numbered list of buckets the business tracks money in: cash, what
-customers owe, what you owe suppliers, sales, cost of goods, and so on. Acme's chart has
-**93 accounts**. You don't post to them by hand. When you post an invoice or a payment,
-Carbon writes the entries to the right buckets for you, following rules set up once during
-[company setup](/manual/getting-started/setup-company).
+Every posted invoice and payment writes entries to the **chart of accounts** — the numbered
+buckets the business tracks money in (cash, receivables, payables, sales, cost of goods). Acme's
+chart has **93 accounts**, and you never post to them by hand.
 
-A few of Acme's accounts, so the names aren't a mystery:
-
-<DataTable
-  columns={[
-    { key: "num", label: "No.", mono: true, align: "right" },
-    { key: "name", label: "Account" },
-    { key: "type", label: "Type" },
-    { key: "use", label: "Used for" },
-  ]}
-  rows={[
-    { num: "1010", name: "Bank - Cash", type: <Tag>Asset</Tag>, use: "Cash you hold" },
-    { num: "1110", name: "Accounts Receivable", type: <Tag>Asset</Tag>, use: "Money customers owe you" },
-    { num: "1210", name: "Inventory", type: <Tag>Asset</Tag>, use: "Value of stock on hand" },
-    { num: "2010", name: "Accounts Payable", type: <Tag>Liability</Tag>, use: "Money you owe suppliers" },
-    { num: "4010", name: "Sales", type: <Tag>Revenue</Tag>, use: "Income from selling parts" },
-    { num: "5010", name: "Cost of Goods Sold - Direct", type: <Tag>Expense</Tag>, use: "What it cost to make what you sold" },
-  ]}
-/>
-
-So what actually happens when Acme posts `AR000025`? In plain language, two things move at
-once — that's the "double entry" idea, and it's nothing more than *every change has a matching
-side so the books always balance*:
+When Acme posts `AR000025`, two things move at once so the books always balance:
 
 <StatGrid cols={2}>
   <Stat label="Accounts Receivable (1110)" value="+ $36,820" hint="Radiant now owes Acme" />
-  <Stat label="Sales (4010)" value="+ $36,570" hint="parts revenue earned (freight posts separately)" />
+  <Stat label="Sales (4010)" value="+ $36,570" hint="parts revenue earned; freight posts separately" />
 </StatGrid>
 
-When Radiant pays, a second pair of entries moves the $36,820 out of **Accounts Receivable**
-and into **Bank - Cash (1010)** — the receivable is cleared and the cash is real. On the
-buying side it's the reverse: posting `AP000023` increases **Accounts Payable (2010)** and
-inventory or expense; paying it draws down cash.
+When Radiant pays, the $36,820 moves out of **Accounts Receivable** and into **Bank - Cash
+(1010)**. On the buying side it's the reverse.
 
 <Callout type="info">
-  **You don't need to memorize any of this.** The point is that every shipment, receipt and
-  payment lands in the financial statements *automatically and correctly*. Your accountant
-  can open the books at month-end and trust that the numbers tie back to real shop activity —
-  no spreadsheet reconciliation, no double data entry.
+  **You don't need to memorize any of this.** Every shipment, receipt and payment lands in the
+  financials automatically and correctly — no spreadsheet reconciliation, no double data entry.
 </Callout>
 
-## Integrating with QuickBooks
+## Already using QuickBooks?
 
-Plenty of shops already run their books in **QuickBooks** (or another accounting package) and
-want to keep doing so. Carbon supports that. Rather than forcing you to abandon your existing
-accounting system, Carbon can **sync** the financial documents it generates — invoices,
-payments, and the accounts behind them — out to QuickBooks. For the step-by-step setup, see
-[Integrating with Carbon](/manual/developing/integrating).
-
-<Tabs items={["Carbon as the books", "Carbon + QuickBooks"]}>
-
-<Tab value="Carbon as the books">
-Use Carbon's built-in chart of accounts as your system of record. Everything posts in one
-place, and your financial statements come straight out of Carbon. Best when you want a single
-tool from shop floor to balance sheet.
-</Tab>
-
-<Tab value="Carbon + QuickBooks">
-Keep QuickBooks as the books of record and let Carbon **push** sales and purchase invoices
-across so your accountant works in the tool they know. Carbon stays the source of truth for
-*operations* (what shipped, what was received); QuickBooks owns the *financials*. Map Carbon's
-accounts to your QuickBooks accounts once, and the sync keeps them aligned.
-</Tab>
-
-</Tabs>
+Keep it. Carbon can **sync** the invoices and payments it generates out to **QuickBooks** so
+your accountant stays in the tool they know. Carbon owns *operations* (what shipped, what was
+received); QuickBooks owns the *financials*.
 
 <Callout type="warn">
-  **Decide your books-of-record up front.** Pick *one* place to be the financial source of
-  truth — Carbon or your accounting package — and configure the integration before you start
-  posting real invoices. Switching mid-stream means reconciling two sets of numbers. Because
-  Carbon is [API-first](/manual/developing/using-the-api), other accounting systems can be
-  integrated the same way; QuickBooks is just the most common.
+  **Pick your books-of-record up front.** Choose *one* financial source of truth — Carbon or
+  QuickBooks — and set up the integration before posting real invoices. See [Integrating with
+  Carbon](/manual/developing/integrating).
 </Callout>
 
 ## Next steps
 
-You've now seen the full order-to-cash loop close. To revisit the two stops that feed
-accounting, head back up the chain:
-
 <Cards>
   <IconCard title="From sale to shipment" href="/manual/selling/sales-to-shipment" description="How a shipment becomes the sales invoice you just billed." icon={<Truck className="size-4" />} />
-  <IconCard title="Purchasing basics" href="/manual/buying/purchasing-basics" description="Raise and receive a PO — the receipt that a purchase invoice matches against." icon={<ShoppingCart className="size-4" />} />
+  <IconCard title="Purchasing basics" href="/manual/buying/purchasing-basics" description="Raise and receive a PO — the receipt a purchase invoice matches against." icon={<ShoppingCart className="size-4" />} />
 </Cards>

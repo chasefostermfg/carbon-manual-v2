@@ -3,127 +3,98 @@ title: "Sales orders"
 description: "Capture demand and drive fulfillment from a sales order."
 ---
 
-A **sales order** (SO) is your customer's commitment to buy: who's ordering, what,
-how many, when it's due, and at what price. It's the single most important record in
-fulfillment because everything downstream hangs off it — the [job](/manual/overview/glossary)
-that makes the part, the [purchase order](/manual/buying/purchasing-basics) that buys the
-material, the [shipment](/manual/inventory/shipping-receiving) that sends it, and the
-[invoice](/manual/accounting/overview) that bills for it all point back to this one document.
-Enter the order once and Carbon carries that information everywhere the work goes.
+A **sales order** is your customer's commitment to buy: who's ordering, what, how many,
+when it's due, and at what price. Enter it once and Carbon carries it everywhere — the
+[job](/manual/manufacturing/jobs) that makes the part, the [shipment](/manual/selling/sales-to-shipment)
+that sends it, and the invoice that bills for it.
 
 This page follows Acme's real order **SO000069** — 500 Counterweight Hooks for Radiant
-Aerospace, $36,820, *Make to Order* — from creation to completion.
+Aerospace, **$36,820**, *Make to Order*.
 
-<Callout type="info">
-  **Where this fits.** A sales order usually starts life as a [quote](/manual/selling/quoting)
-  the customer accepts. From here, Carbon spawns the [job](/manual/manufacturing/jobs) that
-  makes the part, then the order flows on to [shipping and the invoice](/manual/selling/sales-to-shipment).
-  Quote → **Sales Order** → Job → Shipment → Invoice.
-</Callout>
+## Where this lives in Carbon
 
-## What a sales order is made of
+Sales orders live in the **Sales** module. Open **Sales**, then click **Orders** in the
+left sub-nav to see every order and its status.
+
+<AppShot
+  src="/screenshots/manual/sales-orders.png"
+  alt="The Orders list in the Sales module"
+  caption="Sales → Orders. Each row is one order. SO000069 (Radiant Aerospace) is Completed at $36,820. Click any row to open it, or the green Add button, top-right, to start one."
+/>
+
+The list shows each order's number, customer, total, and **status** at a glance. Click a
+row to open the order.
+
+## Two parts of an order
 
 Every sales order has two parts:
 
-- A **header** — the facts that apply to the whole order: the customer, the order date,
-  the [payment terms](/manual/overview/glossary), the shipping location, and the customer's
-  own purchase-order number (their "PO reference").
-- One or more **lines** — each line is one thing the customer is buying: an item, a
-  quantity, a unit price, a promised date, and a **fulfillment method** that tells Carbon
-  *how* you'll deliver it. One order can mix made-to-order parts, stock items, and services
-  on separate lines.
+- A **header** — facts for the whole order: the customer, the order date, the
+  [payment terms](/manual/overview/glossary), the ship-from location, and the customer's own
+  PO number.
+- One or more **lines** — each line is one thing the customer is buying: an item, a quantity,
+  a unit price, a promised date, and a **fulfillment method**.
 
-Here's SO000069 as it looks in Carbon once it's complete. Notice the four tabs — every
-sales order organizes its detail the same way.
+Here's SO000069 open. The line **CWH-A36-15** is 500 EA at **$73.14**. The tabs along the
+top — **Shipments** and **Invoices** — show what went out and what was billed.
 
-<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/so_Fx6FCeSpx9sxut9Qns6y91/details" caption="Acme's sales order for Radiant Aerospace — header on Details, the line items on Lines.">
-  <RecordPanel
-    title="SO000069 — Radiant Aerospace"
-    subtitle="Sales Order · Order date 2026-06-11"
-    status={<StatusBadge tone="green">Completed</StatusBadge>}
-    tabs={["Details", "Lines", "Shipments", "Invoices"]}
-    activeTab="Details"
-  >
-    <FieldGrid cols={3}>
-      <Field label="Customer" value="Radiant Aerospace" />
-      <Field label="Customer PO ref" value="55557777" mono />
-      <Field label="Order date" value="2026-06-11" />
-      <Field label="Payment terms" value="Net 30" />
-      <Field label="Ship from" value="Headquarters" />
-      <Field label="Order total" value="$36,820.00" />
-    </FieldGrid>
-  </RecordPanel>
-</AppShot>
-
-<Callout type="tip">
-  The **customer PO reference** (`55557777` here) is the number *your customer* uses for the
-  order on their end. It's not the same as Carbon's `SO000069`. Capturing it means the
-  number shows up on the packing slip and invoice, so your customer's accounts-payable team
-  can match your invoice to their purchase order without a phone call.
-</Callout>
+<AppShot
+  src="/screenshots/manual/sales-order-detail.png"
+  alt="Sales Order SO000069 detail with the Counterweight Hook line"
+  caption="Sales Order SO000069. One line: CWH-A36-15, 500 @ $73.14 = $36,820. Use the Shipments and Invoices buttons to see fulfillment."
+/>
 
 ## Create a sales order
 
-There are two ways an order is born: you **convert a quote** the customer accepted, or you
-**start a fresh order** by hand. Converting is by far the most common — it's how SO000069
-was created — so start there.
+There are two ways an order is born. **Converting a quote** is by far the most common — it's
+how SO000069 was created.
 
 <Tabs items={["Convert a quote", "Start from scratch"]}>
 <Tab value="Convert a quote">
 
 When a customer accepts a [quote](/manual/selling/quoting), you don't re-type anything.
-Carbon copies the lines, quantities, prices, and the linked manufacturing
-[method](/manual/items/methods) straight across, and keeps the two records linked so you
-can always trace an order back to the price you promised.
+Carbon copies the lines, quantities, prices, and the linked [method](/manual/items/methods),
+and keeps the two records linked.
 
 <Steps>
 
 <Step>
-**Open the accepted quote.** Go to **Sales → Quotes** and open the quote — for Acme that's
-`Q000061`. Confirm the line, quantity, and price are what the customer agreed to.
+**Open the accepted quote.** Go to **Sales → Quotes** and open it — for Acme that's
+`Q000061`. Confirm the line, quantity, and price.
 </Step>
 
 <Step>
-**Convert to Sales Order.** Click **Convert to Order** (or **Finalize**) in the top-right
-of the quote. Carbon creates a new sales order — `SO000069` — and copies every line over,
-including the *Make to Order* fulfillment method on the Counterweight Hook line.
+**Convert to Order.** Click **Convert to Order** in the top-right. Carbon creates `SO000069`
+and copies every line, including the *Make to Order* method on the hook line.
 </Step>
 
 <Step>
-**Review the header.** The customer, currency, and payment terms come from the quote and the
-customer record. Add or confirm the **customer PO reference** (`55557777`) and the **ship-from
-location** (Headquarters). Set the **order date** if it isn't today.
+**Review the header.** Confirm the **customer PO reference** (`55557777`) and the
+**ship-from location** (Headquarters). Set the **order date** if it isn't today.
 </Step>
 
 </Steps>
 
-<Callout type="tip">
-  Because the quote line and the sales-order line share the same internal ID, Carbon links
-  them directly. Open `SO000069` and you can jump straight back to `Q000061` — handy when a
-  customer asks "is this the price you quoted me?"
-</Callout>
-
 </Tab>
 <Tab value="Start from scratch">
 
-Not every order comes from a quote — a repeat customer might just email a PO. In that case
-you create the order directly.
+Not every order comes from a quote — a repeat customer might just email a PO.
 
 <Steps>
 
 <Step>
-**New sales order.** Go to **Sales → Sales Orders** and click **New**. Pick the
-[customer](/manual/selling/customers) (Radiant Aerospace). Carbon fills in their default
-payment terms, currency, and ship-to address automatically.
+**Add a new order.** In **Sales → Orders**, click the green **Add** button, top-right. Pick
+the [customer](/manual/selling/customers) (Radiant Aerospace). Carbon fills in their default
+terms, currency, and ship-to address.
 </Step>
 
 <Step>
-**Fill in the header.** Set the **order date**, the **ship-from location**, and type in the
-customer's **PO reference**. Save the header to get an order number.
+**Fill in the header.** Set the **order date**, the **ship-from location**, and the
+customer's **PO reference**. Save to get an order number.
 </Step>
 
 <Step>
-**Add the lines.** Add one line per item the customer is buying — covered next.
+**Add the lines.** Add one line per item — covered next.
 </Step>
 
 </Steps>
@@ -131,31 +102,16 @@ customer's **PO reference**. Save the header to get an order number.
 </Tab>
 </Tabs>
 
-## Add lines
+<Callout type="tip">
+  The **customer PO reference** (`55557777`) is the number *your customer* uses for the order.
+  Capturing it prints it on the packing slip and invoice, so their accounts-payable team can
+  match your bill without a phone call.
+</Callout>
 
-A **line** is one thing being sold. To add the Counterweight Hook line, you open the
-**Lines** tab and pick the item — Carbon pulls its description, unit of measure, and a
-default price, then you set the quantity and the promised date.
+## What's on a line
 
-<AppShot title="Sales Order · SO000069 — Lines" url="app.carbon.ms/x/sales-order/so_Fx6FCeSpx9sxut9Qns6y91/details" caption="The Lines tab. Each row is one item, quantity, price, fulfillment method, and status." flush>
-  <DataTable
-    columns={[
-      { key: "line", label: "#", align: "right" },
-      { key: "part", label: "Item", mono: true },
-      { key: "desc", label: "Description" },
-      { key: "qty", label: "Qty", align: "right" },
-      { key: "price", label: "Unit price", align: "right" },
-      { key: "method", label: "Fulfillment" },
-      { key: "promised", label: "Promised" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { line: "1", part: "CWH-A36-15", desc: "Counterweight Hook", qty: "500 EA", price: "$73.14", method: <Tag>Make to Order</Tag>, promised: "2026-06-26", status: <StatusBadge tone="green">Shipped</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-Each line carries a few fields worth knowing:
+A **line** is one thing being sold. Open the **Lines** tab, pick the item, and Carbon pulls
+its description, unit, and a default price. Then you set quantity and the promised date.
 
 <DataTable
   columns={[
@@ -165,26 +121,17 @@ Each line carries a few fields worth knowing:
   ]}
   rows={[
     { field: "Item", example: "CWH-A36-15", what: "The part, material, or service being sold." },
-    { field: "Quantity", example: "500 EA", what: "How many, in the item's unit of measure (EA = Each)." },
+    { field: "Quantity", example: "500 EA", what: "How many, in the item's unit (EA = Each)." },
     { field: "Unit price", example: "$73.14", what: "What the customer pays per unit. Line total = qty × price." },
     { field: "Fulfillment", example: "Make to Order", what: "How Carbon delivers this line (see below)." },
     { field: "Promised date", example: "2026-06-26", what: "The date you've committed to deliver by." },
-    { field: "Customer part #", example: "730562", what: "The customer's own number for the item — printed on the packing slip." },
   ]}
 />
 
-<Callout type="tip">
-  Acme's hook sells for **$73.14** while its internal unit cost is a fraction of a dollar —
-  that gap is your margin, and Carbon shows it on the line so you can see profitability
-  before you ever ship. Adding a **shipping cost** to the line (Acme added $250) bills the
-  freight to the customer too.
-</Callout>
+## Pick a fulfillment method
 
-## Choose a fulfillment method per line
-
-The **fulfillment method** is the most important choice on a line. It tells Carbon how this
-particular item gets delivered — and that decision drives everything that happens next. You
-set it **per line**, so one order can fulfill some items from stock and make others to order.
+The **fulfillment method** is the most important choice on a line. You set it **per line**, so
+one order can ship some items from stock and make others to order.
 
 <DataTable
   columns={[
@@ -193,86 +140,24 @@ set it **per line**, so one order can fulfill some items from stock and make oth
     { key: "does", label: "What Carbon does" },
   ]}
   rows={[
-    { method: <Tag>Make to Order</Tag>, when: "The item is built specifically for this order.", does: "Spawns a job to manufacture it (see below)." },
-    { method: <Tag>Pull from Stock</Tag>, when: "You already keep the finished item on a shelf.", does: "Reserves on-hand inventory; no job is created." },
-    { method: <Tag>Drop Ship</Tag>, when: "A supplier ships straight to your customer.", does: "Links a purchase order that delivers to the customer's address." },
+    { method: <Tag>Make to Order</Tag>, when: "The item is built for this order.", does: "Spawns a job to make it." },
+    { method: <Tag>Pull from Stock</Tag>, when: "You keep the finished item on a shelf.", does: "Reserves on-hand inventory. No job." },
+    { method: <Tag>Drop Ship</Tag>, when: "A supplier ships straight to your customer.", does: "Links a PO that delivers to the customer." },
   ]}
 />
 
-The Counterweight Hook line on SO000069 is **Make to Order** — Acme doesn't keep 500 finished
-hooks on a shelf, so each order is built fresh. That one setting is why a job appears next.
+SO000069's line is **Make to Order** — Acme doesn't stock 500 finished hooks, so each order is
+built fresh. That one setting spawns **Job J000097** when the order is confirmed.
 
 <Callout type="info">
-  An item's default fulfillment method comes from its
-  [replenishment setting](/manual/items/replenishment) — a *Make* part defaults to *Make to
-  Order*, a *Buy* part to *Pull from Stock*. You can override the default on any individual
-  line.
+  A line's default method comes from the item's
+  [replenishment setting](/manual/items/replenishment): a *Make* part defaults to *Make to
+  Order*, a *Buy* part to *Pull from Stock*. You can override it on any line.
 </Callout>
 
-## How a line spawns a job
+## Order statuses
 
-When you confirm an order with a **Make to Order** line, Carbon creates a **job** — a
-production order that carries its own copy of the item's [method](/manual/items/methods)
-(its bill of materials and routing). The job is the bridge from "the customer ordered it" to
-"the shop floor makes it."
-
-<Mermaid
-  chart={`flowchart LR
-  SO[Sales Order line CWH-A36-15 Make to Order] --> JOB[Job J000097 500 pieces]
-  JOB --> OPS[Flame Cut then Sandblasting then Inspection]
-  OPS --> SHIP[Ship 500 against the SO line]`}
-/>
-
-For SO000069, the single line spawned **Job J000097**:
-
-<AppShot title="Job · J000097" url="app.carbon.ms/x/job/job_8m3YTfc2oBy8xkdJX3wWD8/details" caption="The job Carbon created for the Make-to-Order line — linked straight back to SO000069.">
-  <RecordPanel
-    title="J000097 — Counterweight Hook"
-    subtitle="For SO000069 · Radiant Aerospace"
-    status={<StatusBadge tone="green">Completed</StatusBadge>}
-    tabs={["Details", "Method", "Operations"]}
-    activeTab="Details"
-  >
-    <FieldGrid cols={3}>
-      <Field label="Sales order" value="SO000069" mono />
-      <Field label="Production qty" value="500 EA" />
-      <Field label="Complete" value="500 of 500" />
-      <Field label="Due date" value="2026-06-26" />
-      <Field label="Shipped" value="500" />
-      <Field label="Status" value="Completed" />
-    </FieldGrid>
-  </RecordPanel>
-</AppShot>
-
-Notice the link runs both ways: the job knows its sales order (`SO000069`) and the sales
-order's **Details** tab lists the jobs it created. You never lose the thread between "what
-was sold" and "what's being made."
-
-<Callout type="tip">
-  Carbon won't usually create the job until the order is **confirmed**. Confirming is your
-  signal that the order is real and the shop should commit material and machine time to it —
-  so review your lines before you confirm.
-</Callout>
-
-## Promised dates and the due date
-
-The **promised date** on a line is the date you've told the customer they'll have the goods.
-Carbon uses it to set the job's **due date** and to schedule the work backwards from there —
-so the shop knows when each operation has to start. On SO000069 the promised date is
-**2026-06-26**, which became the due date on job J000097.
-
-<Callout type="warn">
-  Promising a date Carbon can't hit is the most common scheduling mistake. If the routing
-  needs more shop time than the days between today and the promised date, the job will be
-  late before it starts. Check the job's schedule after you confirm — and if material has to
-  be [purchased first](/manual/buying/purchasing-basics) (Acme bought A36 steel on PO000057),
-  build that lead time into the promise.
-</Callout>
-
-## Sales order statuses
-
-A sales order moves through a short lifecycle. The status tells you, at a glance, where the
-order is in fulfillment.
+The **status** column on the Orders list tells you where each order is.
 
 <DataTable
   columns={[
@@ -280,99 +165,50 @@ order is in fulfillment.
     { key: "means", label: "What it means" },
   ]}
   rows={[
-    { status: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Being built — lines and prices can still change. Nothing is committed." },
-    { status: <StatusBadge tone="blue">Confirmed</StatusBadge>, means: "The order is real. Jobs are created for Make-to-Order lines and the work is scheduled." },
-    { status: <StatusBadge tone="amber">To Ship</StatusBadge>, means: "Goods are ready (or being made) and waiting to be picked and shipped." },
-    { status: <StatusBadge tone="green">Completed</StatusBadge>, means: "Every line is fully shipped and invoiced. SO000069 is here." },
-    { status: <StatusBadge tone="red">Cancelled</StatusBadge>, means: "The order was called off before fulfillment finished." },
+    { status: <StatusBadge tone="neutral">Draft</StatusBadge>, means: "Being built. Lines and prices can still change." },
+    { status: <StatusBadge tone="blue">Confirmed</StatusBadge>, means: "Real. Jobs are created for Make-to-Order lines." },
+    { status: <StatusBadge tone="amber">To Ship</StatusBadge>, means: "Goods are ready, waiting to be picked and shipped." },
+    { status: <StatusBadge tone="green">Completed</StatusBadge>, means: "Every line shipped and invoiced. SO000069 is here." },
+    { status: <StatusBadge tone="red">Cancelled</StatusBadge>, means: "Called off before fulfillment finished." },
   ]}
 />
 
-Status is tracked at the **line** level too: each line shows how much has been **sent** and
-**invoiced**. SO000069's line shows 500 sent of 500 and 500 invoiced — that's why the whole
-order rolled up to **Completed**.
-
 <StatGrid cols={3}>
   <Stat label="Ordered" value="500" hint="Counterweight Hooks" />
-  <Stat label="Shipped" value="500" hint="all sent 2026-06-11" />
+  <Stat label="Shipped" value="500" hint="sent 2026-06-11" />
   <Stat label="Invoiced" value="500" hint="AR000025 — Paid" />
 </StatGrid>
 
 ## Track shipments and invoices
 
-The remaining two tabs on the sales order are where fulfillment shows up. You don't fill them
-in directly — they're populated as shipments leave and invoices post — but they're how you
-answer "did this go out?" and "did we bill for it?"
+The **Shipments** and **Invoices** buttons on the order are where fulfillment shows up. You
+don't fill them in by hand — they populate as goods leave and bills post.
 
-<Tabs items={["Shipments", "Invoices"]}>
-<Tab value="Shipments">
-
-Every time goods leave against the order, a **shipment** record appears here, with the
-quantity sent and the date. SO000069 has one shipment covering all 500 hooks, sent
-**2026-06-11**. Each shipment links to the packing slip your customer receives.
-
-<AppShot title="Sales Order · SO000069 — Shipments" url="app.carbon.ms/x/sales-order/so_Fx6FCeSpx9sxut9Qns6y91/shipments" flush>
-  <DataTable
-    columns={[
-      { key: "line", label: "Line", mono: true },
-      { key: "qty", label: "Qty sent", align: "right" },
-      { key: "date", label: "Sent date" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { line: "CWH-A36-15", qty: "500 EA", date: "2026-06-11", status: <StatusBadge tone="green">Shipped</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-</Tab>
-<Tab value="Invoices">
-
-When you bill the order, the **sales invoice** pulls its lines straight from what shipped —
-no re-keying — and appears on this tab. SO000069 was billed on invoice `AR000025` for
-**$36,820** (the $36,570 of goods plus $250 shipping) and marked **Paid** the same day.
-
-<AppShot title="Sales Order · SO000069 — Invoices" url="app.carbon.ms/x/sales-order/so_Fx6FCeSpx9sxut9Qns6y91/invoices" flush>
-  <DataTable
-    columns={[
-      { key: "inv", label: "Invoice", mono: true },
-      { key: "issued", label: "Issued" },
-      { key: "total", label: "Total", align: "right" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { inv: "AR000025", issued: "2026-06-11", total: "$36,820.00", status: <StatusBadge tone="green">Paid</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-</Tab>
-</Tabs>
+- **Shipments** — every time goods leave, a shipment record appears with the quantity and date.
+  SO000069 has one shipment for all 500 hooks, sent **2026-06-11**.
+- **Invoices** — when you bill, the invoice pulls its lines from what shipped. SO000069 was
+  billed on `AR000025` for **$36,820** (goods plus $250 shipping) and marked **Paid** the same day.
 
 <Callout type="info">
-  Radiant Aerospace keeps coming back: the same Counterweight Hook runs on **SO000070** (1,500
-  EA, in progress) and **SO000071** (3,000 EA, queued). Each is its own sales order with its
-  own job — but they all point back to the same item and method, so Acme prices and makes them
-  the same way every time.
+  Radiant Aerospace keeps coming back: the same hook runs on **SO000070** (1,500 EA, in
+  progress) and **SO000071** (3,000 EA, queued). Each is its own order with its own job, but all
+  point back to the same item and method.
 </Callout>
 
 ## Common gotchas
 
 <Accordions type="single">
 <Accordion title="I confirmed the order but no job appeared.">
-Check the line's **fulfillment method**. A job is only created for **Make to Order** lines.
-If the line is set to *Pull from Stock*, Carbon reserves inventory instead — no job. Change
-the method on the line if the item really does need to be made.
+Check the line's **fulfillment method**. A job is only created for **Make to Order** lines. If
+the line is *Pull from Stock*, Carbon reserves inventory instead — no job.
 </Accordion>
 <Accordion title="The price on the line isn't what I quoted.">
-Lines copied from a quote carry the quoted price. A line you add by hand uses the item's
-default sell price instead, which may differ. When in doubt, convert from the quote rather
-than re-keying — that's the whole point of the quote-to-order link.
+Lines copied from a quote carry the quoted price. A line you add by hand uses the item's default
+sell price, which may differ. When in doubt, convert from the quote rather than re-keying.
 </Accordion>
 <Accordion title="Can one order ship in more than one batch?">
-Yes. A line can be shipped partially — send what's ready now and the rest later. Each
-shipment shows on the **Shipments** tab, and the line stays open (status *To Ship*) until the
-full quantity has gone out. The order only reaches *Completed* when every line is fully
+Yes. A line can ship partially — send what's ready now, the rest later. The line stays *To Ship*
+until the full quantity has gone out. The order reaches *Completed* only when every line is fully
 shipped and invoiced.
 </Accordion>
 </Accordions>

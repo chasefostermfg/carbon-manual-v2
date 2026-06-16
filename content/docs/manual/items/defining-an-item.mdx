@@ -3,44 +3,30 @@ title: "Defining an item"
 description: "Parts, materials, tools and services — how to create and describe the things you make and buy."
 ---
 
-Almost everything in Carbon starts with an **item**. An item is a single, named thing you
-make, buy, sell, or use in your shop — a finished part, a slab of steel, a drill bit, a
-service you charge for. Every quote line, sales order, job, purchase order and invoice
-ultimately points back to an item, so getting items right is the foundation of everything
-else. This page shows you what an item *is*, the six kinds Carbon recognizes, and exactly
-how to create one — using real parts from Acme Inc.'s shop.
+Almost everything in Carbon starts with an **item** — a single, named thing you make, buy,
+sell, or use. Every quote, order, job and invoice points back to an item.
 
-<Callout type="info">
-  **Where this fits.** Items are the very first thing you set up in Carbon, before you can
-  quote, sell, make, or buy anything — they're one of the
-  [core concepts](/manual/overview/core-concepts) the whole system is built on. Once an item
-  exists, you give it a [**method**](/manual/items/methods) (how it's made) and a
-  [**replenishment**](/manual/items/replenishment) rule (how you keep it in stock). After
-  this page, those two are your natural next stops.
-</Callout>
+This page lives in the **Items** module. It covers the six kinds of item and how to create one.
 
-## What an item is
+## Where this lives in Carbon
 
-Think of an item as a record card for one thing. It carries a unique
-[**part number**](/manual/overview/glossary), a description, and a handful of settings that
-tell Carbon how to treat it everywhere it shows up — what unit to count it in, whether to
-track stock of it, what it costs, what you sell it for, and whether you **make** it or
-**buy** it.
+Items live in the **Items** module. Open it from the left rail, then pick a list:
+**Parts**, **Materials**, **Tools**, and so on. Each list has the same green **Add** button,
+top-right.
 
-You only ever describe an item *once*. From then on, the Counterweight Hook is "the
-Counterweight Hook" on every quote, job and invoice — Carbon reuses the same record, so a
-price change or a spelling fix happens in exactly one place.
+<AppShot
+  src="/screenshots/manual/items-parts.png"
+  alt="The Parts list in the Items module, with MAKE/BUY and tracking columns and a green Add Part button"
+  caption="Items → Parts. Click any row to open a part, or the green Add Part button (top-right) to create one."
+/>
 
-<StatGrid cols={3}>
-  <Stat label="Item types" value="6" hint="Part, Material, Tool, Consumable, Service, Fixture" />
-  <Stat label="Tracking modes" value="4" hint="Inventory, Batch, Serial, Non-Inventory" />
-  <Stat label="Replenishment" value="2" hint="Make or Buy" />
-</StatGrid>
+You describe an item **once**. After that, Carbon reuses the same record everywhere — so a
+price fix happens in one place.
 
 ## The six item types
 
-When you create an item, the first thing you choose is its **type**. The type tells Carbon
-what role the item plays in your business. Acme's shop uses all six.
+The first thing you choose is the **type**. It tells Carbon what role the item plays. Acme
+uses all six.
 
 <DataTable
   columns={[
@@ -50,212 +36,86 @@ what role the item plays in your business. Acme's shop uses all six.
   ]}
   rows={[
     { type: <Tag>Part</Tag>, what: "Something you make or sell as a finished good", example: "CWH-A36-15" },
-    { type: <Tag>Material</Tag>, what: "Raw stock you buy and consume to make parts", example: "A36-STEEL-PLT-1\".96x240" },
-    { type: <Tag>Tool</Tag>, what: "Durable shop equipment used across many jobs", example: "TOL-CAL (Digital Calipers)" },
-    { type: <Tag>Consumable</Tag>, what: "Low-cost supplies used up during work", example: "GRD-WHL (Grinding Wheels)" },
-    { type: <Tag>Service</Tag>, what: "Work performed (yours or a supplier's), not a physical good", example: "Outside plating / anodizing" },
-    { type: <Tag>Fixture</Tag>, what: "A jig or holding device that positions a part during an operation", example: "Flame-cut weldment fixture" },
+    { type: <Tag>Material</Tag>, what: "Raw stock you buy and consume", example: "A36-STEEL-PLT-1\".96x240" },
+    { type: <Tag>Tool</Tag>, what: "Durable shop equipment used across jobs", example: "TOL-CAL" },
+    { type: <Tag>Consumable</Tag>, what: "Cheap supplies used up during work", example: "GRD-WHL" },
+    { type: <Tag>Service</Tag>, what: "Work performed, not a physical good", example: "Outside plating" },
+    { type: <Tag>Fixture</Tag>, what: "A jig that holds a part during an operation", example: "Flame-cut fixture" },
   ]}
 />
 
-The two types you'll use most are **Part** and **Material**, and they sit at opposite ends
-of the same job:
+You'll use **Part** and **Material** the most. They sit at opposite ends of the same job:
 
-- A **Part** is the thing you deliver. Acme's hero part, the **Counterweight Hook**
-  (`CWH-A36-15`), is a Part — a finished steel hook it makes for Radiant Aerospace.
-- A **Material** is the raw stock you consume to make a Part. The hook is flame-cut from
-  **A36 Steel Plate 1″** (`A36-STEEL-PLT-1".96x240`), which is a Material.
+- A **Part** is what you deliver. Acme's **Counterweight Hook** (`CWH-A36-15`) is a Part.
+- A **Material** is what you consume to make a Part. The hook is cut from **A36 Steel Plate**
+  (`A36-STEEL-PLT-1".96x240`), which is a Material.
 
 <Callout type="tip">
-  **Tool vs Consumable** is just durability and value. A **Tool** (a torque wrench, a
-  micrometer) is reused for years and worth tracking individually. A **Consumable** (sandpaper,
-  shop rags, welding wire) is cheap and used up — you track it by quantity, not by
-  serial number. When in doubt, ask "would I notice if one walked off?" — if yes, it's
-  probably a Tool.
+  **Tool vs Consumable** is just value and durability. A **Tool** (a caliper, a torque wrench)
+  lasts years and is worth tracking. A **Consumable** (sandpaper, welding wire) is cheap and
+  used up. Ask: "would I notice if one walked off?" If yes, it's probably a Tool.
 </Callout>
 
-## Anatomy of an item: the key fields
+## Create a Part
 
-Every item type shares the same core fields. Here's what each one means and why it matters.
-
-### Part number (readableId)
-
-The **part number** — Carbon's field name is `readableId` — is the short, human-friendly
-code you and your customers use to refer to the item. Acme's are descriptive:
-`CWH-A36-15` reads as *Counterweight Hook, A36 steel*. Materials follow a pattern of
-`{grade}-{form}-{thickness}".{sheet size}`, so `A36-STEEL-PLT-1".96x240` is *A36 steel
-plate, 1 inch thick, 96″×240″ sheet*.
-
-Pick a convention and stick to it — a readable, consistent scheme pays off the moment your
-item list grows past a few dozen. The part number must be unique within your company.
-
-<Callout type="info">
-  An item can also carry a **revision** (the Counterweight Hook is revision `15`). Carbon
-  shows the combined value as `readableIdWithRevision`. Revisions let you change a design
-  over time while keeping the history of older versions intact.
-</Callout>
-
-### Description
-
-A plain-language name — "Counterweight Hook", "A36 Steel Plate 1″". This is what prints on
-quotes, orders and invoices, so write it for the reader, not the engineer.
-
-### Unit of measure (UoM)
-
-How you **count** the item. The Counterweight Hook is counted in `EA` (Each); the steel
-plate is bought and consumed in `LB` (Pounds). The unit of measure flows everywhere: when
-the hook's method says it needs "40 LB" of steel per piece, Carbon knows that "40" means
-pounds because the steel's UoM is `LB`.
-
-### Item tracking type
-
-This decides *how much detail* Carbon keeps about your stock of the item. There are four
-modes, from least to most granular:
-
-<DataTable
-  columns={[
-    { key: "mode", label: "Tracking type" },
-    { key: "means", label: "What Carbon tracks" },
-    { key: "use", label: "Use it for" },
-  ]}
-  rows={[
-    { mode: <Tag>Inventory</Tag>, means: "A running on-hand quantity by location", use: "Most stocked parts and materials" },
-    { mode: <Tag>Batch</Tag>, means: "On-hand quantity, grouped into batches/lots", use: "Material where the heat or lot matters (steel, chemicals)" },
-    { mode: <Tag>Serial</Tag>, means: "Every individual unit, by unique serial number", use: "High-value or regulated finished parts" },
-    { mode: <Tag>Non-Inventory</Tag>, means: "Nothing — quantity isn't held in stock", use: "Services, or buy-direct items you never stock" },
-  ]}
-/>
-
-The Counterweight Hook is **Inventory**-tracked: Carbon keeps a running count of how many
-finished hooks are on hand. The A36 steel plate is **Batch**-tracked
-(`requiresBatchTracking: true`) — because when a quality question comes up later, Acme needs
-to know *which heat of steel* went into Radiant's order. That batch link is the start of
-full [traceability](/manual/quality/tracking-quality).
-
-<Callout type="warn">
-  Tracking type is hard to change once an item has transaction history, so choose it when you
-  create the item. If you're unsure, **Inventory** is the safe default for physical goods and
-  **Non-Inventory** for services.
-</Callout>
-
-### Unit cost and sale price
-
-- **Unit cost** is what the item costs *you* — for a Material, the price you pay your
-  supplier; for a Part you make, the cost Carbon rolls up from its method (materials plus
-  shop time). Acme buys A36 plate from Ryerson at **$0.25/LB**.
-- **Sale price** is what you charge the customer. The Counterweight Hook sells to Radiant
-  Aerospace at **$73.14 EA**.
-
-These are *defaults*. A specific quote or order can override the price, but the item-level
-figures give Carbon something to work with the moment you add the item to a document.
-
-### Make vs Buy (replenishment)
-
-The **replenishment system** answers one question: when you need more of this item, do you
-**make** it or **buy** it?
-
-<Mermaid
-  chart={`flowchart LR
-  I[Need more of an item] --> Q{Make or Buy?}
-  Q -->|Make| J[Carbon raises a Job]
-  Q -->|Buy| P[Carbon raises a Purchase Order]`}
-/>
-
-- **Make** items get a [**method**](/manual/items/methods) (a recipe) and are produced on a
-  [**job**](/manual/manufacturing/jobs). The Counterweight Hook is a *Make* item.
-- **Buy** items get suppliers and prices and are replenished with a
-  [**purchase order**](/manual/buying/purchasing-basics). The A36 steel plate is a *Buy*
-  item — Acme orders it from Ryerson.
-
-This single setting is why the hero thread works: because the hook is *Make*, an order for
-it creates a job; because the steel is *Buy*, that job's shortage creates a purchase order.
-You'll tune the finer details (reorder points, lead times) in
-[Replenishment & planning](/manual/items/replenishment).
-
-## Create a Part, step by step
-
-Let's create the Counterweight Hook the way Acme did. The flow is the same for any item
-type — you just pick a different **Type** in step 2.
+Let's create the Counterweight Hook the way Acme did. The flow is the same for any type — you
+just pick a different **Type** in step 2.
 
 <Steps>
 
 <Step>
-### Open the new-item form
+### Open the Parts list
 
-In the left rail, open the **Items** module and choose **Parts**, then click **New**. (Each
-type has its own list — Parts, Materials, Tools, and so on — but they all open the same
-create form.)
+In the left rail, open the **Items** module and choose **Parts**. Click the green
+**Add Part** button, top-right.
 </Step>
 
 <Step>
-### Choose the type and enter the basics
+### Enter the basics
 
-Set **Type** to *Part*. Then fill in the part number, a description, and the unit of
-measure. Acme enters `CWH-A36-15`, "Counterweight Hook", and `EA`.
+Fill in the four fields every item needs. Acme enters:
 
-<AppShot title="New Part" url="app.carbon.ms/x/part/new" caption="Creating the Counterweight Hook — the four fields every item needs.">
-  <FieldGrid cols={2}>
-    <Field label="Type" value="Part" />
-    <Field label="Part number (readableId)" value="CWH-A36-15" mono />
-    <Field label="Description" value="Counterweight Hook" />
-    <Field label="Unit of measure" value="EA (Each)" />
-  </FieldGrid>
-</AppShot>
+- **Type** — *Part*
+- **Part number** — `CWH-A36-15`
+- **Description** — Counterweight Hook
+- **Unit of measure** — `EA` (Each)
+
+The part number must be unique. Pick a readable scheme and stick to it.
 </Step>
 
 <Step>
-### Set tracking and replenishment
+### Set tracking and Make-or-Buy
 
-Choose how Carbon should track stock and whether you make or buy the item. For the hook,
-that's **Inventory** tracking and **Make** replenishment.
+- **Tracking** — *Inventory* (Carbon keeps a running on-hand count). Use *Batch* when the lot
+  matters, *Serial* for high-value parts, *Non-Inventory* for services.
+- **Replenishment** — *Make* or *Buy*. The hook is **Make**: Carbon builds it on a job. The
+  steel plate is **Buy**: Carbon orders it on a purchase order.
 
-<AppShot title="New Part — tracking & replenishment" url="app.carbon.ms/x/part/new">
-  <FieldGrid cols={2}>
-    <Field label="Item tracking type" value="Inventory" />
-    <Field label="Replenishment system" value="Make" />
-  </FieldGrid>
-</AppShot>
-
-<Callout type="tip">
-  Because you chose **Make**, Carbon will expect a **method** for this part next — the recipe
-  of materials and operations. You'll build it in [Methods: BOM & routing](/manual/items/methods).
-  A **Buy** part would instead prompt you for suppliers and purchase prices.
+<Callout type="warn">
+  Tracking is hard to change once an item has history, so set it now. When unsure: **Inventory**
+  for physical goods, **Non-Inventory** for services.
 </Callout>
 </Step>
 
 <Step>
-### Save — and you're done
+### Save
 
 Click **Save**. Carbon creates the item, marks it **Active**, and opens its detail page.
-That's the whole foundation: from here you can add the method, set prices, and start
-quoting. The hook now exists as a single record that every future document will reuse.
+That's the whole foundation.
 </Step>
 
 </Steps>
 
 ## Reading the item detail page
 
-Once an item exists, its detail page organizes everything about it into tabs. Here's the
-Counterweight Hook's record, with each tab's job called out.
+The detail page groups everything into tabs. The hook is a **Make** part, so its
+**Manufacturing** tab holds the method (the recipe) and a 3D model.
 
-<AppShot title="Part · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw…/details" caption="The Counterweight Hook item detail — tabs group settings by what they control.">
-  <RecordPanel
-    title="Counterweight Hook"
-    subtitle="Part · CWH-A36-15 · revision 15"
-    status={<StatusBadge tone="green">Active</StatusBadge>}
-    tabs={["Details", "Manufacturing", "Planning", "Costing", "Sales", "Purchasing"]}
-    activeTab="Details"
-  >
-    <FieldGrid cols={3}>
-      <Field label="Part number" value="CWH-A36-15" mono />
-      <Field label="Description" value="Counterweight Hook" />
-      <Field label="Type" value="Part" />
-      <Field label="Unit of measure" value="EA" />
-      <Field label="Tracking" value="Inventory" />
-      <Field label="Replenishment" value="Make" />
-    </FieldGrid>
-  </RecordPanel>
-</AppShot>
+<AppShot
+  src="/screenshots/manual/item-method.png"
+  alt="A Part's Manufacturing view showing the method tree, Bill of Material, and a 3D model"
+  caption="The Manufacturing tab: the method tree (BOM + operations), a 3D model, and Replenishment = MAKE / MAKE TO ORDER."
+/>
 
 <DataTable
   columns={[
@@ -264,53 +124,25 @@ Counterweight Hook's record, with each tab's job called out.
     { key: "hook", label: "For the Counterweight Hook" },
   ]}
   rows={[
-    { tab: "Details", controls: "Identity: number, description, type, UoM, tracking", hook: "CWH-A36-15, Part, EA, Inventory" },
-    { tab: "Manufacturing", controls: "The method — BOM + routing for a Make item", hook: "40 LB A36 plate → Flame Cut → Sandblast → Inspect" },
+    { tab: "Details", controls: "Number, description, type, UoM, tracking", hook: "CWH-A36-15 · Part · EA · Inventory" },
+    { tab: "Manufacturing", controls: "The method (BOM + routing) for a Make item", hook: "40 LB A36 plate → Flame Cut → Sandblast → Inspect" },
     { tab: "Planning", controls: "Replenishment, reorder points, lead time", hook: "Make to Order" },
     { tab: "Costing", controls: "Unit cost and how it's calculated", hook: "Rolled up from the method" },
     { tab: "Sales", controls: "Sale price and customer part numbers", hook: "$73.14 EA · Radiant part 730562" },
-    { tab: "Purchasing", controls: "Suppliers and purchase prices (Buy items)", hook: "n/a — this part is Made" },
+    { tab: "Purchasing", controls: "Suppliers and prices (Buy items)", hook: "n/a — this part is Made" },
   ]}
 />
 
 <Callout type="info">
-  Notice the **Manufacturing** and **Purchasing** tabs are mirror images. A **Make** item
-  uses *Manufacturing* (its method) and leaves *Purchasing* mostly empty; a **Buy** item is
-  the reverse. The A36 steel plate, being a Buy material, fills in *Purchasing* (Ryerson,
-  $0.25/LB) and has no method.
+  **Manufacturing** and **Purchasing** are mirror images. A **Make** item fills in
+  *Manufacturing* and leaves *Purchasing* empty; a **Buy** item is the reverse. The A36 steel
+  plate fills in *Purchasing* (Ryerson, $0.25/LB) and has no method.
 </Callout>
 
-## Acme's item list
+## A look at Acme's items
 
-Here's a real slice of Acme's parts — a mix of finished goods across aerospace, energy,
-mining and defense customers. Notice that several share the `A36` and `SS304` material
-families, and that the hero part sits right in the middle.
-
-<AppShot title="Items · Parts" url="app.carbon.ms/x/items/parts" caption="A sample of Acme's 32 parts. Every one of these is a single reusable item record." flush>
-  <DataTable
-    columns={[
-      { key: "part", label: "Part number", mono: true },
-      { key: "name", label: "Description" },
-      { key: "type", label: "Type" },
-      { key: "uom", label: "UoM", align: "center" },
-      { key: "repl", label: "Source" },
-    ]}
-    rows={[
-      { part: "AF-SS-PLT304-01", name: "Anchor Flange", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "BBB-360-2-01", name: "Brass Bearing Block", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "BSP-A36-PLT-012", name: "Bridge Support Pedestal", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "CWH-A36-15", name: "Counterweight Hook", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "COP-PLT-A36-10", name: "Crane Outrigger Pad", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "BRK-TI-005", name: "Engine Mounting Bracket", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "HSG-SS-316", name: "Fuel Injector Housing", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "MAN-AL-606", name: "Hydraulic Manifold", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "PVPA-SS316-01", name: "Pressure Vessel Port Adapter", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { part: "TEN-722INC-005", name: "Thermal Exhaust Nozzle", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-    ]}
-  />
-</AppShot>
-
-To see how the other types look as records, here's one of each kind Acme keeps:
+Each type is its own list under **Items**, but they all create the same way. Here's one of
+each kind Acme keeps.
 
 <DataTable
   columns={[
@@ -330,15 +162,13 @@ To see how the other types look as records, here's one of each kind Acme keeps:
 />
 
 <Callout type="tip">
-  Don't try to perfect every field up front. Create the item with its number, description,
-  UoM, type, tracking and Make/Buy choice — that's enough to start working. You can refine
-  costs, suppliers and the method as you go.
+  Don't perfect every field up front. Number, description, UoM, type, tracking and Make/Buy is
+  enough to start. Refine costs, suppliers and the method as you go.
 </Callout>
 
 ## Next steps
 
-You can create an item — now teach Carbon how to make it, what it's made of, and how to keep
-it in stock.
+You can create an item — now teach Carbon how to make it and how to keep it in stock.
 
 <Cards>
   <IconCard title="Methods: BOM & routing" href="/manual/items/methods" description="Give a Make part its recipe: the materials and the shop operations." icon={<Workflow className="size-4" />} />

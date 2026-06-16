@@ -3,97 +3,62 @@ title: "Customers"
 description: "Create customers, contacts, locations and payment terms."
 ---
 
-A **customer** is anyone you sell to. In Carbon, a customer record is the home base for one
-company you do business with — it holds their people (contacts), their addresses (ship-to and
-bill-to locations), how and when they pay you (payment terms), and even the part numbers *they*
-use for *your* parts. Once a customer exists, you can quote them, take their orders, ship to them,
-and invoice them — all without re-typing their details each time.
+A **customer** is anyone you sell to. Set one up once, and Carbon reuses their people, addresses,
+and payment terms on every quote, order, and invoice — no re-typing.
 
-This page walks you through creating a customer, filling in everything Carbon needs, and reading
-a customer record. We'll use Acme's real customers throughout, and build out **Radiant Aerospace**
-in full — the customer behind the Counterweight Hook order you may have seen in
-[Carbon in 15 minutes](/manual/walkthrough).
+## Where this lives in Carbon
 
-<Callout type="info">
-  **Where this fits.** Customers are the *who* of selling — the starting point for everything on
-  the sales side. Once a customer exists, you can write them a [quote](/manual/selling/quoting),
-  turn that into a [sales order](/manual/selling/sales-orders), and eventually bill them. This is
-  the first stop in the Quote → Sales Order → Job → Shipment → Invoice flow.
-</Callout>
+Customers live in the **Sales** module. Open **Sales** from the home screen, then click
+**Customers** in the sub-nav across the top.
 
-## The customer list
-
-Everything starts on the **Customers** list, under the **Sales** module. Each row is one company.
-At a glance you can see who's active and what kind of business they are. Acme has 16 customers;
-here are five of them.
-
-<AppShot title="Customers" url="app.carbon.ms/x/sales/customers" caption="Acme's customer list — Sales module." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "ID", mono: true },
-      { key: "name", label: "Customer" },
-      { key: "type", label: "Type" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { id: "CUS000003", name: "Radiant Aerospace", type: <Tag>Aerospace &amp; Defense</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
-      { id: "CUS000012", name: "Aurora Power", type: <Tag>Energy &amp; Power</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
-      { id: "CUS000004", name: "Atlas Structural", type: <Tag>Construction</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
-      { id: "CUS000002", name: "Deep Rock Mining", type: <Tag>Mining</Tag>, status: <StatusBadge tone="green">Active</StatusBadge> },
-      { id: "CUS000008", name: "Nexus Power", type: <Tag>Energy &amp; Power</Tag>, status: <StatusBadge tone="neutral">Inactive</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-Two columns are worth a closer look before you start creating customers — **status** and **type**.
-
-### Status: where a customer is in your relationship
-
-Every customer has a **status** that controls whether you can actively sell to them. Carbon ships
-with five:
-
-<DataTable
-  columns={[
-    { key: "status", label: "Status" },
-    { key: "means", label: "What it means" },
-  ]}
-  rows={[
-    { status: <StatusBadge tone="blue">Lead</StatusBadge>, means: "A prospect you're quoting but who hasn't bought yet." },
-    { status: <StatusBadge tone="green">Active</StatusBadge>, means: "A live customer you can quote, order and invoice." },
-    { status: <StatusBadge tone="purple">On Hold</StatusBadge>, means: "Temporarily paused — often for a credit or payment issue." },
-    { status: <StatusBadge tone="neutral">Inactive</StatusBadge>, means: "No longer trading, but kept for history." },
-    { status: <StatusBadge tone="red">Cancelled</StatusBadge>, means: "The relationship is closed." },
-  ]}
+<AppShot
+  src="/screenshots/manual/sales-dashboard.png"
+  alt="The Sales module dashboard with the Customers sub-nav at the top"
+  caption="Sales module. Use the sub-nav (Customers, Quotes, Orders) to jump between Sales screens."
 />
 
-### Type: how you group customers
+The **Customers** list shows one row per company. We'll build out **Radiant Aerospace** — Acme's
+most active customer, behind the Counterweight Hook order **SO000069**.
 
-A **customer type** is a label you use to slice your customers into segments — handy for filtering
-lists and reporting. Acme groups its customers by industry: *Aerospace & Defense*, *Construction*,
-*Dealers*, *Energy & Power*, and *Mining*. Radiant Aerospace is **Aerospace & Defense**. Types are
-optional but make a long customer list far easier to navigate.
+## Two things to know first
+
+Before you add customers, two fields are worth a quick look.
+
+**Status** — shows where a customer is in your relationship:
+
+- <StatusBadge tone="blue">Lead</StatusBadge> — a prospect you're quoting, no order yet.
+- <StatusBadge tone="green">Active</StatusBadge> — a live customer you can quote, order, and invoice.
+- <StatusBadge tone="purple">On Hold</StatusBadge> — paused, often for a payment issue.
+- <StatusBadge tone="neutral">Inactive</StatusBadge> — no longer trading, kept for history.
+- <StatusBadge tone="red">Cancelled</StatusBadge> — relationship closed.
+
+**Type** — a label for grouping customers, handy for filtering and reports. Acme groups by
+industry. Radiant Aerospace is **Aerospace & Defense**.
 
 <Callout type="tip">
-  Both statuses and types are fully editable lists you set up once for your company, under
-  **Settings**. Define the segments that match *your* business before you start adding customers in
-  bulk, so everything lands in the right bucket from day one. See
-  [Set up your company](/manual/getting-started/setup-company).
+  Both lists are editable under **Settings**. Set up your statuses and types once so new customers
+  land in the right bucket. See [Set up your company](/manual/getting-started/setup-company).
 </Callout>
 
 ## Create a customer
 
-Let's create Radiant Aerospace from scratch. The only thing Carbon truly requires is a name — but
-filling in the rest now saves re-keying later.
+Only a **name** is required. Filling in the rest now saves re-keying later.
 
 <Steps>
 
 <Step>
 
-### Open the new-customer form
+### Open the form
 
-From the **Customers** list, click **New Customer** (top right). Carbon opens a blank customer
-form. Give it a **name** — this is the one required field — then set the optional details that make
-the customer usable everywhere else.
+On the **Customers** list, click **New Customer** (top right).
+
+</Step>
+
+<Step>
+
+### Enter the basics
+
+Give the customer a **name**, then set the optional **type**, **status**, and **currency**.
 
 <AppShot title="New Customer" url="app.carbon.ms/x/sales/customers/new" caption="Creating Radiant Aerospace.">
   <FieldGrid cols={2}>
@@ -108,23 +73,11 @@ the customer usable everywhere else.
 
 <Step>
 
-### Set the customer ID (or let Carbon do it)
-
-Carbon assigns a readable **customer ID** automatically using your company's numbering sequence —
-Radiant's is `CUS000003`, and you rarely type this yourself. Behind the scenes every customer also
-gets a permanent internal ID (Radiant's is `cust_LxoH7AbowNVjTwGSoqkW1Q`); you'll see that form of
-ID in the URL and in the [API](/manual/developing/using-the-api), but day to day you just use the
-name.
-
-</Step>
-
-<Step>
-
 ### Save
 
-Click **Save**. The customer now exists and appears on the Customers list. You can stop here and
-add the rest later — but the next sections (contacts, locations, payment terms) are what make a
-customer ready to quote and ship.
+Click **Save**. Carbon assigns a customer ID automatically (Radiant's internal ID is
+`cust_LxoH7AbowNVjTwGSoqkW1Q`). The customer now appears on the list, and you can add the rest
+anytime.
 
 </Step>
 
@@ -132,10 +85,8 @@ customer ready to quote and ship.
 
 ## Add contacts
 
-A **contact** is a person at the customer — a buyer, an engineer, an AP clerk. You attach contacts
-to a customer so that when you write a quote or a sales order, you can pick *who* it's for and
-*who* to email. A customer can have as many contacts as you need; one is usually marked as the
-primary point of contact.
+A **contact** is a person at the customer — a buyer, an engineer, an AP clerk. You pick a contact
+when you quote or order, and Carbon emails them the PDF.
 
 <Steps>
 
@@ -143,27 +94,16 @@ primary point of contact.
 
 ### Open the Contacts tab
 
-On the customer record, switch to the **Contacts** tab and click **New Contact**.
+On the customer record, click the **Contacts** tab, then **New Contact**.
 
 </Step>
 
 <Step>
 
-### Enter the person's details
+### Enter their details
 
-Fill in name, email, phone and (optionally) job title. Email matters most — it's what Carbon uses
-when you send a quote or order PDF, and it's how the customer can be invited to the
-[customer portal](/manual/selling/sales-orders) to see their orders.
-
-<AppShot title="New Contact · Radiant Aerospace" url="app.carbon.ms/x/sales/customers/…/contacts" caption="Adding Radiant's primary contact.">
-  <FieldGrid cols={2}>
-    <Field label="First name" value="Randy" />
-    <Field label="Last name" value="Raymer" />
-    <Field label="Title" value="CEO" />
-    <Field label="Email" value="On file" />
-    <Field label="Primary contact" value="Yes" />
-  </FieldGrid>
-</AppShot>
+Fill in name, **email**, phone, and (optionally) job title. Email matters most — it's what Carbon
+uses to send quotes and orders.
 
 </Step>
 
@@ -171,30 +111,23 @@ when you send a quote or order PDF, and it's how the customer can be invited to 
 
 ### Save and repeat
 
-Save the contact. Add more for anyone else you deal with — for example a separate accounts-payable
-contact who should receive invoices. When you later create a quote or order for this customer,
-these contacts appear in a dropdown so you can pick the right recipient.
+Save, then add anyone else you deal with — for example a separate AP contact for invoices.
 
 </Step>
 
 </Steps>
 
 <Callout type="tip">
-  The buyer's name and email aren't just decoration. On Radiant's real order **SO000069**, the
-  selected contact is the person Carbon addressed the order confirmation to — and the same contact
-  flowed through to the invoice **AR000025**. Set contacts up once and they follow the paperwork.
+  Contacts follow the paperwork. The contact you pick on an order flows straight onto its invoice —
+  on Radiant's order **SO000069**, the same contact appeared on invoice **AR000025**.
 </Callout>
 
 ## Add ship-to and bill-to locations
 
-A customer **location** is an address. Carbon treats two address *roles* specially:
+A **location** is an address. Carbon uses two roles:
 
-- **Ship-to** — where finished goods are delivered. This drives [shipments](/manual/inventory/shipping-receiving).
-- **Bill-to** — where invoices are sent. This drives [accounting](/manual/accounting/overview).
-
-Most customers have one of each (often the same address), but a large customer might receive at
-several plants while all the bills go to one accounts-payable office. You add as many addresses as
-you need and tag each one with its role.
+- **Ship-to** — where goods are delivered. Drives [shipments](/manual/inventory/shipping-receiving).
+- **Bill-to** — where invoices go. Drives [accounting](/manual/accounting/overview).
 
 <Steps>
 
@@ -202,31 +135,17 @@ you need and tag each one with its role.
 
 ### Open the Locations tab
 
-On the customer record, go to the **Locations** tab and click **New Location**.
+On the customer record, click the **Locations** tab, then **New Location**.
 
 </Step>
 
 <Step>
 
-### Enter the address and its role
+### Enter the address and role
 
-Type the street address, city, state, postal code and country. Mark whether this address is a
-**ship-to**, a **bill-to**, or both, and set one as the **default** so Carbon pre-fills it on new
-orders. Radiant uses a single headquarters address for both roles, which is the most common setup.
-
-<AppShot title="Customer Locations · Radiant Aerospace" url="app.carbon.ms/x/sales/customers/…/locations" caption="Radiant's headquarters — used as both ship-to and bill-to." flush>
-  <DataTable
-    columns={[
-      { key: "name", label: "Location" },
-      { key: "addr", label: "Address" },
-      { key: "role", label: "Role" },
-      { key: "default", label: "Default", align: "right" },
-    ]}
-    rows={[
-      { name: "Radiant Aerospace HQ", addr: "4801 Shaw Lane, Austin, TX 78744", role: <Tag>Ship-to &amp; Bill-to</Tag>, default: "Yes" },
-    ]}
-  />
-</AppShot>
+Type the address, then tag it **Ship-to**, **Bill-to**, or both. Mark one as the **default** so
+Carbon pre-fills it on new orders. Radiant uses one HQ address for both roles — the most common
+setup.
 
 </Step>
 
@@ -234,8 +153,7 @@ orders. Radiant uses a single headquarters address for both roles, which is the 
 
 ### Save
 
-Save each address. On every new quote, order and invoice for this customer, Carbon proposes the
-default ship-to and bill-to — but you can switch to any other address on the customer in one click.
+Save each address. Carbon proposes the defaults on every new order, and you can switch in one click.
 
 </Step>
 
@@ -243,10 +161,8 @@ default ship-to and bill-to — but you can switch to any other address on the c
 
 ## Set payment terms
 
-**Payment terms** define *when* a customer is expected to pay an invoice — for example **Net 30**
-means "due 30 days after the invoice date." Setting terms on the customer means every invoice you
-raise for them inherits the right due date automatically, so your accounting stays consistent
-without anyone remembering the rule.
+**Payment terms** say *when* a customer should pay — for example **Net 30** means "due 30 days
+after the invoice date." Set them on the customer and every invoice inherits the right due date.
 
 <Steps>
 
@@ -254,17 +170,15 @@ without anyone remembering the rule.
 
 ### Open the Payment tab
 
-On the customer record, go to the **Payment** tab. Pick the customer's default **payment terms**
-from the dropdown (these terms are a reusable list set up in **Settings**).
+On the customer record, click the **Payment** tab.
 
 </Step>
 
 <Step>
 
-### Choose the terms and currency
+### Pick the terms
 
-Radiant Aerospace is set to **Net 30**, billed in **USD**. You can also set a default tax setting
-here if the customer is tax-exempt or charged at a specific rate.
+Choose the default **payment terms** and **currency**. Radiant Aerospace is **Net 30** in **USD**.
 
 <AppShot title="Payment · Radiant Aerospace" url="app.carbon.ms/x/sales/customers/…/payment" caption="Radiant's default billing terms.">
   <FieldGrid cols={3}>
@@ -280,57 +194,46 @@ here if the customer is tax-exempt or charged at a specific rate.
 
 ### Save
 
-Save. From now on, any invoice for this customer defaults to Net 30 — exactly what you'll see on
-Radiant's real invoice **AR000025** (issued and due against the same order).
+Save. From now on, invoices for this customer default to **Net 30** — exactly what shows on
+Radiant's real invoice **AR000025**.
 
 </Step>
 
 </Steps>
 
 <Callout type="tip">
-  Terms set on the customer are *defaults*, not handcuffs. You can override the payment terms on a
-  single order or invoice when a deal calls for it — the customer default just spares you from
-  setting them every time.
+  Terms are defaults, not handcuffs. You can override them on a single order or invoice anytime.
 </Callout>
 
 ## Customer-specific part numbers
 
-Here's a small feature that prevents big headaches. Your customer often calls your part by *their*
-internal number, not yours. Acme's part is `CWH-A36-15` (the Counterweight Hook), but Radiant
-Aerospace orders it as **730562**. Carbon lets you record that mapping once, on the customer, so:
+Your customer often calls your part by *their* number. Acme's part is `CWH-A36-15`, but Radiant
+orders it as **730562**. Record that mapping once on the customer, and Carbon recognizes their PO
+references and prints their number on your paperwork.
 
-- When Radiant sends a PO referencing **730562**, you instantly know it's `CWH-A36-15`.
-- When you send Radiant a quote, order or packing slip, Carbon can print *their* number alongside
-  yours — so the paperwork matches what the customer expects.
-
-This is stored as the **customer part number** (Carbon's field is `customerPartId`), and it lives
-on the link between a customer and one of your [items](/manual/items/defining-an-item).
-
-<AppShot title="Customer Parts · Radiant Aerospace" url="app.carbon.ms/x/sales/customers/…/parts" caption="Mapping Acme's part numbers to Radiant's." flush>
+<AppShot title="Customer Parts · Radiant Aerospace" url="app.carbon.ms/x/sales/customers/…/parts" caption="Mapping Acme's part number to Radiant's." flush>
   <DataTable
     columns={[
       { key: "ours", label: "Our part", mono: true },
       { key: "desc", label: "Description" },
       { key: "theirs", label: "Customer part #", mono: true },
-      { key: "rev", label: "Customer rev" },
     ]}
     rows={[
-      { ours: "CWH-A36-15", desc: "Counterweight Hook", theirs: "730562", rev: "—" },
+      { ours: "CWH-A36-15", desc: "Counterweight Hook", theirs: "730562" },
     ]}
   />
 </AppShot>
 
 <Callout type="info">
-  You'll see **730562** again on Radiant's real sales order line in
-  [Sales orders](/manual/selling/sales-orders) — Carbon carried the customer part number straight
-  from the customer record onto the order, with no extra typing.
+  You'll see **730562** again on Radiant's order line in
+  [Sales orders](/manual/selling/sales-orders) — Carbon carried it over with no extra typing.
 </Callout>
 
 ## Reading a customer record
 
-Once a customer is built out, its record is a single screen with everything in tabs. Here's
-Radiant Aerospace as it looks in Acme's system — the **Details** tab summarizes the company, and
-the other tabs hold the contacts, locations and payment settings you just created.
+A finished customer is one screen of tabs. Here's Radiant Aerospace in Acme's system: the
+**Details** tab summarizes the company, and the other tabs hold the contacts, locations, and terms
+you just set up.
 
 <AppShot title="Customer · Radiant Aerospace" url="app.carbon.ms/x/sales/customers/cust_LxoH7AbowNVjTwGSoqkW1Q">
   <RecordPanel
@@ -341,12 +244,10 @@ the other tabs hold the contacts, locations and payment settings you just create
     activeTab="Details"
   >
     <FieldGrid cols={3}>
-      <Field label="Customer ID" value="CUS000003" mono />
       <Field label="Customer type" value="Aerospace & Defense" />
       <Field label="Status" value="Active" />
       <Field label="Currency" value="USD" />
       <Field label="Payment terms" value="Net 30" />
-      <Field label="Total orders" value="12" />
     </FieldGrid>
     <div className="mt-4">
       <DataTable
@@ -366,31 +267,16 @@ the other tabs hold the contacts, locations and payment settings you just create
   </RecordPanel>
 </AppShot>
 
-That single record is now wired into everything downstream. When you quote, order, ship or invoice
-Radiant, Carbon pulls their contacts, addresses, terms and part-number mappings automatically — you
-enter the relationship once and it follows every transaction.
-
-<Mermaid
-  chart={`flowchart LR
-  C[Customer Radiant Aerospace] --> Q[Quote]
-  Q --> SO[Sales Order]
-  SO --> SH[Shipment uses ship-to]
-  SO --> INV[Invoice uses bill-to and terms]`}
-/>
-
 <Callout type="warn">
-  Avoid creating the same company twice. Duplicate customers split a company's history across two
-  records, so quotes, orders and invoices no longer add up in one place. Before adding a customer,
-  search the list — if they're already there (even as a *Lead*), edit that record rather than making
-  a new one.
+  Don't create the same company twice — duplicates split a customer's history across two records.
+  Search the list first; if they're already there (even as a *Lead*), edit that record instead.
 </Callout>
 
 ## Next steps
 
-You've got a customer with contacts, addresses, terms and part-number mappings. Now put them to
-work — start quoting and selling.
+You've got a customer with contacts, addresses, and terms. Now put them to work.
 
 <Cards>
   <IconCard title="Quoting & estimating" href="/manual/selling/quoting" description="Build and price a quote for a customer, like Q000061 for Radiant Aerospace." icon={<FileText className="size-4" />} />
-  <IconCard title="Sales orders" href="/manual/selling/sales-orders" description="Turn a won quote into a confirmed order — and see the customer part number flow through." icon={<ClipboardList className="size-4" />} />
+  <IconCard title="Sales orders" href="/manual/selling/sales-orders" description="Turn a won quote into a confirmed order — and watch the customer part number flow through." icon={<ClipboardList className="size-4" />} />
 </Cards>

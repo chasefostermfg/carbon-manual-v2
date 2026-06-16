@@ -3,33 +3,29 @@ title: "Migrating your data"
 description: "Bring your items, customers and suppliers into Carbon."
 ---
 
-If you're moving to Carbon from spreadsheets or another system, you don't have to retype
-everything by hand. This page shows you **what to bring in, in what order, and how** — using
-Carbon's built-in CSV importers. The golden rule of any migration is simple: **import the
-things other records depend on first.** Get the order right and the rest falls into place.
+Moving from spreadsheets or another system? You don't retype everything by hand. You import
+it with Carbon's built-in **CSV importers**. The one rule: **import the things other records
+depend on first.**
 
-We'll use Acme Inc.'s own data as the worked example throughout — the same parts, customers
-and suppliers you'll see everywhere else in this manual.
+We'll use Acme Inc.'s real data as the example throughout.
 
-<Callout type="info">
-  **Before you start.** This page assumes your company is already set up
-  ([Set up your company](/manual/getting-started/setup-company)) and that you've added the
-  people who'll be doing the work ([Users & permissions](/manual/getting-started/users-permissions)).
-  Migration is the last step of getting started — once your data is in, you're ready to
-  [define and use items](/manual/items/defining-an-item) for real.
-</Callout>
+## Where this lives in Carbon
 
-## Why order matters
+Each importer lives in the **module that owns the data** — Items, Sales, Purchasing,
+Inventory. You open that module, click **Import**, and upload a CSV. Imported parts land in
+the **Items** module, on the **Parts** list.
 
-Carbon records are linked. An [item](/manual/overview/glossary) points to a
-**unit of measure**. A piece of **opening inventory** points to an item *and* a
-[location](/manual/overview/glossary). A **bill of materials** points to the parent item
-*and* every child item. An **open sales order** points to a customer *and* an item.
+<AppShot
+  src="/screenshots/manual/items-parts.png"
+  alt="The Parts list in the Items module"
+  caption="Items → Parts. This is where imported parts land. The green Add Part button (top-right) creates one by hand."
+/>
 
-So if you import opening stock before the item exists, Carbon has nothing to attach it to and
-the row fails. Import items before their units of measure exist, and the `unitOfMeasureCode`
-column has nothing to match. The fix is to load your data in **dependency order** — each
-layer building on the one below it.
+## Import in this order
+
+Carbon records are linked. A part needs a **unit of measure**. Opening stock needs the part
+*and* a **location**. A sales order needs a customer *and* an item. So you load the bottom
+layer first and build up.
 
 <Mermaid
   chart={`flowchart LR
@@ -40,396 +36,253 @@ layer building on the one below it.
   E --> F[Open Orders]`}
 />
 
-### The recommended sequence
-
 <DataTable
   columns={[
     { key: "step", label: "Order", align: "right" },
     { key: "what", label: "Bring in" },
-    { key: "why", label: "Why it comes first" },
+    { key: "why", label: "Why this order" },
   ]}
   rows={[
     { step: "1", what: "Units of measure & locations", why: "Everything below references them by code" },
-    { step: "2", what: "Items (parts, materials, consumables, tools)", why: "The backbone — orders, BOMs and stock all point at items" },
+    { step: "2", what: "Items (parts, materials, tools)", why: "Orders, BOMs and stock all point at items" },
     { step: "3", what: "Customers & suppliers", why: "Needed before any sales or purchase document" },
-    { step: "4", what: "Opening inventory", why: "Needs the item and the location to already exist" },
-    { step: "5", what: "BOMs & methods", why: "Link a parent item to its child items and operations" },
-    { step: "6", what: "Open orders (quotes, SOs, POs)", why: "Reference items, customers and suppliers — so they're last" },
+    { step: "4", what: "Opening inventory", why: "Needs the item and the location to exist first" },
+    { step: "5", what: "BOMs & methods", why: "Link a parent item to its child items" },
+    { step: "6", what: "Open orders (quotes, SOs, POs)", why: "Reference items, customers and suppliers — so last" },
   ]}
 />
 
 <Callout type="tip">
-  You don't have to migrate history. Most shops bring in their **master data** (items,
-  customers, suppliers) plus a snapshot of **opening inventory** and any **open orders**, and
-  leave closed jobs and paid invoices in the old system. A clean start beats a perfect copy.
+  You don't have to migrate history. Most shops bring in **master data** (items, customers,
+  suppliers) plus a snapshot of **opening inventory** and any **open orders** — and leave closed
+  jobs and paid invoices in the old system. A clean start beats a perfect copy.
 </Callout>
 
-## Step 1 — Foundations: units of measure & locations
+## 1 — Units & locations
 
-A **unit of measure** (UoM) is how you count an item — `EA` for "each", `LB` for pounds, `IN`
-for inches. A **location** is a physical site that holds stock. These are the codes every
-later import leans on, so they go in first. Carbon ships with the common ones already defined,
-so usually you're just confirming they exist rather than creating them.
+A **unit of measure** (UoM) is how you count an item: `EA` for each, `LB` for pounds. A
+**location** is a site that holds stock. Carbon ships with the common UoMs, so usually you're
+just confirming they exist.
 
-Acme's setup is small and typical:
-
-<AppShot title="Units of measure" url="app.carbon.ms/x/settings/uom" caption="Carbon's built-in units — Acme uses EA for parts and LB for raw materials." flush>
-  <DataTable
-    columns={[
-      { key: "code", label: "Code", mono: true },
-      { key: "name", label: "Name" },
-      { key: "use", label: "Used for" },
-    ]}
-    rows={[
-      { code: "EA", name: "Each", use: "Finished parts (e.g. CWH-A36-15)" },
-      { code: "LB", name: "Pound", use: "Raw materials (e.g. A36 steel plate)" },
-      { code: "IN", name: "Inches", use: "Bar and tube stock cut to length" },
-      { code: "GL", name: "Gallon", use: "Liquids — coolant, solvent" },
-    ]}
-  />
-</AppShot>
-
-<AppShot title="Locations" url="app.carbon.ms/x/inventory/locations" caption="Acme runs two sites; all of the hero-thread documents live at Headquarters." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "Location ID", mono: true },
-      { key: "name", label: "Name" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { id: "loc_…MgY9CA", name: "Headquarters", status: <StatusBadge tone="green">Active</StatusBadge> },
-      { id: "loc_…aFfZRs", name: "Texas", status: <StatusBadge tone="green">Active</StatusBadge> },
-    ]}
-  />
-</AppShot>
+Acme keeps it small — `EA` for parts, `LB` for raw materials — and runs two sites,
+**Headquarters** and **Texas**.
 
 <Callout type="warn">
-  Decide your UoM and location **codes** now and never change them later. Every imported row,
-  every BOM line and every stock balance refers to these codes by exact text — rename `EA` to
-  `ea` afterward and you'll orphan thousands of references. Pick the casing once and stick with it.
+  Pick your UoM and location **codes** now and never rename them. Every imported row points at
+  these codes by exact text — change `EA` to `ea` later and you orphan thousands of references.
 </Callout>
 
-## Step 2 — Items (parts, materials, consumables, tools)
+## 2 — Items
 
 [Items](/manual/items/defining-an-item) are the heart of Carbon — a part you make, a material
-you buy, a consumable, a tool. Almost everything else points at an item, so this is the
-biggest and most important import. Get your spreadsheet clean here and the rest of the
-migration is easy.
+you buy, a tool. This is the biggest import. Each CSV row becomes one item.
 
-Each row becomes one item. The columns map to real Carbon fields:
+Two decisions matter on every row: its `itemType` (part, material, tool?) and its
+`replenishmentSystem` — do you **Make** it or **Buy** it?
 
 <DataTable
   columns={[
-    { key: "col", label: "Your CSV column", mono: true },
-    { key: "field", label: "Carbon field" },
-    { key: "ex", label: "Example value" },
+    { key: "rid", label: "readableId", mono: true },
+    { key: "name", label: "name" },
+    { key: "type", label: "itemType" },
+    { key: "uom", label: "unitOfMeasureCode", mono: true },
+    { key: "repl", label: "replenishmentSystem" },
   ]}
   rows={[
-    { col: "readableId", field: "Part number (human-readable ID)", ex: "CWH-A36-15" },
-    { col: "name", field: "Item name / description", ex: "Counterweight Hook" },
-    { col: "itemType", field: "Part · Material · Consumable · Tool · Service · Fixture", ex: "Part" },
-    { col: "unitOfMeasureCode", field: "Unit of measure (from Step 1)", ex: "EA" },
-    { col: "replenishmentSystem", field: "Make vs Buy — how you get it", ex: "Make" },
-    { col: "itemTrackingType", field: "Inventory · Non-Inventory · Serial · Batch", ex: "Inventory" },
+    { rid: "CWH-A36-15", name: "Counterweight Hook", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
+    { rid: "BRK-TI-005", name: "Engine Mounting Bracket", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
+    { rid: "MAN-AL-606", name: "Hydraulic Manifold", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
+    { rid: "A36-STEEL-PLT-1\".96x240", name: "A36 Steel Plate 1\"", type: <Tag>Material</Tag>, uom: "LB", repl: "Buy" },
+    { rid: "304-SS-PLT-1\".96x240", name: "304 Stainless Steel Plate 1\"", type: <Tag>Material</Tag>, uom: "LB", repl: "Buy" },
+    { rid: "TOL-CAL", name: "Digital Calipers", type: <Tag>Tool</Tag>, uom: "EA", repl: "Buy" },
   ]}
 />
 
-Here's a slice of Acme's items file — real parts and materials from the dossier. Notice the
-two key decisions on every row: its `itemType` (is it a part, a raw material, a tool?) and its
-`replenishmentSystem` (do you **make** it or **buy** it?).
-
-<AppShot title="items.csv" url="app.carbon.ms/x/items/import" caption="A sample items import — mixed parts and materials, ready to map." flush>
-  <DataTable
-    columns={[
-      { key: "rid", label: "readableId", mono: true },
-      { key: "name", label: "name" },
-      { key: "type", label: "itemType" },
-      { key: "uom", label: "unitOfMeasureCode", mono: true },
-      { key: "repl", label: "replenishmentSystem" },
-    ]}
-    rows={[
-      { rid: "CWH-A36-15", name: "Counterweight Hook", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { rid: "BRK-TI-005", name: "Engine Mounting Bracket", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { rid: "MAN-AL-606", name: "Hydraulic Manifold", type: <Tag>Part</Tag>, uom: "EA", repl: "Make" },
-      { rid: "A36-STEEL-PLT-1\".96x240", name: "A36 Steel Plate 1\"", type: <Tag>Material</Tag>, uom: "LB", repl: "Buy" },
-      { rid: "304-SS-PLT-1\".96x240", name: "304 Stainless Steel Plate 1\"", type: <Tag>Material</Tag>, uom: "LB", repl: "Buy" },
-      { rid: "TOL-CAL", name: "Digital Calipers", type: <Tag>Tool</Tag>, uom: "EA", repl: "Buy" },
-    ]}
-  />
-</AppShot>
-
 <Callout type="tip">
-  Keep your `readableId` values consistent — Acme uses patterns like
-  `[abbrev]-[material]-[rev]` for parts (`CWH-A36-15`) and
-  `[alloy]-[substance]-[form]-[thickness]".[dimension]` for materials
-  (`A36-STEEL-PLT-1".96x240`). A predictable scheme makes parts findable and your BOM import
-  in Step 5 far easier to wire up.
+  Keep `readableId` values consistent. Acme uses `[abbrev]-[material]-[rev]` for parts
+  (`CWH-A36-15`) and a longer pattern for materials (`A36-STEEL-PLT-1".96x240`). A predictable
+  scheme makes parts findable and the BOM import in Step 5 far easier.
 </Callout>
 
-## Step 3 — Customers & suppliers
+## 3 — Customers & suppliers
 
-With items in place, bring in the businesses you sell to and buy from. **Customers** are
-needed before any quote, sales order or invoice; **suppliers** before any purchase order. Each
-is its own import, but the workflow is identical.
+With items in place, add who you sell to and buy from. **Customers** come before any quote or
+order; **suppliers** before any purchase order. Same workflow, two files.
 
 <Tabs items={["Customers", "Suppliers"]}>
   <Tab value="Customers">
-    <AppShot title="customers.csv" url="app.carbon.ms/x/sales/customers/import" caption="A sample of Acme's customer list." flush>
-      <DataTable
-        columns={[
-          { key: "name", label: "name" },
-          { key: "type", label: "customerType" },
-          { key: "terms", label: "paymentTerm" },
-          { key: "status", label: "status", align: "right" },
-        ]}
-        rows={[
-          { name: "Radiant Aerospace", type: "Aerospace & Defense", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-          { name: "Aurora Power", type: "Energy & Power", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-          { name: "Deep Rock Mining", type: "Mining", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-          { name: "Everbolt Defense", type: "Aerospace & Defense", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-        ]}
-      />
-    </AppShot>
+    <DataTable
+      columns={[
+        { key: "name", label: "name" },
+        { key: "type", label: "customerType" },
+        { key: "terms", label: "paymentTerm" },
+        { key: "status", label: "status", align: "right" },
+      ]}
+      rows={[
+        { name: "Radiant Aerospace", type: "Aerospace & Defense", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+        { name: "Aurora Power", type: "Energy & Power", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+        { name: "Deep Rock Mining", type: "Mining", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+        { name: "Everbolt Defense", type: "Aerospace & Defense", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+      ]}
+    />
   </Tab>
   <Tab value="Suppliers">
-    <AppShot title="suppliers.csv" url="app.carbon.ms/x/purchasing/suppliers/import" caption="A sample of Acme's supplier list." flush>
-      <DataTable
-        columns={[
-          { key: "name", label: "name" },
-          { key: "type", label: "supplierType" },
-          { key: "terms", label: "paymentTerm" },
-          { key: "status", label: "status", align: "right" },
-        ]}
-        rows={[
-          { name: "Ryerson", type: "Metals and Raw Materials", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-          { name: "McMaster-Carr", type: "Hardware and Fasteners", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-          { name: "Grainger", type: "Maintenance / Repair / Operations", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-          { name: "DigiKey", type: "Electronics and Components", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
-        ]}
-      />
-    </AppShot>
+    <DataTable
+      columns={[
+        { key: "name", label: "name" },
+        { key: "type", label: "supplierType" },
+        { key: "terms", label: "paymentTerm" },
+        { key: "status", label: "status", align: "right" },
+      ]}
+      rows={[
+        { name: "Ryerson", type: "Metals and Raw Materials", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+        { name: "McMaster-Carr", type: "Hardware and Fasteners", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+        { name: "Grainger", type: "Maintenance / Repair / Operations", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+        { name: "DigiKey", type: "Electronics and Components", terms: "Net 30", status: <StatusBadge tone="green">Active</StatusBadge> },
+      ]}
+    />
   </Tab>
 </Tabs>
 
 <Callout type="info">
-  Customer and supplier **types** (like "Aerospace & Defense" or "Metals and Raw Materials")
-  and **payment terms** (like "Net 30") are short lookup lists. If your CSV uses a type Carbon
-  doesn't recognize yet, create it once under Settings before importing — then every row that
-  references it lands cleanly. More in [Customers](/manual/selling/customers) and
-  [Suppliers](/manual/buying/suppliers).
+  Customer/supplier **types** and **payment terms** are short lookup lists. If your CSV uses
+  one Carbon doesn't have yet, create it once under Settings first. More in
+  [Customers](/manual/selling/customers) and [Suppliers](/manual/buying/suppliers).
 </Callout>
 
-## Step 4 — Opening inventory
+## 4 — Opening inventory
 
-Now that items and locations both exist, you can record what's **physically on your shelves
-today** — your opening balances. Each row says: *this item, this quantity, at this location*
-(and, if you track bins, which [shelf](/manual/overview/glossary)).
+Now record what's **on your shelves today**. Each row says: *this item, this quantity, at this
+location* (and which [shelf](/manual/overview/glossary), if you track bins).
 
-<AppShot title="opening-inventory.csv" url="app.carbon.ms/x/inventory/adjustments/import" caption="Acme's opening stock of raw steel at Headquarters." flush>
-  <DataTable
-    columns={[
-      { key: "item", label: "readableId", mono: true },
-      { key: "loc", label: "location" },
-      { key: "shelf", label: "shelf", mono: true },
-      { key: "qty", label: "quantity", align: "right" },
-      { key: "uom", label: "uom", mono: true },
-    ]}
-    rows={[
-      { item: "A36-STEEL-PLT-1\".96x240", loc: "Headquarters", shelf: "R02-B01-01", qty: "54,001", uom: "LB" },
-      { item: "304-SS-PLT-1\".96x240", loc: "Headquarters", shelf: "R02-B02-01", qty: "12,400", uom: "LB" },
-      { item: "6061-AL-BIL-6\" x 6\"-T6", loc: "Headquarters", shelf: "R03-A01-01", qty: "2,150", uom: "LB" },
-    ]}
-  />
-</AppShot>
+<DataTable
+  columns={[
+    { key: "item", label: "readableId", mono: true },
+    { key: "loc", label: "location" },
+    { key: "shelf", label: "shelf", mono: true },
+    { key: "qty", label: "quantity", align: "right" },
+    { key: "uom", label: "uom", mono: true },
+  ]}
+  rows={[
+    { item: "A36-STEEL-PLT-1\".96x240", loc: "Headquarters", shelf: "R02-B01-01", qty: "54,001", uom: "LB" },
+    { item: "304-SS-PLT-1\".96x240", loc: "Headquarters", shelf: "R02-B02-01", qty: "12,400", uom: "LB" },
+    { item: "6061-AL-BIL-6\" x 6\"-T6", loc: "Headquarters", shelf: "R03-A01-01", qty: "2,150", uom: "LB" },
+  ]}
+/>
 
-Carbon turns each row into an inventory adjustment that sets the item's on-hand quantity. After
-the import, every part with stock shows a real on-hand figure you can build jobs against.
+Each row becomes an inventory adjustment that sets the item's on-hand quantity.
 
 <Callout type="warn">
-  Import opening inventory **once**, ideally on go-live day, and pick a clear cutover moment.
-  If you import balances and then keep transacting in your old system, the two drift apart fast.
-  Freeze the old system, count, import, and run forward in Carbon from there.
+  Import opening inventory **once**, ideally on go-live day. If you import balances and keep
+  transacting in the old system, the two drift apart fast. Freeze, count, import, run forward.
 </Callout>
 
-## Step 5 — BOMs & methods
+## 5 — BOMs & methods
 
 A [**method**](/manual/items/methods) is how a made item is built: its **bill of materials**
-(what it's made of) plus its **routing** (the operations that make it). Methods only make sense
-once the parent and all the child items already exist — which is exactly why they come after
-Step 2.
+(what it's made of) plus its **routing** (the operations that make it). Methods only work once
+the parent and all child items already exist — which is why they come after Step 2.
 
-For a made-to-order part like the Counterweight Hook, the method is short: one material, three
-operations. Here's how that recipe looks once it's in Carbon.
+The Counterweight Hook's method is short: one material, three operations.
 
-<AppShot title="Method · CWH-A36-15" url="app.carbon.ms/x/part/…/manufacturing" caption="The imported method for the Counterweight Hook — one material and three operations." flush>
-  <MethodTree
-    nodes={[
-      {
-        kind: "assembly",
-        label: "CWH-A36-15",
-        detail: "Counterweight Hook — Make to Order",
-        qty: "1 EA",
-        children: [
-          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ — pulled from stock", qty: "40 LB" },
-          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
-          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
-          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station", qty: "10 min/pc" },
-        ],
-      },
-    ]}
-  />
-</AppShot>
+<AppShot
+  src="/screenshots/manual/item-method.png"
+  alt="The Counterweight Hook's Manufacturing view: method tree, bill of material, and 3D model"
+  caption="A made part's Manufacturing view — its bill of material (A36 Steel Plate ×40) and routing, set to Make to Order."
+/>
 
-To import methods by CSV, you typically prepare **two related files** and load them in order:
+You import methods with **two files**, loaded in order:
 
 <Steps>
   <Step>
-    **BOM lines** — one row per material, linking a parent `readableId` to a child `readableId`
-    with a quantity. For the hook: parent `CWH-A36-15`, child `A36-STEEL-PLT-1".96x240`, qty
-    `40` LB.
+    **BOM lines** — one row per material, linking a parent `readableId` to a child
+    `readableId` with a quantity. For the hook: parent `CWH-A36-15`, child
+    `A36-STEEL-PLT-1".96x240`, qty `40` LB.
   </Step>
   <Step>
-    **Routing operations** — one row per operation, with its sequence, the
-    [process](/manual/overview/glossary) (Flame Cut, Sandblasting, Quality Inspection) and the
-    [work center](/manual/overview/glossary) it runs at (Burn Table — PA2, Sand Blasting Room,
-    Inspection Station), plus times like `45` minutes per piece.
+    **Routing operations** — one row per operation, with its sequence, process (Flame Cut,
+    Sandblasting, Inspection) and the work center it runs at, plus a time per piece.
   </Step>
   <Step>
-    Carbon stitches the two together into the parent item's method. From then on, any
-    [job](/manual/manufacturing/jobs) for that part copies this recipe automatically.
+    Carbon stitches the two into the parent's method. From then on, any
+    [job](/manual/manufacturing/jobs) for that part copies the recipe automatically.
   </Step>
 </Steps>
 
 <Callout type="tip">
-  Multi-level assemblies (a part made of sub-assemblies that are themselves made) import the
-  same way — just make sure **every** sub-assembly already exists as an item, and import the
-  deepest level's BOM first so each parent can find its children.
+  Multi-level assemblies import the same way — just make sure **every** sub-assembly exists as
+  an item first, and import the deepest level's BOM before its parents.
 </Callout>
 
-## Step 6 — Open orders
+## 6 — Open orders
 
-Last, bring in the work that's still in flight: open **quotes**, **sales orders** awaiting
-fulfillment, and **purchase orders** awaiting receipt. These reference items, customers and
-suppliers, so by now everything they point at already exists.
+Last, bring in work still in flight: open **quotes**, **sales orders** awaiting fulfillment,
+and **purchase orders** awaiting receipt. By now everything they point at already exists.
 
-<AppShot title="open-sales-orders.csv" url="app.carbon.ms/x/sales/orders/import" caption="An open sales-order import — each line ties a customer to an item." flush>
-  <DataTable
-    columns={[
-      { key: "cust", label: "customer" },
-      { key: "item", label: "readableId", mono: true },
-      { key: "qty", label: "saleQuantity", align: "right" },
-      { key: "price", label: "unitPrice", align: "right" },
-      { key: "due", label: "promisedDate" },
-    ]}
-    rows={[
-      { cust: "Radiant Aerospace", item: "CWH-A36-15", qty: "1,500 EA", price: "$73.14", due: "2026-07-01" },
-      { cust: "Radiant Aerospace", item: "CWH-A36-15", qty: "3,000 EA", price: "$73.14", due: "2026-07-21" },
-    ]}
-  />
-</AppShot>
+<DataTable
+  columns={[
+    { key: "cust", label: "customer" },
+    { key: "item", label: "readableId", mono: true },
+    { key: "qty", label: "saleQuantity", align: "right" },
+    { key: "price", label: "unitPrice", align: "right" },
+    { key: "due", label: "promisedDate" },
+  ]}
+  rows={[
+    { cust: "Radiant Aerospace", item: "CWH-A36-15", qty: "1,500 EA", price: "$73.14", due: "2026-07-01" },
+    { cust: "Radiant Aerospace", item: "CWH-A36-15", qty: "3,000 EA", price: "$73.14", due: "2026-07-21" },
+  ]}
+/>
 
-These two rows mirror Acme's real open work — the follow-on Counterweight Hook orders
-(`SO000070` and `SO000071`) that come right after the hero order `SO000069`. Once they're in,
-Carbon can plan jobs and purchasing against them just like any natively created order.
+These mirror Acme's real follow-on Counterweight Hook orders (`SO000070` and `SO000071`, right
+after the hero order `SO000069`). Once in, Carbon plans jobs and purchasing against them.
 
-## The CSV import workflow
+## How every importer works
 
-Every importer in Carbon works the same way, so once you've done one you've done them all. The
-files in a typical migration look like this — loaded top to bottom:
-
-<Files>
-  <Folder name="acme-migration" defaultOpen>
-    <File name="01-units-of-measure.csv" />
-    <File name="01-locations.csv" />
-    <File name="02-items.csv" />
-    <File name="03-customers.csv" />
-    <File name="03-suppliers.csv" />
-    <File name="04-opening-inventory.csv" />
-    <File name="05-bom-lines.csv" />
-    <File name="05-routing-operations.csv" />
-    <File name="06-open-sales-orders.csv" />
-    <File name="06-open-purchase-orders.csv" />
-  </Folder>
-</Files>
-
-To load any one of them:
+Every importer follows the same five steps, so once you've done one, you've done them all.
 
 <Steps>
   <Step>
     **Open the importer.** Go to the module that owns the data — Items, Sales, Purchasing,
-    Inventory — and choose **Import**. Carbon offers a template CSV with the exact column
-    headers it expects; download it and pour your data into those columns.
+    Inventory — and click **Import**. Download Carbon's template CSV and pour your data into
+    its columns.
   </Step>
   <Step>
-    **Upload the file.** Drop your `.csv` in. Carbon reads the header row and previews the first
-    few rows so you can confirm it parsed the way you expected.
+    **Upload the file.** Drop in your `.csv`. Carbon previews the first rows so you can confirm
+    it parsed correctly.
   </Step>
   <Step>
-    **Map columns to Carbon fields.** For each of your columns, pick the Carbon field it feeds —
-    your "Part No." to `readableId`, your "UoM" to `unitOfMeasureCode`, your "Make/Buy" to
-    `replenishmentSystem`. If your headers already match Carbon's template, the mapping is
-    auto-filled.
-
-    <AppShot title="Column mapping" url="app.carbon.ms/x/items/import" caption="Mapping spreadsheet columns to Carbon item fields." flush>
-      <DataTable
-        columns={[
-          { key: "src", label: "Your column", mono: true },
-          { key: "arrow", label: "" },
-          { key: "field", label: "Carbon field", mono: true },
-          { key: "ok", label: "", align: "right" },
-        ]}
-        rows={[
-          { src: "Part No.", arrow: "→", field: "readableId", ok: <StatusBadge tone="green">Mapped</StatusBadge> },
-          { src: "Description", arrow: "→", field: "name", ok: <StatusBadge tone="green">Mapped</StatusBadge> },
-          { src: "UoM", arrow: "→", field: "unitOfMeasureCode", ok: <StatusBadge tone="green">Mapped</StatusBadge> },
-          { src: "Make/Buy", arrow: "→", field: "replenishmentSystem", ok: <StatusBadge tone="green">Mapped</StatusBadge> },
-          { src: "Notes", arrow: "→", field: "(skip)", ok: <StatusBadge tone="neutral">Ignored</StatusBadge> },
-        ]}
-      />
-    </AppShot>
+    **Map columns.** Point each of your columns at a Carbon field — your "Part No." to
+    `readableId`, "UoM" to `unitOfMeasureCode`, "Make/Buy" to `replenishmentSystem`. If your
+    headers match the template, mapping auto-fills.
   </Step>
   <Step>
-    **Validate.** Carbon checks every row before changing anything — flagging blank required
-    fields, a `unitOfMeasureCode` that doesn't exist yet, or a duplicate `readableId`. Fix the
-    flagged rows in your spreadsheet and re-upload.
+    **Validate.** Carbon checks every row before changing anything — flagging blanks, a missing
+    UoM code, or a duplicate `readableId`. Fix flagged rows and re-upload.
   </Step>
   <Step>
     **Import.** When the preview is clean, confirm. Carbon creates the records and shows a
-    summary — how many created, how many skipped. Spot-check a few against the app, then move
-    on to the next file in the sequence.
+    summary. Spot-check a few, then move to the next file.
   </Step>
 </Steps>
 
 <Callout type="warn">
   Always run a **small test batch first** — five or ten rows — before importing thousands. A
-  tiny run surfaces a wrong column mapping or a bad UoM code in seconds, instead of after
-  you've created 5,000 mis-mapped parts. Carbon validates before writing, but a real test
-  import is the surest check.
+  tiny run surfaces a wrong mapping or bad UoM code in seconds, not after you've created 5,000
+  mis-mapped parts.
 </Callout>
-
-## Large or repeatable migrations: use the API
 
 <Callout type="tip">
-  Carbon is **[API-first](/manual/overview/glossary)** — every screen in the app is backed by a
-  documented API, and anything you can type in, you can script. For a big migration, a one-time
-  data move from a legacy ERP, or a sync you'll run more than once, scripting it against the API
-  is far more reliable than hand-mapping CSVs over and over. You control the order, you can
-  re-run safely, and you get a clean log of exactly what was created. See
-  [Using the API](/manual/developing/using-the-api) to get started.
+  **Big or repeatable migration?** Carbon is [API-first](/manual/overview/glossary) — anything
+  you can type in, you can script. For a large move or a recurring sync, scripting against the
+  API beats hand-mapping CSVs. You can even have an AI assistant drive it through Carbon's
+  built-in [MCP server](/manual/developing/mcp-and-ai). See
+  [Using the API](/manual/developing/using-the-api).
 </Callout>
-
-The same dependency order applies whether you click or script: create units and locations, then
-items, then customers and suppliers, then balances, then methods, then open orders. The API
-just lets you automate each layer. Because Carbon also ships a built-in
-[**MCP server**](/manual/developing/mcp-and-ai), you can even have an AI assistant drive parts of
-the migration for you — reading your old data and creating the Carbon records in order.
 
 ## Next steps
 
-You've got your data in. Here's where to go next:
-
 <Cards>
-  <IconCard title="Defining an item" href="/manual/items/defining-an-item" description="Open one of your imported parts and fill in the rest of its details." icon={<Package className="size-4" />} />
-  <IconCard title="Using the API" href="/manual/developing/using-the-api" description="Script a large or repeatable migration instead of importing by hand." icon={<Plug className="size-4" />} />
+  <IconCard title="Defining an item" href="/manual/items/defining-an-item" description="Open an imported part and fill in the rest of its details." icon={<Package className="size-4" />} />
   <IconCard title="Methods: BOM & routing" href="/manual/items/methods" description="Build out the recipes for the parts you make." icon={<Workflow className="size-4" />} />
+  <IconCard title="Using the API" href="/manual/developing/using-the-api" description="Script a large or repeatable migration instead of importing by hand." icon={<Plug className="size-4" />} />
 </Cards>

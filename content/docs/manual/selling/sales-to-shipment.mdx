@@ -3,83 +3,75 @@ title: "From sales order to shipment"
 description: "Follow an order all the way to a shipped, invoiced job."
 ---
 
-You've taken the order — now you have to deliver it. This page follows the **back half** of
-the sale: how a confirmed sales order turns into a finished, shipped, and invoiced job. It's
-a close-up companion to the [15-minute walkthrough](/manual/walkthrough), so we'll reuse the
-same real example — the 500 **Counterweight Hooks** Acme made for **Radiant Aerospace** on
-[sales order](/manual/overview/glossary) **SO000069** — and zoom in on the steps the
-walkthrough skipped past: the [job](/manual/overview/glossary) the order created, tracking
-fulfillment, building the [shipment](/manual/overview/glossary), and raising the invoice.
+You took the order. Now you have to deliver it. This page follows the **back half** of a sale:
+how a confirmed order becomes a finished, shipped, and invoiced job.
+
+We use one real example all the way through — the 500 **Counterweight Hooks** (part
+**CWH-A36-15**) Acme made for **Radiant Aerospace** on sales order **SO000069**.
+
+## Where this lives in Carbon
+
+This flow lives mostly in the **Sales** module, with one stop in **Inventory** (the shipment).
+Open **Sales → Orders**, then click your order to see the buttons that drive everything below.
+
+<AppShot
+  src="/screenshots/manual/sales-orders.png"
+  alt="The Orders list in the Sales module"
+  caption="Sales → Orders. Click any row to open it. SO000069 (Radiant Aerospace) shows as Completed, $36,820."
+/>
 
 <Callout type="info">
-  **Where this fits.** This is the last leg of the selling flow:
-  Quote → Sales Order → **(make it) → ship it → invoice it**.
-  It picks up right after [Sales orders](/manual/selling/sales-orders), where you confirm
-  the order, and hands off to [Accounting](/manual/accounting/overview), where the invoice
-  becomes revenue. If a line is *Make to Order*, the manufacturing chapter
-  ([Jobs](/manual/manufacturing/jobs)) covers actually building it; here we stay on the
-  sales side and watch the order get fulfilled.
+  **Where this fits.** This is the last leg of selling: Quote → Sales Order → **make it → ship
+  it → invoice it**. It picks up after [Sales orders](/manual/selling/sales-orders) and hands
+  off to [Accounting](/manual/accounting/overview).
 </Callout>
 
-## The fulfillment flow at a glance
+## The path, in four moves
 
-Once a sales order is confirmed, every line has to be **fulfilled** — Carbon's word for
-"get the goods to the customer." How that happens depends on one setting on each line: the
-**fulfillment method** (Carbon also calls this the *method type*).
-
-- **Make to Order** — the part has to be built, so confirming the order creates a **job**.
-  Nothing ships until that job produces finished pieces.
-- **Make to Stock** / **Pull from Inventory** — the part is already on a shelf, so you skip
-  straight to picking and shipping.
-
-Our hero line is *Make to Order*, which is the longer, more interesting path. Here's the
-whole chain you're about to walk through:
+Our line is **Make to Order**, so it gets built before it ships. Here is the whole chain:
 
 <Mermaid
   chart={`flowchart LR
   SO[Sales Order SO000069] --> J[Job J000097]
   J --> FG[Finished goods in stock]
   FG --> SH[Shipment]
-  SH --> LINE[SO line marked Shipped]
-  LINE --> INV[Invoice AR000025]`}
+  SH --> INV[Invoice AR000025]`}
 />
 
 <StatGrid cols={4}>
   <Stat label="Ordered" value="500 EA" hint="SO000069, line 1" />
-  <Stat label="Made" value="500" hint="job J000097 complete" />
+  <Stat label="Made" value="500" hint="job J000097 done" />
   <Stat label="Shipped" value="500" hint="to Radiant Aerospace" />
   <Stat label="Invoiced" value="$36,820" hint="AR000025 · Paid" />
 </StatGrid>
 
+## Everything runs from the order
+
+Open SO000069 and you get a row of action buttons across the top — including **Shipments** and
+**Invoices**. You do not leave the order to ship or bill. You click these buttons, and Carbon
+fills in the rest from the order.
+
+<AppShot
+  src="/screenshots/manual/sales-order-detail.png"
+  alt="The SO000069 detail page with Shipments and Invoices buttons"
+  caption="Sales Order SO000069. The Shipments and Invoices buttons (top of the page) start the next two steps for you."
+/>
+
+<Callout type="tip">
+  Carbon copies the part, quantity, and price forward at every step. You confirm numbers — you
+  almost never re-type them.
+</Callout>
+
 ## Step 1 — A Make-to-Order line creates a job
 
-When you confirm a sales order with a *Make to Order* line, Carbon doesn't expect the part
-to be sitting in inventory. Instead it spins up a **job** — a production order that knows
-exactly which order line it's serving — and links the two together. You don't re-type
-anything; the part, the quantity, and the due date all flow from the line into the job.
+Each order line is set to **Make to Order** or **Pull from Inventory**.
 
-On SO000069, line 1 is 500 Counterweight Hooks set to *Make to Order*. Confirming the order
-created job **J000097** for exactly 500 pieces, due 2026-06-26.
+- **Make to Order** — the part gets built. Confirming the order creates a **job**.
+- **Pull from Inventory** — the part is already on a shelf, so you skip straight to shipping.
 
-<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/so_Fx6FCe…" caption="The order line, set to Make to Order, with its linked job." flush>
-  <DataTable
-    columns={[
-      { key: "line", label: "Line", align: "right" },
-      { key: "part", label: "Part", mono: true },
-      { key: "qty", label: "Qty", align: "right" },
-      { key: "method", label: "Fulfillment" },
-      { key: "job", label: "Linked job", mono: true },
-      { key: "status", label: "Job status", align: "right" },
-    ]}
-    rows={[
-      { line: "1", part: "CWH-A36-15", qty: "500 EA", method: <Tag>Make to Order</Tag>, job: "J000097", status: <StatusBadge tone="green">Completed</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-The link runs both ways. Open the job and you'll see it points back to its source — the
-sales order, the customer, and even the original quote — so anyone on the shop floor knows
-*why* they're making these hooks.
+Line 1 on SO000069 is Make to Order. Confirming the order created job **J000097** for 500
+pieces, due **2026-06-26**. The job links back to its order, customer, and quote — so the shop
+floor knows *why* it's building these hooks.
 
 <AppShot title="Job · J000097" url="app.carbon.ms/x/job/job_8m3YTf…" caption="The job carries its origin: which order, which customer, which quote.">
   <RecordPanel
@@ -100,165 +92,78 @@ sales order, the customer, and even the original quote — so anyone on the shop
   </RecordPanel>
 </AppShot>
 
-<Callout type="tip">
-  You don't have to leave the sales order to check on production. The **Jobs** tab on the SO
-  lists every linked job and its live status — for SO000069 it shows J000097 at 500 of 500
-  complete. From the [sales order](/manual/selling/sales-orders) you always know whether the
-  thing you sold actually got made.
-</Callout>
-
 <Callout type="warn">
-  A *Make to Order* line **can't ship until its job produces finished pieces**. If the job is
-  still In Progress, the order line stays open — Carbon won't let you ship parts you haven't
-  made yet. Building that job is the [Manufacturing](/manual/manufacturing/jobs) chapter's
-  job (pun intended); the rest of this page assumes the pieces are done and in stock.
+  A Make-to-Order line **can't ship until its job is done**. Building the job is covered in
+  [Jobs](/manual/manufacturing/jobs). The rest of this page assumes the 500 hooks are made and
+  in stock.
 </Callout>
 
-## Step 2 — Track fulfillment on the sales order
+## Step 2 — Watch fulfillment on the order
 
-While the job runs, the sales order is your dashboard for "how close are we to delivering?"
-Every line carries three running tallies that Carbon keeps up to date automatically:
+The sales order is your dashboard for "how close are we?" Every line keeps three running tallies,
+updated automatically:
 
-- **Quantity** — how many the customer ordered.
-- **Quantity shipped** — how many have left the building so far.
-- **Quantity invoiced** — how many you've billed for.
+- **Ordered** — how many the customer asked for.
+- **Shipped** — how many have left the dock.
+- **Invoiced** — how many you've billed.
 
-These three numbers tell the whole fulfillment story at a glance. When *shipped* catches up
-to *ordered*, the line is fully delivered; when *invoiced* catches up too, the line is fully
-billed. Carbon also flips two flags — `sentComplete` and `invoicedComplete` — to **true**
-once a line is fully shipped and fully invoiced, which is how the order knows it's finished.
+When **shipped** catches up to **ordered**, the line is delivered. When **invoiced** catches up
+too, the line is done.
 
-<AppShot title="Sales Order · SO000069 — fulfillment" url="app.carbon.ms/x/sales-order/so_Fx6FCe…/details" caption="The three tallies on the line: ordered, shipped, invoiced — all at 500.">
-  <RecordPanel
-    title="SO000069 — Radiant Aerospace"
-    subtitle="Order date 2026-06-11 · PO reference 55557777"
-    status={<StatusBadge tone="green">Completed</StatusBadge>}
-    tabs={["Details", "Lines", "Jobs", "Shipments", "Invoices"]}
-    activeTab="Lines"
-  >
-    <DataTable
-      columns={[
-        { key: "part", label: "Part", mono: true },
-        { key: "ordered", label: "Ordered", align: "right" },
-        { key: "shipped", label: "Shipped", align: "right" },
-        { key: "invoiced", label: "Invoiced", align: "right" },
-        { key: "status", label: "Status", align: "right" },
-      ]}
-      rows={[
-        { part: "CWH-A36-15", ordered: "500 EA", shipped: "500 EA", invoiced: "500 EA", status: <StatusBadge tone="green">Shipped</StatusBadge> },
-      ]}
-    />
-  </RecordPanel>
-</AppShot>
-
-<Callout type="info">
-  These tallies are **per line**, not just per order. A single sales order can have many
-  lines at different stages — one fully shipped, one half shipped, one not started — and
-  Carbon tracks each independently. The order as a whole only counts as *Completed* when
-  every line is fully shipped and invoiced, which is exactly the state SO000069 is in.
-</Callout>
-
-## Step 3 — Create the shipment
-
-A **shipment** is the record of goods physically leaving your dock. It's where you say "this
-much, of this part, going to this customer, by this carrier." Creating one is how you turn
-finished pieces into a delivery — and it's the event that updates the *shipped* tally you
-just saw.
-
-You can start a shipment straight from the sales order. Carbon pre-fills it from the order
-so you're confirming, not re-typing.
-
-<Steps>
-
-<Step>
-**Open the order and start a shipment.** From SO000069, use **Ship** (or the **Shipments**
-tab → **New Shipment**). Carbon creates a shipment pre-filled with the customer (Radiant
-Aerospace), the ship-to address, and the open lines from the order.
-</Step>
-
-<Step>
-**Pick the finished goods.** Set how many of each line you're sending. The Counterweight
-Hooks were received into inventory from the completed job, so all 500 are available to pick.
-Because A36 steel is **batch-tracked**, Carbon records *which batch* of finished hooks you're
-shipping — that's the genealogy link that powers [traceability](/manual/quality/tracking-quality)
-later. Enter **500 EA** to ship the line in full.
-</Step>
-
-<Step>
-**Choose a shipping method.** Pick the carrier and service. Acme has **10** shipping methods
-configured, from in-house delivery to overnight air (see the table below). Choose the one
-that matches what you quoted — for a heavy 500-piece steel order, that's typically a freight
-method like **LTL (Less Than Truckload)** rather than a parcel service.
-</Step>
-
-<Step>
-**Post the shipment.** Posting commits it: Carbon decrements the finished hooks from
-inventory and adds **500** to the line's *quantity shipped*. A shipment record is created
-(internally `sh_7injMjdu1xyZqTVFFrjauv`) and linked back to the order.
-</Step>
-
-</Steps>
-
-<AppShot title="Shipment · for SO000069" url="app.carbon.ms/x/shipment/sh_7injMj…" caption="Picking 500 finished hooks for Radiant Aerospace, ready to post." flush>
+<AppShot title="Sales Order · SO000069 — Lines" url="app.carbon.ms/x/sales-order/so_Fx6FCe…" caption="The three tallies on the line — ordered, shipped, invoiced — all at 500.">
   <DataTable
     columns={[
       { key: "part", label: "Part", mono: true },
-      { key: "desc", label: "Description" },
       { key: "ordered", label: "Ordered", align: "right" },
-      { key: "ship", label: "Shipping now", align: "right" },
-      { key: "uom", label: "UoM" },
+      { key: "shipped", label: "Shipped", align: "right" },
+      { key: "invoiced", label: "Invoiced", align: "right" },
+      { key: "status", label: "Status", align: "right" },
     ]}
     rows={[
-      { part: "CWH-A36-15", desc: "Counterweight Hook", ordered: "500", ship: "500", uom: "EA" },
+      { part: "CWH-A36-15", ordered: "500 EA", shipped: "500 EA", invoiced: "500 EA", status: <StatusBadge tone="green">Shipped</StatusBadge> },
     ]}
   />
 </AppShot>
 
-### Acme's shipping methods
+## Step 3 — Create the shipment
 
-A **shipping method** is just the carrier-and-service option you choose at ship time. Carbon
-ships with none preset — you add the ones your shop actually uses in **Settings**. Acme has
-configured these 10:
+A **shipment** is the record of goods leaving your dock. It's also the event that bumps the
+**shipped** tally. Start it from the order's **Shipments** button.
 
-<DataTable
-  columns={[
-    { key: "method", label: "Shipping method" },
-    { key: "kind", label: "Best for" },
-  ]}
-  rows={[
-    { method: "Customer Pickup", kind: <Tag>Will-call</Tag> },
-    { method: "Local Delivery", kind: <Tag>Own truck</Tag> },
-    { method: "LTL (Less Than Truckload)", kind: <Tag>Freight</Tag> },
-    { method: "FTL (Full Truckload)", kind: <Tag>Freight</Tag> },
-    { method: "FedEx Ground (3-5 Business Days)", kind: <Tag>Parcel</Tag> },
-    { method: "FedEx Priority Overnight (1 Business Day)", kind: <Tag>Parcel</Tag> },
-    { method: "UPS Ground (3-5 Business Days)", kind: <Tag>Parcel</Tag> },
-    { method: "UPS Next Day Air (1 Business Day)", kind: <Tag>Parcel</Tag> },
-    { method: "DHL Parcel International Standard", kind: <Tag>International</Tag> },
-    { method: "DHL Express Worldwide (1-2 Business Days)", kind: <Tag>International</Tag> },
-  ]}
-/>
+<Steps>
+
+<Step>
+**Click Shipments → New.** Carbon pre-fills the customer (Radiant Aerospace), the ship-to
+address, and the open order lines.
+</Step>
+
+<Step>
+**Pick the finished goods.** Enter how many of each line you're sending. All 500 hooks came in
+from job J000097, so enter **500 EA**. Because A36 steel is batch-tracked, Carbon records which
+batch ships — that's the [traceability](/manual/quality/tracking-quality) link.
+</Step>
+
+<Step>
+**Choose a shipping method.** Pick the carrier and service you quoted. For a heavy steel order,
+that's usually a freight method like **LTL (Less Than Truckload)**, not a parcel service.
+</Step>
+
+<Step>
+**Post the shipment.** Posting removes the hooks from inventory and adds **500** to the line's
+**shipped** count. The shipment is saved and linked to the order.
+</Step>
+
+</Steps>
 
 <Callout type="tip">
-  **Shipping cost vs. shipping method are two different things.** The *method* is the carrier
-  service you pick. The *cost* is what you bill the customer for freight — on SO000069 that's
-  **$250**, set on the order line. The cost rides through to the invoice automatically; you
-  don't add it twice.
+  You can ship a line in **more than one go**. Finish only 300 of 500? Ship 300 now — Carbon
+  records a partial shipment and keeps the line open for the rest.
 </Callout>
 
-<Callout type="warn">
-  You can ship a line in **more than one go**. If you only finish 300 of 500 hooks, ship 300
-  now — Carbon records a partial shipment, sets *quantity shipped* to 300, and leaves the
-  line open for the remaining 200. The line only reads *Shipped* once the shipped quantity
-  reaches the ordered quantity.
-</Callout>
+## Step 4 — The line reads Shipped
 
-## Step 4 — The line is marked Shipped
-
-Posting the shipment is what moves the needle on the order. Carbon adds the shipped quantity
-to the line, and the moment *shipped* equals *ordered*, the line's `sentComplete` flag flips
-to **true** and the status reads **Shipped**. For SO000069, posting all 500 finished the
-line in a single shipment.
+Once **shipped** equals **ordered**, the line status flips to **Shipped**. For SO000069, one
+shipment of 500 finished the line.
 
 <AppShot title="Sales Order · SO000069 — Shipments" url="app.carbon.ms/x/sales-order/so_Fx6FCe…/shipments" caption="One posted shipment covers the whole line — sent 2026-06-11." flush>
   <DataTable
@@ -275,43 +180,32 @@ line in a single shipment.
   />
 </AppShot>
 
-<Callout type="info">
-  Shipping and receiving share one chapter because they're mirror images: a **shipment** is
-  goods going *out* to a customer, a **receipt** is goods coming *in* from a supplier. Same
-  picking, batch, and posting mechanics. See
-  [Shipping & receiving](/manual/inventory/shipping-receiving) for the receiving side.
-</Callout>
-
 ## Step 5 — Invoice the order
 
-With the goods shipped, you can bill for them. A **sales invoice** is your request for
-payment. The best part: Carbon builds it from what actually shipped, so the invoice can't
-drift away from reality. You don't re-key the line — Carbon pulls the part, the quantity,
-and the price straight off the shipped order line.
+With the goods shipped, you can bill. A **sales invoice** is your request for payment. Carbon
+builds it from what actually shipped, so it can't drift from reality. Start it from the order's
+**Invoices** button.
 
 <Steps>
 
 <Step>
-**Create the invoice from the order.** From SO000069, use **Invoice** (or the **Invoices**
-tab). Carbon drafts a sales invoice — **AR000025** — pulling line 1 in at the shipped
-quantity (500) and the order's unit price ($73.14).
+**Click Invoices → New.** Carbon drafts invoice **AR000025**, pulling line 1 in at the shipped
+quantity (500) and the order price ($73.14).
 </Step>
 
 <Step>
-**Check the totals.** The line subtotal is 500 × $73.14 = **$36,570**. The **$250** shipping
-cost from the order line carries over, making the invoice total **$36,820**. Payment terms
-(Net 30) come from the customer record — no need to set them again.
+**Check the totals.** Goods are 500 × $73.14 = **$36,570**. The **$250** shipping cost carries
+over, making the total **$36,820**. Payment terms (**Net 30**) come from the customer record.
 </Step>
 
 <Step>
-**Post and send it.** Posting the invoice books the revenue and sets the line's
-`invoicedComplete` flag to **true**. Send it to Radiant, and when they pay, mark it **Paid**
-— which is exactly the state AR000025 ended in, paid the same day it was issued.
+**Post and send it.** Posting books the revenue and marks the line fully invoiced. Send it to
+Radiant; when they pay, mark it **Paid** — exactly how AR000025 ended, paid the same day.
 </Step>
 
 </Steps>
 
-<AppShot title="Sales Invoice · AR000025" url="app.carbon.ms/x/sales-invoice/si_EBoHyd…" caption="Built from the shipment — subtotal plus freight, marked Paid.">
+<AppShot title="Sales Invoice · AR000025" url="app.carbon.ms/x/sales-invoice/si_EBoHyd…" caption="Built from the shipment — goods plus freight, marked Paid.">
   <RecordPanel
     title="AR000025 — Radiant Aerospace"
     subtitle="Issued 2026-06-11 · Paid 2026-06-11"
@@ -331,19 +225,13 @@ cost from the order line carries over, making the invoice total **$36,820**. Pay
 </AppShot>
 
 <Callout type="info">
-  **Subtotal vs. invoice total.** The *subtotal* ($36,570) is the goods alone. The *invoice
-  total* ($36,820) adds the $250 freight. That's why the order total and the invoice total
-  match but the line subtotal is lower — the difference is shipping, every time.
+  **Subtotal vs. total.** The *subtotal* ($36,570) is the goods alone. The *total* ($36,820)
+  adds the $250 freight. The order total and invoice total match — the gap is always shipping.
 </Callout>
-
-Once posted, the invoice is an accounting document, not a sales one — it flows into your
-books as **accounts receivable** and, when paid, recognizes revenue. How that posting works
-is covered in [Accounting](/manual/accounting/overview).
 
 ## The back half, in one table
 
-Here's everything that happened after the order was confirmed — one line, one continuous,
-self-linking chain:
+One line, one self-linking chain — nothing re-typed between steps:
 
 <DataTable
   columns={[
@@ -356,16 +244,14 @@ self-linking chain:
     { stage: "Sales order", record: "SO000069", what: "500 hooks ordered · Make to Order", status: <StatusBadge tone="green">Completed</StatusBadge> },
     { stage: "Job", record: "J000097", what: "Created from the line · made 500", status: <StatusBadge tone="green">Completed</StatusBadge> },
     { stage: "Shipment", record: "sh_7injMj…", what: "Picked & shipped 500 to Radiant", status: <StatusBadge tone="green">Shipped</StatusBadge> },
-    { stage: "SO line", record: "Line 1", what: "Shipped 500 of 500 · sentComplete", status: <StatusBadge tone="green">Shipped</StatusBadge> },
-    { stage: "Invoice", record: "AR000025", what: "Billed $36,820 · invoicedComplete", status: <StatusBadge tone="green">Paid</StatusBadge> },
+    { stage: "SO line", record: "Line 1", what: "Shipped 500 of 500", status: <StatusBadge tone="green">Shipped</StatusBadge> },
+    { stage: "Invoice", record: "AR000025", what: "Billed $36,820", status: <StatusBadge tone="green">Paid</StatusBadge> },
   ]}
 />
 
-<Callout type="info">
-  Notice what you **didn't** do: re-enter the part, re-type the quantity, or copy the price
-  between steps. Each record built itself from the one before. That's the payoff of a single
-  *system of record* — fulfill the work once, and the numbers follow it from the dock to the
-  ledger.
+<Callout type="tip">
+  Want the wider context? The [15-minute walkthrough](/manual/walkthrough) runs this exact
+  example end to end, from quote to cash.
 </Callout>
 
 ## Next steps

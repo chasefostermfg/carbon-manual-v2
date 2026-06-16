@@ -3,366 +3,183 @@ title: "Tracking quality"
 description: "Non-conformances, inspections, corrective actions and full traceability."
 ---
 
-Quality is the part of Carbon that keeps bad parts from leaving the building — and lets you
-*prove* it later. This page covers the four pieces of Carbon's **QMS** (Quality Management
-System, the [glossary](/manual/overview/glossary) term for the tools that control and document
-quality): **inspections** baked into a job, **non-conformances** (NCRs) and the corrective
-actions that follow them, **gauges** and their calibration schedule, and **traceability** —
-how batch and serial tracking let you answer "which heat of A36 steel went into Radiant's
-order?" months after the job shipped.
+The **Quality** module keeps bad parts from leaving the building — and lets you *prove* later that what you shipped was good. It has four jobs: **inspections**, **non-conformances** (NCRs), **gauges**, and **traceability**.
 
-<Callout type="info">
-  **Where this fits.** Quality runs *alongside* the whole flow, not after it. The hero job
-  [J000097](/manual/manufacturing/jobs) ends with an **Inspection** operation; the steel on
-  [PO000057](/manual/buying/purchasing-basics) is batch-tracked when it's
-  [received](/manual/inventory/shipping-receiving); and if anything goes wrong, an NCR ties
-  it all together. You're reading the chapter between the shop floor making parts and the
-  warehouse shipping them.
-</Callout>
+## Where this lives in Carbon
 
-## The four jobs of a QMS
+Open the **Quality** module from the home screen. The dashboard shows your open work and a sub-nav for **Issues**, **Gauges**, **Records**, and **Inspections**.
 
-Before the click-by-click, here's the shape of it. Each piece answers a different question.
+<AppShot
+  src="/screenshots/manual/quality-dashboard.png"
+  alt="The Quality module dashboard in Carbon"
+  caption="Quality dashboard. Acme has 6 Open Issues and 29 Open Actions, with an issue trend chart and the Issues / Gauges / Records / Inspections sub-nav up top."
+/>
 
-<StatGrid cols={4}>
-  <Stat label="Inspections" value="Pass/Fail" hint="check parts against spec" />
-  <Stat label="Non-conformances" value="NCR" hint="record what went wrong" />
-  <Stat label="Gauges" value="Calibrated" hint="trust your measurements" />
-  <Stat label="Traceability" value="Genealogy" hint="prove what went where" />
+The two numbers up top tell you the workload at a glance:
+
+<StatGrid cols={2}>
+  <Stat label="Open Issues" value="6" hint="NCRs still being worked" />
+  <Stat label="Open Actions" value="29" hint="corrective / preventive steps to finish" />
 </StatGrid>
 
-You don't have to use all four to start. Many shops begin with a single inspection
-operation on their most important part and grow from there.
+You don't have to use all four tools to start. Many shops begin with one inspection on their most important part and grow from there.
 
-## Inspections: a quality gate inside the job
+## Inspections: a gate inside the job
 
-In Carbon an **inspection** isn't a separate module — it's just an **operation** in a
-routing, run at a work center you've set aside for checking parts. The hero Counterweight
-Hook proves the point. Its [method](/manual/items/methods) has three operations, and the
-*last* one is the gate:
+In Carbon an **inspection** isn't a separate thing to set up — it's just an **operation** in a routing, run at an inspection work center. The hero Counterweight Hook shows it: its [method](/manual/items/methods) ends with an **Inspection** operation, so no part ships before it's checked.
 
-<AppShot title="Method · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw9xRRAaEdwdCnPxCiBE/manufacturing" caption="The Counterweight Hook routing ends with an Inspection operation — the quality gate." flush>
-  <MethodTree
-    nodes={[
-      {
-        kind: "assembly",
-        label: "CWH-A36-15",
-        detail: "Counterweight Hook",
-        qty: "1 EA",
-        children: [
-          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ — batch-tracked", qty: "40 LB" },
-          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
-          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
-          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station · Quality Inspection process", qty: "10 min/pc" },
-        ],
-      },
-    ]}
-  />
-</AppShot>
-
-Operation 30 runs at the **Inspection Station** work center using the **Quality Inspection**
-process, and it's allotted 10 minutes per piece. Because the routing is *After Previous*,
-no hook reaches inspection until it's been cut and sandblasted — Carbon enforces the order.
-
-### How an inspection runs on the shop floor
+How it runs on the shop floor:
 
 <Steps>
   <Step>
-    **An inspector clocks onto operation 30.** In the [MES app](/manual/manufacturing/shop-floor),
-    the inspector opens job `J000097`, taps the **Inspection** operation, and clocks on — exactly
-    like any other operation. Carbon already knows which **procedure** applies (Acme's
-    *Quality Inspection*, version 1, is an Active standard work instruction).
+    **Clock onto the inspection operation.** In the [shop floor app](/manual/manufacturing/shop-floor), the inspector opens the job, taps the **Inspection** operation, and clocks on — like any other step.
   </Step>
   <Step>
-    **They check parts against the spec.** Using calibrated gauges — a height gauge, calipers,
-    a micrometer — they measure features and compare to the drawing. The procedure spells out
-    what to check and how.
+    **Check parts against the spec** using calibrated gauges. The procedure says what to measure.
   </Step>
   <Step>
-    **They record good and scrap quantities.** Good pieces get reported as **quantity complete**;
-    anything that fails gets reported as **scrap** with a reason. On J000097 all 500 pieces
-    passed, so quantity complete rolled up to 500 with zero scrap.
+    **Record good and scrap counts.** Good pieces become **quantity complete**; failures become **scrap** with a reason.
   </Step>
   <Step>
-    **A failure becomes an NCR.** If parts fail, the inspector raises a **non-conformance**
-    right from the operation (covered next). The job can be held until the issue is resolved,
-    so bad parts can't be picked and shipped by mistake.
+    **Raise an NCR for failures.** Bad parts trigger a non-conformance (next section), and the job can be held so they can't ship by mistake.
   </Step>
 </Steps>
 
 <Callout type="tip">
-  Want first-article or incoming inspection instead of a final gate? Put an inspection
-  operation **first** in the routing, or inspect material the moment it's
-  [received](/manual/inventory/shipping-receiving). The mechanism is identical — it's just an
-  operation at the Inspection Station — only the position changes.
+  Want first-article or incoming inspection instead of a final check? Put the inspection operation **first** in the routing. Same mechanism — only the position changes.
 </Callout>
 
-## Non-conformances (NCRs): recording what went wrong
+## Non-conformances (NCRs): record what went wrong
 
-A **non-conformance report** — an **NCR**, sometimes called an **issue** in Carbon — is the
-record you open when something doesn't meet spec: a mismeasured part, a bad batch of steel,
-a customer complaint. It captures *what* happened, *how bad* it is, *what you did about it*,
-and *how you proved the fix worked*. That paper trail is what auditors and customers like
-Radiant Aerospace want to see.
+An **NCR** — also called an **Issue** in Carbon — is the record you open when something is off-spec: a bad part, a bad batch of steel, a customer complaint. It captures what happened, how bad it is, what you did, and how you proved the fix worked.
 
-### Classify it: NCR types
+**Two settings shape every NCR:**
 
-Carbon ships Acme with **ten NCR types** so every issue is filed under a cause you can report
-on later. Filing by type is how you spot patterns — for example, three "Material Issue" NCRs
-in a month all pointing back to one supplier.
+- **Type** — the cause, so you can spot patterns later (e.g. three *Material Issue* NCRs all from one supplier). Acme ships with ten types like *Manufacturing Defect*, *Material Issue*, and *Customer Complaint*.
+- **Workflow** — the playbook, matched to severity. It lists the required actions you must finish before closing.
 
-<AppShot title="Quality · Issue Types" url="app.carbon.ms/x/quality/issue-types" caption="Acme's ten non-conformance types — pick one when you raise an NCR." flush>
-  <DataTable
-    columns={[
-      { key: "type", label: "NCR type" },
-      { key: "example", label: "When you'd use it" },
-    ]}
-    rows={[
-      { type: "Customer Complaint", example: "Radiant reports a hook out of tolerance after delivery" },
-      { type: "Manufacturing Defect", example: "A flame-cut edge is gouged or out of square" },
-      { type: "Material Issue", example: "A36 plate arrives with surface pitting or wrong hardness" },
-      { type: "Supplier Issue", example: "Ryerson ships the wrong heat or short quantity" },
-      { type: "Equipment Malfunction", example: "The burn table drifts off its cut path" },
-      { type: "Process Deviation", example: "Sandblasting skipped or run out of sequence" },
-      { type: "Testing Failure", example: "A part fails a dimensional or hardness check" },
-      { type: "Design Error", example: "The drawing calls out an impossible feature" },
-      { type: "Documentation Error", example: "The traveler lists the wrong revision" },
-      { type: "Training Issue", example: "An operator wasn't qualified on the work center" },
-    ]}
-  />
-</AppShot>
+Acme uses three workflows, from lightest to heaviest:
 
-### Match the response to the severity: workflows
-
-Not every problem deserves the same paperwork. A scratched part and a customer recall are
-worlds apart, so Carbon attaches a **workflow** to each NCR. A workflow is a named playbook —
-it sets a priority, lists the **required actions** you must complete before closing, and can
-require sign-off from a review board. Acme uses three, drawn straight from standard quality
-practice:
-
-<AppShot title="Quality · Issue Workflows" url="app.carbon.ms/x/quality/issue-workflows" caption="Three NCR workflows, from lightest to heaviest. Carbon picks the playbook based on severity." flush>
-  <DataTable
-    columns={[
-      { key: "workflow", label: "Workflow", mono: true },
-      { key: "priority", label: "Priority", align: "center" },
-      { key: "actions", label: "Required actions before closing" },
-      { key: "approval", label: "Approval", align: "right" },
-    ]}
-    rows={[
-      { workflow: "5 Why 2 How", priority: <StatusBadge tone="blue">Medium</StatusBadge>, actions: "Root cause by asking \"why\" five times", approval: <Tag>None</Tag> },
-      { workflow: "CAPA", priority: <StatusBadge tone="amber">High</StatusBadge>, actions: "Root Cause Analysis · Corrective Action · Documentation", approval: <Tag>None</Tag> },
-      { workflow: "8D", priority: <StatusBadge tone="red">Critical</StatusBadge>, actions: "Containment · Root Cause · Corrective · Preventive · Verification", approval: <StatusBadge tone="purple">MRB</StatusBadge> },
-    ]}
-  />
-</AppShot>
-
-Reading those left to right: **5 Why 2 How** is the quick investigation for a minor issue.
-**CAPA** — *Corrective and Preventive Action* — adds a documented fix and a step to stop it
-recurring. **8D** is the heavyweight, eight-discipline response reserved for critical problems;
-it even requires **MRB** (Material Review Board) sign-off before the NCR can close.
+<DataTable
+  columns={[
+    { key: "workflow", label: "Workflow", mono: true },
+    { key: "priority", label: "Priority", align: "center" },
+    { key: "actions", label: "Required before closing" },
+  ]}
+  rows={[
+    { workflow: "5 Why 2 How", priority: <StatusBadge tone="blue">Medium</StatusBadge>, actions: "Quick root cause for a minor issue" },
+    { workflow: "CAPA", priority: <StatusBadge tone="amber">High</StatusBadge>, actions: "Root cause + corrective + documentation" },
+    { workflow: "8D", priority: <StatusBadge tone="red">Critical</StatusBadge>, actions: "Full 8-discipline fix + MRB sign-off" },
+  ]}
+/>
 
 <Callout type="info">
-  **Corrective vs preventive.** A **corrective action** fixes the parts in front of you
-  (re-inspect the batch, scrap the bad ones). A **preventive action** changes the process so
-  it can't happen again (add a fixture, update the procedure). The heavier workflows make you
-  do both — and Carbon won't let you close the NCR until every required action is checked off.
+  **Corrective vs preventive.** A **corrective action** fixes the parts in front of you. A **preventive action** changes the process so it can't happen again. Heavier workflows make you do both — and Carbon won't let you close the NCR until every required action is checked off.
 </Callout>
 
 ### Raise an NCR
 
-Here's the click-by-click for opening a non-conformance — say a handful of Counterweight
-Hooks fail the dimensional check at operation 30.
-
 <Steps>
   <Step>
-    **Start the NCR from where the problem is.** Open the failing operation on job `J000097`
-    (or go to **Quality → Issues → New**). Starting from the operation pre-fills the link back
-    to the job, the part `CWH-A36-15`, and the work center, so the NCR is anchored to the work.
+    **Start from the problem.** Open the failing operation, or go to **Issues → New**. Starting from the operation pre-fills the job, part, and work center.
   </Step>
   <Step>
-    **Pick the NCR type.** Choose the cause — here **Manufacturing Defect** if it's a cutting
-    problem, or **Material Issue** if the plate was bad. This is the field you'll report on later.
+    **Pick the type and workflow.** Choose the cause (e.g. **Manufacturing Defect**) and the right playbook (**CAPA** for a recurring defect, **8D** if parts reached the customer).
   </Step>
   <Step>
-    **Choose the workflow.** Select **CAPA** for a recurring defect, or **8D** if scrap parts
-    may have shipped and the customer is exposed. Carbon then lists the required actions you'll
-    have to complete.
+    **Describe and quantify.** Write what you saw, attach a photo, and record the **non-conforming quantity** with a **scrap reason** if you're scrapping.
   </Step>
   <Step>
-    **Describe and quantify.** Write what you saw, attach a photo, and record the
-    **non-conforming quantity**. If you're scrapping parts, pick a **scrap reason** so the cost
-    lands in the right account.
+    **Assign and work the actions.** Each required action is a checklist item with an owner and status.
   </Step>
   <Step>
-    **Assign and investigate.** Assign an owner, then work the required actions — root cause,
-    corrective action, and (for CAPA/8D) a preventive action and verification step. Each action
-    is a checklist item with its own owner and status.
-  </Step>
-  <Step>
-    **Close it.** Once every required action is complete — and the MRB has signed off, if the
-    workflow demands it — close the NCR. It stays on the record forever, linked to the job and
-    the part.
+    **Close it.** Once every action is done — and MRB has signed off if the workflow needs it — close the NCR. It stays linked to the job and part forever.
   </Step>
 </Steps>
 
-### The NCR lifecycle, at a glance
-
-<Mermaid
-  chart={`flowchart LR
-  D[Defect found at inspection] --> R[Raise NCR]
-  R --> T[Pick NCR type]
-  T --> W[Choose workflow]
-  W --> C[Containment and corrective action]
-  C --> P[Preventive action]
-  P --> V[Verify the fix]
-  V --> X[MRB approval if 8D]
-  X --> Z[Close NCR]`}
-/>
-
 <Callout type="warn">
-  Don't reach for **8D** on every scratch. Over-classifying buries your team in paperwork and
-  hides the issues that truly matter. Match the workflow to the risk: most shop-floor defects
-  are a 5 Why 2 How; reserve 8D for problems that reached the customer or carry safety risk.
+  Don't reach for **8D** on every scratch. Over-classifying buries your team and hides what truly matters. Most shop-floor defects are a 5 Why 2 How; save 8D for problems that reached the customer or carry safety risk.
 </Callout>
 
 ## Gauges and calibration: trust your measurements
 
-An inspection is only as good as the tool doing the measuring. A **gauge** is any
-measuring instrument — a micrometer, a height gauge, a thread plug. Over time gauges drift,
-so each one is **calibrated** on a schedule against a known standard. Carbon tracks every
-gauge, when it was last calibrated, and when it's due again — and flags any tool that's
-overdue so it can't quietly produce bad readings.
+An inspection is only as good as the tool doing the measuring. A **gauge** is any measuring instrument — a micrometer, height gauge, or thread plug. Gauges drift over time, so each one is **calibrated** on a schedule. Open **Gauges** from the Quality sub-nav.
 
-Acme registers **ten gauges**, `G00001` through `G00010`, each on a six-month calibration
-interval. Here's the live register — note the dates are real, so several are already overdue
-as of today (2026-06-15):
+Acme registers ten gauges (`G00001`–`G00010`), each on a six-month interval. Carbon computes the next-due date and flips overdue tools to **Out of Calibration** on its own:
 
-<AppShot title="Quality · Gauges" url="app.carbon.ms/x/quality/gauges" caption="Acme's gauge register. Carbon computes the next-due date and flags anything out of calibration." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "Gauge", mono: true },
-      { key: "desc", label: "Description" },
-      { key: "last", label: "Last calibrated", align: "right" },
-      { key: "next", label: "Next due", align: "right" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { id: "G00010", desc: "Surface Plate", last: "2026-03-24", next: "2026-09-24", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
-      { id: "G00006", desc: "Outside Micrometer", last: "2026-03-24", next: "2026-09-24", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
-      { id: "G00002", desc: "Thread Gauge", last: "2026-03-22", next: "2026-09-22", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
-      { id: "G00005", desc: "Height Gauge", last: "2026-02-03", next: "2026-08-03", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
-      { id: "G00009", desc: "Dial Bore Gauge", last: "2025-12-18", next: "2026-06-18", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
-      { id: "G00007", desc: "Gauge - Feeler", last: "2025-11-20", next: "2026-05-20", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
-      { id: "G00008", desc: "1.0000\" Gauge Block", last: "2025-11-13", next: "2026-05-13", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
-      { id: "G00004", desc: "Thread Ring Gauge", last: "2025-10-02", next: "2026-04-02", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
-      { id: "G00001", desc: "2\" Depth Gauge", last: "2025-10-26", next: "2026-04-26", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
-      { id: "G00003", desc: "Thread Plug Gauge", last: "2025-09-03", next: "2026-03-03", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
-    ]}
-  />
-</AppShot>
+<DataTable
+  columns={[
+    { key: "id", label: "Gauge", mono: true },
+    { key: "desc", label: "Description" },
+    { key: "next", label: "Next due", align: "right" },
+    { key: "status", label: "Status", align: "right" },
+  ]}
+  rows={[
+    { id: "G00010", desc: "Surface Plate", next: "2026-09-24", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
+    { id: "G00006", desc: "Outside Micrometer", next: "2026-09-24", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
+    { id: "G00009", desc: "Dial Bore Gauge", next: "2026-06-18", status: <StatusBadge tone="green">In Calibration</StatusBadge> },
+    { id: "G00007", desc: "Gauge - Feeler", next: "2026-05-20", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
+    { id: "G00008", desc: "1.0000\" Gauge Block", next: "2026-05-13", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
+    { id: "G00003", desc: "Thread Plug Gauge", next: "2026-03-03", status: <StatusBadge tone="red">Out of Calibration</StatusBadge> },
+  ]}
+/>
 
-Each gauge record carries a **calibration interval** (six months here), a **last calibration
-date**, and a Carbon-computed **next due date**. When the next-due date passes, Carbon moves
-the gauge to **Out of Calibration** automatically — which is your signal to pull it from
-service until it's re-certified.
+To keep gauges current:
 
 <Steps>
   <Step>
-    **Register the gauge.** In **Quality → Gauges → New**, give it a number (Carbon suggests
-    the next in sequence, e.g. `G00011`), a description, a gauge **type**, and a home location.
+    **Register the gauge** in **Gauges → New** — a number, description, type, and home location.
   </Step>
   <Step>
-    **Set the calibration interval.** Acme uses six months. Carbon uses this to compute the
-    next-due date every time you log a calibration.
+    **Set the calibration interval** (Acme uses six months). Carbon uses it to compute the next-due date.
   </Step>
   <Step>
-    **Log each calibration.** When the gauge is calibrated, record the date and result. Carbon
-    rolls the next-due date forward and flips the status back to **In Calibration**.
+    **Log each calibration.** Carbon rolls the due date forward and flips the status back to **In Calibration**.
   </Step>
   <Step>
-    **Watch the overdue list.** Filter the register by **Out of Calibration** to see what needs
-    attention. Five of Acme's ten gauges are overdue right now — a realistic backlog for a
-    small shop, and exactly the list a quality manager works down each week.
+    **Work the overdue list.** Filter by **Out of Calibration** to see what needs attention this week.
   </Step>
 </Steps>
 
 <Callout type="warn">
-  An **out-of-calibration gauge taints every measurement made with it.** If the Thread Plug
-  Gauge (`G00003`, last calibrated 2025-09-03) was used to accept parts after its 2026-03-03
-  due date, you can't trust those results — which may itself become a *Testing Failure* NCR.
-  Keeping gauges current is what makes your inspection records defensible.
+  An **out-of-calibration gauge taints every measurement made with it.** If `G00003` was used to accept parts after its 2026-03-03 due date, you can't trust those results — which can itself become a *Testing Failure* NCR.
 </Callout>
 
-## Traceability and genealogy: proving what went where
+## Traceability: prove what went where
 
-**Traceability** (also called **genealogy**) is Carbon's ability to follow a part backward
-and forward through its whole life: which raw material went into it, which job made it, and
-which customer it shipped to. It's the payoff for all the structure above. The enabler is
-**tracking** set on the item — and the hero thread shows both flavors:
+**Traceability** (or **genealogy**) follows a part backward and forward: which raw material went in, which job made it, which customer it shipped to. The enabler is **tracking** set on the item:
 
-- **Batch tracking** groups material by lot. A36 Steel Plate (`A36-STEEL-PLT-1"`) has
-  `requiresBatchTracking: true`, so every receipt records a **batch** — effectively the *heat*
-  of steel from the mill. When the job pulled 20,000 LB for the 500 hooks, Carbon recorded
-  exactly which batch was consumed.
-- **Serial tracking** gives each finished unit its own number — used when a customer needs to
-  trace an individual part. The Counterweight Hook is inventory-tracked rather than serialized,
-  but a safety-critical part would carry a serial through the same machinery.
+- **Batch tracking** groups material by lot. A36 Steel Plate has batch tracking on, so every receipt records the **heat** of steel from the mill.
+- **Serial tracking** gives each finished unit its own number — for parts a customer needs to trace one by one.
 
-### Following the thread both ways
+Because every record links to the next, you can read the chain either way:
 
-<AppShot title="Genealogy · CWH-A36-15 batch on J000097" url="app.carbon.ms/x/job/job_8m3YTfc2oBy8xkdJX3wWD8/traceability" caption="The chain that lets Acme answer 'which steel went into Radiant's order?' months later." flush>
-  <DataTable
-    columns={[
-      { key: "link", label: "Link in the chain" },
-      { key: "record", label: "Record", mono: true },
-      { key: "detail", label: "Detail" },
-    ]}
-    rows={[
-      { link: "Supplier", record: "Ryerson", detail: "Sold the A36 steel to Acme" },
-      { link: "Purchase Order", record: "PO000057", detail: "Bought A36 Steel Plate 1″ at $0.25/LB" },
-      { link: "Receipt / Batch", record: "A36 batch", detail: "Heat recorded on receipt into bin R02-B01-01" },
-      { link: "Job", record: "J000097", detail: "Consumed 20,000 LB to make 500 hooks" },
-      { link: "Inspection", record: "Op 30", detail: "All 500 passed at the Inspection Station" },
-      { link: "Sales Order", record: "SO000069", detail: "Radiant Aerospace · 500 EA @ $73.14" },
-      { link: "Shipment", record: "sh_7injMj…", detail: "All 500 shipped to Radiant" },
-      { link: "Invoice", record: "AR000025", detail: "Billed $36,820 · Paid" },
-    ]}
-  />
-</AppShot>
+<DataTable
+  columns={[
+    { key: "link", label: "Link in the chain" },
+    { key: "record", label: "Record", mono: true },
+  ]}
+  rows={[
+    { link: "Purchase Order", record: "PO000057" },
+    { link: "Receipt / Batch (heat of steel)", record: "Ryerson" },
+    { link: "Job", record: "J000097" },
+    { link: "Inspection passed", record: "Op 30" },
+    { link: "Sales Order", record: "SO000069" },
+    { link: "Invoice · Paid $36,820", record: "AR000025" },
+  ]}
+/>
 
-Because every one of those records links to the next, you can read the chain in either
-direction:
-
-- **Backward (recall):** "We think a bad heat of steel shipped. Which orders are affected?"
-  Start at the batch, follow it forward to job `J000097`, then to `SO000069`, and you land on
-  **Radiant Aerospace** — in seconds, not days.
-- **Forward (provenance):** "Radiant is asking for the material certs behind their hooks."
-  Start at the shipment on `AR000025`, walk back through the job to the consumed batch, and
-  you have the exact heat of A36 steel and the Ryerson PO it came in on.
+- **Backward (recall):** "A bad heat shipped — which orders?" Follow the batch forward to `J000097`, then `SO000069`, and you land on **Radiant Aerospace** in seconds.
+- **Forward (provenance):** "Radiant wants the material certs." Walk back from the shipment through the job to the exact heat of A36 steel and the Ryerson PO.
 
 <Callout type="tip">
-  Turn on tracking *before* you receive material, not after. Set `requiresBatchTracking`
-  (or serial tracking) on the [item](/manual/items/defining-an-item) up front, and every
-  receipt, job consumption and shipment records the lot automatically. Switch it on too late
-  and the early records have nothing to trace.
+  Turn on tracking *before* you receive material. Set batch (or serial) tracking on the [item](/manual/items/defining-an-item) up front, so every receipt, job, and shipment records the lot automatically.
 </Callout>
-
-### Why it's worth the effort
-
-<StatGrid cols={3}>
-  <Stat label="Recall scope" value="Minutes" hint="find every affected order from one batch" />
-  <Stat label="Audit evidence" value="On file" hint="NCRs, calibrations and certs all linked" />
-  <Stat label="Customer trust" value="Provable" hint="answer 'prove it' for any shipment" />
-</StatGrid>
-
-That's the whole point of a QMS: not extra paperwork for its own sake, but the ability to
-*prove* — to an auditor, a customer, or yourself — that what you shipped was good, and to
-contain the damage fast when it wasn't.
 
 ## Next steps
 
 <Cards>
-  <IconCard title="The shop floor (MES)" href="/manual/manufacturing/shop-floor" description="Where operators clock onto the Inspection operation and report good and scrap quantities." icon={<Factory className="size-4" />} />
+  <IconCard title="The shop floor (MES)" href="/manual/manufacturing/shop-floor" description="Where operators clock onto the Inspection operation and report good and scrap." icon={<Factory className="size-4" />} />
   <IconCard title="Locations & stock" href="/manual/inventory/locations-and-stock" description="Bins, batches and serials — the inventory side of traceability." icon={<Boxes className="size-4" />} />
   <IconCard title="Methods: BOM & routing" href="/manual/items/methods" description="Add an inspection operation to any part's routing." icon={<Workflow className="size-4" />} />
 </Cards>

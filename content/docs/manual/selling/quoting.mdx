@@ -3,166 +3,63 @@ title: "Quoting & estimating"
 description: "Build a quote, price it, send it and turn it into an order."
 ---
 
-A **quote** is your answer to a customer's "what would this cost?" In Carbon you build a
-quote by adding a line for the part and a quantity, and Carbon adds up the cost of the
-materials and shop time behind it so you can set a price you're confident in. When the
-customer says yes, one click turns the quote into a [**sales order**](/manual/overview/glossary)
-— no re-typing, and the two stay linked forever. This page walks through that whole arc using
-Acme's real quote **Q000061**: 500 Counterweight Hooks for **Radiant Aerospace** at
-**$73.14 each**.
+A **quote** answers a customer's "what would this cost?" You add a line for the part and a
+quantity, Carbon rolls up the cost behind it, and you set a price. When the customer says yes,
+one click turns the quote into a **sales order** — nothing gets re-typed.
 
-<Callout type="info">
-  **Where this fits.** The quote is the *first* stop in Carbon's sales flow:
-  **Quote → [Sales Order](/manual/selling/sales-orders) → [Job](/manual/manufacturing/jobs) → Shipment → [Invoice](/manual/accounting/overview)**.
-  Before you quote, you need a [customer](/manual/selling/customers) to quote *to* and an
-  [item](/manual/items/defining-an-item) to quote — so if you haven't set those up yet,
-  start there. To see the whole chain end to end, read the [15-minute walkthrough](/manual/walkthrough).
-</Callout>
+We'll follow Acme's real quote **Q000061**: 500 Counterweight Hooks for **Radiant Aerospace**
+at **$73.14 each**.
 
-## What a quote is (and isn't)
+## Where this lives in Carbon
 
-A quote is a **non-binding price offer**. Nothing gets made, bought, or billed because a
-quote exists — it's a proposal. That makes it the safe place to experiment: try different
-quantities, see how the price-per-piece changes, adjust your margin, and send a polished
-PDF to the customer. Only when they accept do you convert it into a sales order, which *is*
-a commitment.
+Quotes live in the **Sales** module. Open **Sales → Quotes** to see every quote. Click a row
+to open one, or click the green **Add Quote** button (top-right) to start a new one.
 
-A quote in Carbon has three layers, from the outside in:
-
-- **The quote** — the document itself, addressed to one customer (Radiant Aerospace), with a
-  number Carbon assigns automatically (`Q000061`).
-- **Lines** — one per thing you're pricing. Each line points at an [item](/manual/items/defining-an-item)
-  and carries a quantity.
-- **Price breaks** — one or more quantities you price *within* a line. Quoting 100 vs. 500 vs.
-  1,000 of the same part usually gives different per-piece prices, and Carbon lets you show
-  all three on one line.
-
-<Mermaid
-  chart={`flowchart LR
-  Q[Quote Q000061] --> L[Line 1 CWH-A36-15]
-  L --> P1[Qty 500 at 73.14]
-  Q -->|customer accepts| SO[Sales Order SO000069]`}
+<AppShot
+  src="/screenshots/manual/sales-quotes.png"
+  alt="The Quotes list in the Sales module, with Q000061 for Radiant Aerospace marked Ordered"
+  caption="Sales → Quotes. Click a row to open a quote, or the green Add Quote button to start one."
 />
 
-## Create the quote
+<Callout type="info">
+  A quote is a **price offer, not a commitment**. Nothing gets made, bought, or billed until
+  you convert it to a [sales order](/manual/selling/sales-orders). So it's the safe place to
+  try quantities and adjust your margin.
+</Callout>
 
-Quotes live in the **Sales** module. You start a quote by picking the customer, then Carbon
-opens an empty quote with a fresh number for you to fill in.
+## Build the quote
 
 <Steps>
 
 <Step>
-**Open Sales → Quotes and select New.** Carbon shows the list of every quote in the system.
-Acme has 44 of them. The list is your home base — you'll come back here to find, sort and
-filter quotes by customer or status.
-
-<AppShot title="Quotes" url="app.carbon.ms/x/sales/quotes" caption="The Quotes list. Acme's hero quote, Q000061, is highlighted." flush>
-  <DataTable
-    columns={[
-      { key: "id", label: "Quote", mono: true },
-      { key: "customer", label: "Customer" },
-      { key: "lines", label: "Lines", align: "right" },
-      { key: "status", label: "Status", align: "right" },
-    ]}
-    rows={[
-      { id: "Q000061", customer: "Radiant Aerospace", lines: "1", status: <StatusBadge tone="green">Ordered</StatusBadge> },
-      { id: "Q000060", customer: "Deep Rock Mining", lines: "1", status: <StatusBadge tone="neutral">Draft</StatusBadge> },
-      { id: "Q000059", customer: "Nexus Power", lines: "1", status: <StatusBadge tone="blue">Sent</StatusBadge> },
-    ]}
-  />
-</AppShot>
+**Start it.** Click the green **Add Quote** button, then pick **Radiant Aerospace** as the
+customer. Carbon pulls in their address, contact, currency (USD) and payment terms
+(**Net 30**) — so you don't re-key any of it.
 </Step>
 
 <Step>
-**Choose the customer.** Pick **Radiant Aerospace** from the customer field. Carbon pulls in
-everything it already knows about them — billing address, ship-to location, the contact who
-asked for the quote, currency (USD) and payment terms (**Net 30**) — so you don't re-key any
-of it. This is why [setting up your customer](/manual/selling/customers) first pays off.
+**Add a line.** Click **Add Line**, set the type to **Part**, and choose **Counterweight
+Hook** (`CWH-A36-15`). Carbon fills in the description and unit (**EA**, Each) from the item.
 </Step>
 
 <Step>
-**Save the header.** Carbon assigns the next quote number (`Q000061`) and a *revision* of `0`.
-The quote opens in **Draft** status. Draft means it's yours to edit freely; the customer hasn't
-seen it yet.
+**Enter the quantity.** Type **500**. Want to show a price ladder? Add more quantities to the
+same line (say 100, 500, 1,000) and Carbon prices each one.
+</Step>
+
+</Steps>
 
 <Callout type="tip">
-  Revisions let you re-quote without losing history. If Radiant comes back asking for a
-  different quantity, you bump the quote to revision `1` instead of starting over — the
-  original price you offered stays on the record.
-</Callout>
-</Step>
-
-</Steps>
-
-## Add a line
-
-A blank quote is just a header. The work happens on the **lines** — one per part you're
-pricing. Each line ties the quote to a real [item](/manual/items/defining-an-item) so Carbon
-can cost it accurately.
-
-<Steps>
-
-<Step>
-**Add a line and pick the part.** On the quote, choose **Add Line**, set the line type to
-**Part**, and select **Counterweight Hook** (`CWH-A36-15`). Carbon fills the description and
-the unit of measure (**EA** — Each) from the item. You can also capture the customer's own
-part number here — Radiant calls this hook `730562`, so it prints on the quote and they
-recognize it instantly.
-</Step>
-
-<Step>
-**Enter the quantity.** Type **500**. This is the price break you're quoting. If you wanted to
-show Radiant a price ladder, you'd add more quantities to the same line — say 100, 500 and
-1,000 — and Carbon prices each one.
-</Step>
-
-</Steps>
-
-<AppShot title="Quote · Q000061" url="app.carbon.ms/x/quote/quote_VJcEZ…/details" caption="One line, one part, one quantity — the foundation of the quote.">
-  <RecordPanel
-    title="Q000061 — Radiant Aerospace"
-    subtitle="Revision 0 · Net 30 · USD"
-    status={<StatusBadge tone="green">Ordered</StatusBadge>}
-    tabs={["Details", "Lines", "Pricing", "Documents"]}
-    activeTab="Lines"
-  >
-    <FieldGrid cols={3}>
-      <Field label="Customer" value="Radiant Aerospace" />
-      <Field label="Customer part" value="730562" mono />
-      <Field label="Salesperson" value="Chase Foster" />
-    </FieldGrid>
-    <div className="mt-4">
-      <DataTable
-        columns={[
-          { key: "line", label: "Line", align: "right" },
-          { key: "part", label: "Part", mono: true },
-          { key: "desc", label: "Description" },
-          { key: "qty", label: "Qty", align: "right" },
-          { key: "method", label: "Fulfillment" },
-        ]}
-        rows={[
-          { line: "1", part: "CWH-A36-15", desc: "Counterweight Hook", qty: "500 EA", method: <Tag>Make to Order</Tag> },
-        ]}
-      />
-    </div>
-  </RecordPanel>
-</AppShot>
-
-<Callout type="info">
-  The **fulfillment method** on the line — here, *Make to Order* — tells Carbon whether this
-  part is pulled from stock or made fresh. For made parts, Carbon can cost the line from the
-  part's [method](/manual/items/methods) (its bill of materials and routing), which is what
-  makes the next step possible.
+  Quotes start in **Draft** — yours to edit freely before the customer sees them. Carbon also
+  assigns the number (`Q000061`) and a revision automatically.
 </Callout>
 
-## How Carbon prices the line
+## Price the line
 
-This is the part that makes Carbon a quoting tool, not just a form. For a **Make to Order**
-part, Carbon already knows the recipe — what the part is made *of* and the steps to make it —
-so it can roll up a real cost instead of asking you to guess.
+For a **Make to Order** part, Carbon already knows the recipe — what it's made of and how it's
+made. So it rolls up a real cost instead of asking you to guess.
 
-For the Counterweight Hook, the recipe is short. Each hook is flame-cut from **40 lb of
-1-inch A36 steel plate**, then runs through three shop operations:
+The Counterweight Hook is short: **40 lb of 1-inch A36 steel plate**, then three operations.
 
 <AppShot title="Method · CWH-A36-15" url="app.carbon.ms/x/part/item_2ejw9…/manufacturing" caption="Carbon costs the quote from this method — one material, three operations." flush>
   <MethodTree
@@ -173,178 +70,75 @@ For the Counterweight Hook, the recipe is short. Each hook is flame-cut from **4
         detail: "Counterweight Hook",
         qty: "1 EA",
         children: [
-          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″ — pulled from stock", qty: "40 LB" },
-          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2 · $50/hr labor", qty: "45 min/pc" },
-          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room · $50/hr labor", qty: "2 min/pc" },
-          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station · $50/hr labor", qty: "10 min/pc" },
+          { kind: "material", label: "A36-STEEL-PLT-1\"", detail: "A36 Steel Plate 1″", qty: "40 LB" },
+          { kind: "operation", label: "10 · Flame Cut", detail: "Burn Table — PA2", qty: "45 min/pc" },
+          { kind: "operation", label: "20 · Sandblasting", detail: "Sand Blasting Room", qty: "2 min/pc" },
+          { kind: "operation", label: "30 · Inspection", detail: "Inspection Station", qty: "10 min/pc" },
         ],
       },
     ]}
   />
 </AppShot>
 
-Carbon multiplies each ingredient by its cost and each operation's time by its
-[work center](/manual/overview/glossary) rate, then adds it all up into a **rolled-up cost
-per piece**. You don't do the arithmetic — Carbon does, and it re-does it the moment any
-input changes (a new steel price, a faster operation, a bigger batch).
-
-You set the **price**; Carbon shows you the **margin**. Margin is the gap between what the
-work costs you and what you charge — the cushion that has to cover overhead and profit.
-Type a unit price and Carbon shows the margin live; type a target margin and Carbon
-back-solves the price. Acme set **$73.14 each** on this line:
+You set the **price**; Carbon shows the **margin** — the gap between what the work costs and
+what you charge. Type a price and the margin updates live; type a target margin and Carbon
+back-solves the price. Acme set **$73.14 each**:
 
 <StatGrid cols={3}>
-  <Stat label="Quoted price" value="$73.14" hint="per hook, what Radiant pays" />
-  <Stat label="Line total" value="$36,570.00" hint="500 EA at $73.14" />
+  <Stat label="Quoted price" value="$73.14" hint="per hook" />
   <Stat label="Quantity" value="500 EA" hint="this price break" />
+  <Stat label="Line total" value="$36,570.00" hint="500 EA × $73.14" />
 </StatGrid>
 
-<Callout type="tip">
-  **Cost is not price.** Carbon tracks the internal *cost* to make a part separately from the
-  *price* you quote — on this line the recorded unit cost rounds to fractions of a cent
-  against a $73.14 price, because most of the value is in the labor and material Carbon rolls
-  up behind the scenes. You always control the price; Carbon just keeps the cost honest so
-  your margin is real.
-</Callout>
-
 <Callout type="warn">
-  Carbon's cost rollup is only as good as the part's [method](/manual/items/methods). If a
-  part has no bill of materials or routing yet, Carbon can't estimate its cost, and you'll be
-  pricing blind. Build the method first — or quote a known price and refine it later.
+  The cost rollup is only as good as the part's [method](/manual/items/methods). No bill of
+  materials or routing yet? Carbon can't estimate the cost — build the method first, or quote
+  a known price and refine it later.
 </Callout>
-
-## Configurators: pricing made-to-order parts
-
-Some parts aren't one fixed thing — they're a *family*. A flame-cut plate part might come in
-any thickness, size or grade the customer asks for, and each combination has a different
-amount of steel and cutting time, so a different cost. Re-typing a method for every variation
-would be miserable.
-
-A **configurator** solves this. It's a single item that exposes a few choices — Acme has one
-called the **Flame Cut Part Configurator** (`FLAME CONFIG`) — and those choices drive the
-method and the cost automatically. You quote the *configurator*, answer its questions, and
-Carbon assembles the right bill of materials, routing and rolled-up cost on the fly.
-
-<AppShot title="Configure · Flame Cut Part Configurator" url="app.carbon.ms/x/quote/quote_VJcEZ…/configure" caption="A configurator turns customer choices into a costed, made-to-order line.">
-  <RecordPanel
-    title="Flame Cut Part Configurator"
-    subtitle="Configured line · drives BOM, routing and cost"
-    status={<StatusBadge tone="blue">Configuring</StatusBadge>}
-  >
-    <FieldGrid cols={2}>
-      <Field label="Material grade" value="A36 steel" />
-      <Field label="Plate thickness" value="1 inch" />
-      <Field label="Cut process" value="Flame Cut" />
-      <Field label="Finish" value="Sandblasted" />
-    </FieldGrid>
-    <Callout type="info">
-      When you confirm the choices, Carbon generates the line's method and rolls up its cost
-      the same way it does for a standard part — no hand-built recipe required.
-    </Callout>
-  </RecordPanel>
-</AppShot>
 
 <Callout type="tip">
-  Use a configurator when you sell the same *kind* of part in many shapes — cut plate,
-  machined bar stock, bent sheet. Use a plain part with a fixed method (like `CWH-A36-15`)
-  when the design is settled and you make it the same way every time. Both price the same way
-  once the method exists. Learn more in [Methods: BOM & routing](/manual/items/methods).
+  Selling the same *kind* of part in many shapes (cut plate, machined bar)? Use a
+  **configurator** — one item that asks a few questions, then builds the method and cost for
+  you. Acme has the **Flame Cut Part Configurator** (`FLAME CONFIG`). See
+  [Methods: BOM & routing](/manual/items/methods).
 </Callout>
 
-## Send the quote
-
-When the lines and prices look right, you send the quote to the customer. Carbon generates a
-clean PDF and can email it to the contact on the quote — no copying numbers into a separate
-document.
+## Send it
 
 <Steps>
 
 <Step>
-**Review the totals.** Check the line prices and the quote total one more time. On Q000061
-that's a single line: 500 EA × $73.14 = **$36,570.00**.
+**Check the total.** On Q000061 that's one line: 500 EA × $73.14 = **$36,570.00**.
 </Step>
 
 <Step>
-**Select Send.** Carbon builds the quote PDF, addresses it to Radiant's contact, and records
-that the quote was sent. The status moves from **Draft** to **Sent** — your signal that the
-ball is now in the customer's court.
-
-<Callout type="tip">
-  Sending also timestamps the quote. If you've set an expiration window, that clock starts
-  here, so the customer knows the price isn't open-ended.
-</Callout>
+**Click Send.** Carbon builds the PDF, emails it to Radiant's contact, and moves the status
+from **Draft** to **Sent** — the ball is now in the customer's court.
 </Step>
 
 </Steps>
 
-## Convert a won quote to a sales order
+## Convert to an order
 
-When Radiant says yes, you don't rebuild anything. From the quote you select **Convert to
-Order** and Carbon copies the customer, lines, quantities and prices straight onto a brand-new
-[sales order](/manual/selling/sales-orders) — here, **SO000069**.
+When Radiant says yes, don't rebuild anything. On the quote, click **Convert to Order**.
+Carbon copies the customer, lines, quantities and prices onto a new
+[sales order](/manual/selling/sales-orders) — here, **SO000069** — and the two stay linked.
 
-<AppShot title="Sales Order · SO000069" url="app.carbon.ms/x/sales-order/so_Fx6FC…/details" caption="The converted order. Same part, same price, now a commitment — and still linked to Q000061.">
-  <RecordPanel
-    title="SO000069 — Radiant Aerospace"
-    subtitle="From quote Q000061 · Order date 2026-06-11"
-    status={<StatusBadge tone="green">Completed</StatusBadge>}
-    tabs={["Details", "Lines", "Shipments", "Invoices"]}
-    activeTab="Lines"
-  >
-    <FieldGrid cols={3}>
-      <Field label="From quote" value="Q000061" mono />
-      <Field label="Order total" value="$36,820.00" />
-      <Field label="Payment terms" value="Net 30" />
-    </FieldGrid>
-    <div className="mt-4">
-      <DataTable
-        columns={[
-          { key: "part", label: "Part", mono: true },
-          { key: "qty", label: "Qty", align: "right" },
-          { key: "price", label: "Unit price", align: "right" },
-          { key: "ext", label: "Extended", align: "right" },
-        ]}
-        rows={[
-          { part: "CWH-A36-15", qty: "500 EA", price: "$73.14", ext: "$36,570.00" },
-        ]}
-      />
-    </div>
-  </RecordPanel>
-</AppShot>
-
-The two records stay **linked**. Open J000097 later and you can trace it back through
-SO000069 all the way to the quote you sent — so when someone asks "what price did we promise
-on this?" the answer is one click away. That traceability is the whole point of entering the
-information once.
+<AppShot
+  src="/screenshots/manual/sales-order-detail.png"
+  alt="Sales Order SO000069 for Radiant Aerospace, converted from quote Q000061"
+  caption="The converted order SO000069. Same part, same price — now a commitment, still linked to Q000061."
+/>
 
 <Callout type="info">
-  The order total ($36,820.00) is a little higher than the quote line total ($36,570.00)
-  because $250 of shipping was added on the order. Quotes price the *work*; the order is where
-  freight, taxes and other add-ons get finalized.
+  The order total ($36,820.00) is higher than the quote line total ($36,570.00) because $250
+  of shipping was added on the order. Quotes price the *work*; the order is where freight and
+  taxes get finalized.
 </Callout>
 
-<Callout type="warn">
-  Converting doesn't close the quote behind your back — it marks it **Ordered** so you can
-  still see exactly what you offered. A quote that the customer passes on can be marked
-  **Lost** instead, which keeps your win/loss history honest for later analysis.
-</Callout>
-
-## Recap
-
-<DataTable
-  columns={[
-    { key: "step", label: "Step" },
-    { key: "what", label: "What you do" },
-    { key: "result", label: "Result" },
-  ]}
-  rows={[
-    { step: "Create", what: "Pick the customer, save the header", result: "Q000061 opens in Draft" },
-    { step: "Add a line", what: "Choose CWH-A36-15, qty 500", result: "Line tied to the real item" },
-    { step: "Price", what: "Set $73.14; Carbon rolls up cost + margin", result: "Line total $36,570.00" },
-    { step: "Send", what: "Generate the PDF and email it", result: "Status → Sent" },
-    { step: "Convert", what: "Convert to Order when they say yes", result: "SO000069, linked to the quote" },
-  ]}
-/>
+Converting marks the quote **Ordered** (so you can always see what you offered) instead of
+deleting it. A quote the customer passes on can be marked **Lost** instead — which keeps your
+win/loss history honest.
 
 ## Next steps
 
